@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -388,12 +387,19 @@
   .admin-logic h4{margin:0 0 10px; font-family:'Baloo 2'; font-size:1rem;}
   .admin-logic ol{margin:0; padding-left:18px;}
   .admin-logic li{margin-bottom:6px; color:var(--text-light);}
-  .table-scroll{overflow-x:auto;}
+  .table-scroll{
+    overflow:auto; max-height:65vh; border-radius:var(--radius);
+    border:1px solid var(--line);
+  }
+  table.admin-table thead th{
+    position:sticky; top:0; z-index:5;
+    background:var(--bg-surface);
+  }
   .admin-toolbar{
     display:flex; align-items:center; gap:14px; margin-bottom:14px; flex-wrap:wrap;
   }
   .admin-toolbar .btn-secondary{padding:10px 16px;}
-  table.admin-table{width:100%; min-width:900px; border-collapse:collapse; background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  table.admin-table{width:100%; min-width:900px; border-collapse:collapse; background:var(--bg-surface);}
   table.admin-table th, table.admin-table td{padding:12px 14px; text-align:left; border-bottom:1px solid var(--line); font-size:0.82rem; white-space:nowrap;}
   table.admin-table th{color:var(--text-muted); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.5px;}
   table.admin-table tr:last-child td{border-bottom:none;}
@@ -478,6 +484,22 @@
   .st-void{background:rgba(120,120,140,0.18); color:#8b86a3; border:1px solid #4a4368;}
 
   .row-void td{opacity:0.45;}
+  .comp-badge{
+    display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px;
+    background:var(--bg-surface-2); border:1px solid var(--purple); color:var(--text-light);
+    font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .comp-badge:hover{background:var(--purple);}
+  .comp-popover{
+    display:none; margin-top:6px; padding:8px 10px; border-radius:10px;
+    background:var(--bg-deep); border:1px solid var(--purple);
+    font-size:0.78rem; color:var(--text-light); white-space:normal; max-width:220px;
+  }
+  .comp-popover.open{display:block;}
+  .comp-popover .chip{
+    display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; border-radius:999px;
+    background:var(--bg-surface-2); border:1px solid var(--line); font-weight:600;
+  }
   .mini-btn{
     padding:5px 10px; border-radius:8px; cursor:pointer;
     font-family:'Inter'; font-weight:600; font-size:0.72rem;
@@ -2107,7 +2129,9 @@
       const meta = stMeta(r.status, r.detail);
       const comps = r.companions || [];
       const nameCell = comps.length
-        ? `${escapeHtml(r.name)} <span style="color:var(--text-muted);">(+${escapeHtml(comps.join('、'))})</span>`
+        ? `${escapeHtml(r.name)}<span class="comp-badge" data-toggle-comp="${escapeHtml(r.regId)}">+${comps.length}</span>
+           <div class="comp-popover" id="comp-${escapeHtml(r.regId)}">${
+             comps.map(n=>`<span class="chip">${escapeHtml(n)}</span>`).join('')}</div>`
         : escapeHtml(r.name);
 
       let actions = '';
@@ -2165,6 +2189,21 @@
   }
 
   // 事件委派：表格重繪時不用重新綁定每顆按鈕
+  // 攜伴徽章：點擊展開/收合，再點別的地方自動收合
+  document.getElementById('admin-tbody').addEventListener('click', (e)=>{
+    const badge = e.target.closest('.comp-badge');
+    if(!badge) return;
+    const pop = document.getElementById('comp-' + badge.dataset.toggleComp);
+    if(!pop) return;
+    const willOpen = !pop.classList.contains('open');
+    document.querySelectorAll('.comp-popover.open').forEach(p=> p.classList.remove('open'));
+    if(willOpen) pop.classList.add('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(e.target.closest('.comp-badge') || e.target.closest('.comp-popover')) return;
+    document.querySelectorAll('.comp-popover.open').forEach(p=> p.classList.remove('open'));
+  });
+
   document.getElementById('admin-tbody').addEventListener('click', async (e)=>{
     const btn = e.target.closest('.mini-btn');
     if(!btn) return;
