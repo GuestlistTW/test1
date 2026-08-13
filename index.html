@@ -1440,12 +1440,15 @@
         headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // avoids CORS preflight with Apps Script
         body: JSON.stringify(payload)
       });
+      const raw = await res.text();
       let body = null;
-      try{ body = await res.json(); }catch(e){ /* 讀不到就算了，不影響主流程 */ }
-      return { ok:true, body: body };
+      try{ body = JSON.parse(raw); }catch(e){ /* 不是合法 JSON，下面用 raw 顯示真正拿到的內容 */ }
+      // body 解析失敗時，把 HTTP 狀態碼與原始內容（通常是 Google 的錯誤頁面）
+      // 一起帶回去，前端才能顯示真正發生的事，而不是誤判成密碼錯誤。
+      return { ok:true, status:res.status, body: body, raw: body ? null : raw.slice(0,300) };
     }catch(err){
       console.error('Backend POST failed', err);
-      return { ok:false, reason:'network' };
+      return { ok:false, reason:'network', error:String(err) };
     }
   }
 
@@ -2009,16 +2012,25 @@
         enterAdmin();
         applyAdminData(body.results || []);
       } else {
-        // 顯示後端實際回報的原因，而不是一律說「密碼錯誤」——
-        // 分頁沒建立、部署權限沒開、網址填錯都會走到這裡，
-        // 蓋成密碼錯誤會讓人往錯的方向找問題。
+        // 顯示真正發生的事，而不是一律說「密碼錯誤」——
+        // 分頁沒建立、部署權限沒開、網址填錯、或後端根本沒回 JSON
+        // （常見於某些內建瀏覽器，例如 LINE），都會走到這裡，
+        // 蓋成密碼錯誤只會讓人往錯的方向找問題。
         let why;
         if(!r.ok){
           why = currentLang === 'en'
-            ? 'Cannot reach the backend. Check that GAS_URL is correct and the deployment allows access from "Anyone".'
-            : '連不到後端。請確認 GAS_URL 網址正確，且部署時「誰可以存取」有設為「任何人」。';
+            ? `Cannot reach the backend (${r.reason||'network error'}). Check that GAS_URL is correct and the deployment allows access from "Anyone".`
+            : `連不到後端（${r.reason||'網路錯誤'}）。請確認 GAS_URL 網址正確，且部署時「誰可以存取」有設為「任何人」。`;
+        } else if(!body || (body.result === undefined && body.error === undefined)){
+          // fetch 有回應，但內容不是我們預期的 JSON——通常是 Google 回傳了
+          // 錯誤頁面或登入頁面而不是資料，把實際拿到的內容顯示出來方便判斷。
+          why = (currentLang === 'en' ? 'Unexpected response (HTTP ' : '收到非預期的回應（HTTP ')
+            + (r.status || '?') + (currentLang === 'en' ? '): ' : '）：')
+            + (r.raw ? r.raw : (currentLang === 'en' ? 'empty response' : '空白回應'));
         } else if(body.message && String(body.message).indexOf('unauthorized') < 0){
           why = (currentLang === 'en' ? 'Backend error: ' : '後端回報：') + body.message;
+        } else if(body.error && body.error !== 'unauthorized'){
+          why = (currentLang === 'en' ? 'Backend error: ' : '後端回報：') + body.error;
         } else {
           why = currentLang === 'en' ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次';
         }
