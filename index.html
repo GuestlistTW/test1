@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -539,6 +540,40 @@
   .guest-country-hint{grid-column:1 / -1; margin-top:-2px;}
   input.country-input{text-transform:uppercase;}
   input.country-input::placeholder{text-transform:none;}
+
+  /* ===== 展示模式提示 ===== */
+  .demo-banner{
+    background:rgba(255,217,61,0.12); border:1px solid var(--yellow); color:var(--yellow);
+    border-radius:var(--radius); padding:14px 18px; margin-bottom:18px;
+    font-size:0.86rem; font-weight:600; line-height:1.6;
+  }
+  /* ===== 取消申請 ===== */
+  .cancel-pending-row td{background:rgba(255,159,64,0.08);}
+  .lr-companions{
+    display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end;
+  }
+  .lr-chip{
+    background:var(--bg-surface-2); border:1px solid var(--line); border-radius:999px;
+    padding:3px 10px; font-size:0.8rem; font-weight:600;
+  }
+  .cancel-area{margin-top:18px; padding-top:16px; border-top:1px solid var(--line);}
+  .cancel-area textarea{
+    width:100%; padding:10px 12px; margin-top:8px;
+    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
+    color:var(--text-light); font-family:'Inter'; font-size:0.9rem;
+  }
+  .btn-danger{
+    width:100%; padding:12px; border-radius:12px; margin-top:10px;
+    background:transparent; border:1px solid var(--red); color:var(--red);
+    font-family:'Inter'; font-weight:700; font-size:0.9rem; cursor:pointer;
+  }
+  .btn-danger:hover{background:rgba(255,75,92,0.1);}
+  .btn-danger:disabled{opacity:0.5; cursor:not-allowed;}
+  .cancel-pending-note{
+    margin-top:14px; padding:12px 14px; border-radius:10px;
+    background:rgba(255,159,64,0.12); border:1px solid var(--orange);
+    color:var(--orange); font-size:0.86rem; font-weight:600; line-height:1.6;
+  }
 </style>
 </head>
 <body>
@@ -784,6 +819,7 @@
       </div>
       <div class="lr-row"><span class="lr-label" data-i18n="lr_regid">報名編號</span><span class="lr-value" id="lr-regid">—</span></div>
       <div class="lr-row"><span class="lr-label" data-i18n="lr_count">報名人數</span><span class="lr-value" id="lr-count">—</span></div>
+      <div class="lr-row" id="lr-companions-row" style="display:none;"><span class="lr-label" data-i18n="lr_companions">攜伴</span><span class="lr-value lr-companions" id="lr-companions"></span></div>
       <div class="lr-row"><span class="lr-label" data-i18n="lr_due">應付金額</span><span class="lr-value" id="lr-due">—</span></div>
       <div class="lr-row"><span class="lr-label" data-i18n="lr_method">付款方式</span><span class="lr-value" id="lr-method">—</span></div>
       <div class="lr-note" id="lr-note"></div>
@@ -796,6 +832,16 @@
         <div class="paycode-num" id="paycode-num">—</div>
         <div class="paycode-meta" id="paycode-meta"></div>
         <div id="paycode-qr"></div>
+      </div>
+
+      <div class="cancel-pending-note" id="cancel-pending-note" style="display:none;" data-i18n="cancel_pending_note">
+        ⏳ 你已送出取消申請，主辦單位確認後會將這筆報名改為「已取消」。如果是誤按，請直接聯繫主辦單位。
+      </div>
+
+      <div class="cancel-area" id="cancel-area" style="display:none;">
+        <label class="lr-label" for="cancel-reason" data-i18n="cancel_reason_label">如果無法出席，可以在這裡申請取消報名（送出後由主辦單位確認）</label>
+        <textarea id="cancel-reason" rows="2" data-i18n-ph="cancel_reason_ph" placeholder="取消原因（選填）"></textarea>
+        <button type="button" class="btn-danger" id="cancel-btn" data-i18n="cancel_btn">申請取消報名</button>
       </div>
     </div>
   </section>
@@ -885,11 +931,6 @@
         <label for="pay-date" data-i18n="pay_date_label">匯款日期</label>
         <input type="date" id="pay-date" required>
       </div>
-      <div class="field">
-        <label for="pay-regid" data-i18n="pay_regid_label">報名編號（選填）</label>
-        <input type="text" id="pay-regid" placeholder="例：TP005">
-        <div class="hint" data-i18n="pay_regid_hint">如果知道你的報名編號，填在這裡可以讓對帳更準確（報名成功時彈窗有顯示）</div>
-      </div>
       <button type="submit" class="btn-primary" id="payment-submit-btn" data-i18n="pay_submit">回報轉帳資訊</button>
       <div class="form-msg" id="payment-msg" data-i18n="pay_msg">✅ 已收到你的轉帳回報，我們會盡快核對並更新報名狀態。</div>
     </form>
@@ -942,16 +983,21 @@
     </div>
 
     <div class="admin-content" id="admin-content" style="display:none;">
+      <div class="demo-banner" id="demo-banner" style="display:none;" data-i18n="demo_banner">
+        🧪 展示模式：目前顯示的是內建的範例資料，沒有連接後端，任何操作都不會真的寫入試算表。部署 Google Apps Script 後，用真實密碼登入即可看到實際資料。
+      </div>
+
       <div class="admin-banner">
         <span class="ic">🔧</span>
-        <span data-i18n="admin_banner_text">報名與匯款回報會直接寫入「報名資料」「匯款回報」兩張原始分頁；核對狀態由系統即時算出，並同步寫回「報名資料」的狀態欄位，不再另外維護對帳總表。原始資料只會新增、不會被覆寫。</span>
+        <span data-i18n="admin_banner_text">報名與匯款回報直接寫入「報名資料」「匯款回報」兩張原始分頁。報名狀態只有三種（已報名／報名成功／已取消），系統會即時算好同步寫回試算表，不另外維護對帳總表。電話是唯一識別碼，原始資料只會新增、不會被覆寫。</span>
       </div>
 
       <div class="admin-stats">
         <div class="stat-box"><div class="stat-num" id="stat-groups">0</div><div class="stat-label" data-i18n="stat_groups">有效報名組數</div></div>
         <div class="stat-box"><div class="stat-num" id="stat-people">0</div><div class="stat-label" data-i18n="stat_people">總人數</div></div>
-        <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">已核對組數</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">報名成功組數</div></div>
         <div class="stat-box"><div class="stat-num" style="color:var(--orange);" id="stat-outstanding">NT$0</div><div class="stat-label" data-i18n="stat_outstanding">未收金額</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--red);" id="stat-pending">0</div><div class="stat-label" data-i18n="stat_pending">待處理取消申請</div></div>
         <div class="stat-box"><div class="stat-num" style="color:var(--yellow);" id="stat-revenue">NT$0</div><div class="stat-label" data-i18n="stat_revenue">預期總營收</div></div>
       </div>
 
@@ -963,11 +1009,12 @@
 
       <div class="admin-filters" id="admin-filters">
         <button type="button" class="filter-btn active" data-filter="all" data-i18n="filter_all">全部</button>
-        <button type="button" class="filter-btn" data-filter="unpaid" data-i18n="filter_unpaid">未收款</button>
+        <button type="button" class="filter-btn" data-filter="cancelreq" data-i18n="filter_cancelreq">⚠ 取消申請</button>
+        <button type="button" class="filter-btn" data-filter="unpaid" data-i18n="filter_unpaid">尚未收款</button>
         <button type="button" class="filter-btn" data-filter="reported" data-i18n="filter_reported">待銀行核實</button>
-        <button type="button" class="filter-btn" data-filter="review" data-i18n="filter_review">待人工確認</button>
-        <button type="button" class="filter-btn" data-filter="paid" data-i18n="filter_paid">已核對</button>
-        <button type="button" class="filter-btn" data-filter="void" data-i18n="filter_void">已作廢</button>
+        <button type="button" class="filter-btn" data-filter="mismatch" data-i18n="filter_mismatch">金額不符</button>
+        <button type="button" class="filter-btn" data-filter="success" data-i18n="filter_success">報名成功</button>
+        <button type="button" class="filter-btn" data-filter="cancelled" data-i18n="filter_cancelled">已取消</button>
       </div>
 
       <div class="table-scroll">
@@ -982,8 +1029,8 @@
               <th data-i18n="admin_th_method">付款方式</th>
               <th data-i18n="admin_th_paid">已回報金額</th>
               <th data-i18n="admin_th_last5">後五碼</th>
-              <th data-i18n="admin_th_status">核對狀態</th>
-              <th data-i18n="admin_th_table">同桌備註</th>
+              <th data-i18n="admin_th_status">報名狀態</th>
+              <th data-i18n="admin_th_note">對帳備註</th>
               <th data-i18n="admin_th_actions">操作</th>
             </tr>
           </thead>
@@ -996,12 +1043,12 @@
       <div class="admin-logic" style="margin-top:22px;">
         <h4 data-i18n="admin_logic_title">對帳與操作說明</h4>
         <ol>
-          <li data-i18n="admin_logic_1">應付金額 =（攜伴人數 + 1）× NT$1,200，由報名人數自動算出，不另存欄位</li>
-          <li data-i18n="admin_logic_2">匯款回報若有填「報名編號」優先用編號配對；沒填才退回用電話配對</li>
-          <li data-i18n="admin_logic_3">金額相符 →「已回報，待銀行核實」；金額不符 →「待人工確認」，需人工介入</li>
-          <li data-i18n="admin_logic_4">按「銀行已核實」＝你已實際去銀行帳戶確認這筆錢到帳；按「確認收款」＝現場收現或其他方式已收到，兩者都會讓狀態變成已核對</li>
-          <li data-i18n="admin_logic_5">同一支電話被多組有效報名使用時，電話欄會出現 ⚠️，代表配對可能不準，請人工確認</li>
-          <li data-i18n="admin_logic_6">有人填錯重報時，請把舊那筆按「作廢」：資料完整留在試算表可回查，但不列入統計、不觸發重複警示、公開查詢也查不到</li>
+          <li data-i18n="admin_logic_1">報名狀態只有三種：<b>已報名</b>（尚未確認收款）→ <b>報名成功</b>（款項已確認）→ 或 <b>已取消</b></li>
+          <li data-i18n="admin_logic_2">應付金額 =（攜伴人數 + 1）× NT$1,200；匯款回報以「電話」自動配對，報名編號由系統帶入</li>
+          <li data-i18n="admin_logic_3">按「銀行已核實」＝你已實際在銀行帳戶看到這筆錢，金額相符時狀態會自動變成報名成功；按「直接確認收款」＝現場收現等其他方式已收到</li>
+          <li data-i18n="admin_logic_4">狀態只會往前走，系統不會把你手動確認過的「報名成功」自動退回，避免辛苦核對的結果被蓋掉</li>
+          <li data-i18n="admin_logic_5">使用者可以在查詢頁申請取消，會出現在「⚠ 取消申請」分頁等你核准或駁回；核准後該電話就能重新報名</li>
+          <li data-i18n="admin_logic_6">同一支電話同時只能有一筆有效報名。有人填錯要重報時，請先核准取消再讓對方重新填</li>
         </ol>
       </div>
     </div>
@@ -1125,7 +1172,6 @@
     stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Confirmed'},
     stat_outstanding:{en:'Outstanding'}, stat_revenue:{en:'Expected Revenue'},
     filter_all:{en:'All'}, filter_unpaid:{en:'Unpaid'}, filter_reported:{en:'Pending Bank'},
-    filter_review:{en:'Needs Review'}, filter_paid:{en:'Confirmed'}, filter_void:{en:'Voided'},
     admin_logic_6:{en:'If someone re-registers after a mistake, mark the old entry "Void": the raw data stays in the sheet for reference, but it is excluded from stats, duplicate-phone warnings, and public lookup'},
     lr_regid:{en:'Registration No.'}, lr_count:{en:'Party Size'}, lr_due:{en:'Amount Due'}, lr_method:{en:'Payment Method'},
     paycode_btn:{en:'🏪 Generate convenience-store payment code'},
@@ -1133,6 +1179,16 @@
     paycode_label:{en:'Payment Code'},
     field_country_ph:{en:'Type TW, Taiwan, or pick from the list'},
     country_unknown:{en:'Not in our list — will be submitted as typed'},
+    lr_companions:{en:'Plus-ones'},
+    cancel_reason_label:{en:'If you can no longer attend, you can request cancellation here (subject to organizer confirmation)'},
+    cancel_reason_ph:{en:'Reason (optional)'},
+    cancel_btn:{en:'Request Cancellation'},
+    cancel_pending_note:{en:'⏳ Your cancellation request has been submitted. The organizer will confirm and mark this registration as cancelled. If this was a mistake, please contact the organizer directly.'},
+    demo_banner:{en:'🧪 Demo mode: showing built-in sample data with no backend connected — nothing you do here is written to the spreadsheet. Deploy the Apps Script and log in with the real password to see live data.'},
+    filter_cancelreq:{en:'⚠ Cancel Requests'}, filter_mismatch:{en:'Amount Mismatch'},
+    filter_success:{en:'Confirmed'}, filter_cancelled:{en:'Cancelled'},
+    admin_th_note:{en:'Reconciliation Note'},
+    stat_pending:{en:'Cancel Requests'},
     footer_text:{en:'Taiwan Pride — Proud Together · Contact the organizer with any questions'},
     line_modal_title:{en:'Welcome to Taiwan Pride!'},
     line_modal_desc:{en:'Scan the QR code below to join our LINE group and get event updates'},
@@ -1412,8 +1468,21 @@
       paymethod: document.querySelector('input[name="paymethod"]:checked').value
     };
     const backendResult = await postToBackend(payload);
-    const assignedRegId = (backendResult.body && backendResult.body.id) ? backendResult.body.id : '';
+    const body = backendResult.body || {};
 
+    // 電話已經有一筆有效報名：不覆寫舊資料，改成提示使用者先取消再重報
+    if(body.result === 'error' && body.code === 'duplicate-phone'){
+      errorEl.textContent = currentLang === 'en'
+        ? `This phone number already has a registration (${body.existingRegId}). To change it, please request cancellation under "Check Status" first, then register again.`
+        : `這支電話已經有一筆報名紀錄（${body.existingRegId}）。若要修改內容，請先到「查詢報名狀態」申請取消原本那筆，再重新報名。`;
+      errorEl.classList.add('show');
+      setTimeout(()=> errorEl.classList.remove('show'), 12000);
+      submitBtn.disabled = false;
+      submitBtn.textContent = currentLang === 'en' ? I18N.signup_submit.en : '送出報名';
+      return;
+    }
+
+    const assignedRegId = body.id || '';
     const msg = document.getElementById('signup-msg');
     msg.classList.add('show');
     setTimeout(()=> msg.classList.remove('show'), 6000);
@@ -1442,8 +1511,7 @@
       phone: document.getElementById('pay-phone').value.trim(),
       last5: document.getElementById('pay-last5').value.trim(),
       amount: Number(document.getElementById('pay-amount').value) || 0,
-      date: document.getElementById('pay-date').value,
-      regId: document.getElementById('pay-regid').value.trim()
+      date: document.getElementById('pay-date').value
     };
     await postToBackend(payload);
 
@@ -1635,32 +1703,38 @@
     el.textContent = text;
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> el.classList.remove('show'), 3200);
+    toastTimer = setTimeout(()=> el.classList.remove('show'), 3400);
   }
 
-  // ---- 狀態顯示：後端狀態字串 → 樣式與文案（前後端要一致） ----
-  const ST = {
-    VOID:'已作廢', ONSITE:'待現場收款', NO_REPORT:'尚未回報匯款',
-    REVIEW:'待人工確認', REPORTED:'已回報，待銀行核實',
-    BANK:'已核對（銀行已核實）', MANUAL:'已核對（人工標記）'
-  };
-  const STATUS_META = {
-    [ST.VOID]:      {cls:'st-void',     zh:'已作廢',        en:'Voided'},
-    [ST.ONSITE]:    {cls:'st-onsite',   zh:'待現場收款',    en:'Pay on-site'},
-    [ST.NO_REPORT]: {cls:'st-none',     zh:'尚未回報匯款',  en:'Awaiting transfer'},
-    [ST.REVIEW]:    {cls:'st-review',   zh:'待人工確認',    en:'Needs review'},
-    [ST.REPORTED]:  {cls:'st-reported', zh:'待銀行核實',    en:'Pending bank check'},
-    [ST.BANK]:      {cls:'st-paid',     zh:'已核對',        en:'Confirmed'},
-    [ST.MANUAL]:    {cls:'st-paid',     zh:'已核對（人工）', en:'Confirmed (manual)'}
-  };
-  function statusMeta(s){
-    return STATUS_META[s] || {cls:'st-none', zh:String(s||'—'), en:String(s||'—')};
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
   }
-  function statusText(s){
-    const m = statusMeta(s);
+
+  // ==========================================================
+  // 報名狀態：只有三種，與後端字串必須完全一致
+  // detail 是同一狀態下的細分原因，只影響顯示與篩選，不影響狀態本身
+  // ==========================================================
+  const ST = { REGISTERED:'已報名', SUCCESS:'報名成功', CANCELLED:'已取消' };
+  const ST_META = {
+    [ST.REGISTERED]: {cls:'st-none',  zh:'已報名',   en:'Registered'},
+    [ST.SUCCESS]:    {cls:'st-paid',  zh:'報名成功', en:'Confirmed'},
+    [ST.CANCELLED]:  {cls:'st-void',  zh:'已取消',   en:'Cancelled'}
+  };
+  // 「已報名」底下依細分原因換顏色，讓後台一眼看出哪些要處理
+  const DETAIL_CLS = {
+    none:'st-none', onsite:'st-onsite', reported:'st-reported',
+    mismatch:'st-review', paid:'st-paid', cancelled:'st-void'
+  };
+  function stMeta(status, detail){
+    const base = ST_META[status] || {cls:'st-none', zh:String(status||'—'), en:String(status||'—')};
+    return { cls: DETAIL_CLS[detail] || base.cls, zh: base.zh, en: base.en };
+  }
+  function stText(status, detail){
+    const m = stMeta(status, detail);
     return currentLang === 'en' ? m.en : m.zh;
   }
-  const isPaidStatus = (s)=> s === ST.BANK || s === ST.MANUAL;
 
   // ---- lookup form ----
   const lookupResult = document.getElementById('lookup-result');
@@ -1679,16 +1753,17 @@
     btn.disabled = true;
     btn.textContent = currentLang === 'en' ? I18N.lookup_submitting.en : '查詢中…';
 
-    const notFound = ()=>{
-      msg.textContent = currentLang === 'en'
+    const notFound = (text)=>{
+      msg.textContent = text || (currentLang === 'en'
         ? 'No record found — please double check your phone number, or contact the organizer for help.'
-        : '查無資料，請確認電話輸入是否正確，或聯繫主辦單位協助查詢。';
+        : '查無資料，請確認電話輸入是否正確，或聯繫主辦單位協助查詢。');
       msg.classList.add('show');
       setTimeout(()=> msg.classList.remove('show'), 8000);
     };
 
-    if(!GAS_URL){ notFound(); }
-    else {
+    if(!GAS_URL){
+      notFound();
+    } else {
       try{
         const res = await fetch(`${GAS_URL}?action=lookup&phone=${encodeURIComponent(phone)}`);
         const data = await res.json();
@@ -1699,9 +1774,7 @@
           notFound();
         }
       }catch(err){
-        msg.textContent = currentLang === 'en' ? 'Lookup failed — please try again later.' : '查詢發生問題，請稍後再試。';
-        msg.classList.add('show');
-        setTimeout(()=> msg.classList.remove('show'), 8000);
+        notFound(currentLang === 'en' ? 'Lookup failed — please try again later.' : '查詢發生問題，請稍後再試。');
       }
     }
 
@@ -1711,12 +1784,12 @@
 
   function renderLookup(d){
     const isOnline = d.paymethod !== '現場付款';
-    const meta = statusMeta(d.status);
+    const meta = stMeta(d.status, d.detail);
 
     document.getElementById('lr-name').textContent = d.name || '—';
     const badge = document.getElementById('lr-badge');
     badge.className = 'st-badge ' + meta.cls;
-    badge.textContent = statusText(d.status);
+    badge.textContent = stText(d.status, d.detail);
 
     document.getElementById('lr-regid').textContent = d.regId || '—';
     document.getElementById('lr-count').textContent = currentLang === 'en'
@@ -1726,26 +1799,74 @@
       ? (currentLang === 'en' ? 'Online' : '線上付款')
       : (currentLang === 'en' ? 'On-site' : '現場付款');
 
+    // 攜伴姓名（依主辦需求顯示；Email、備註、同桌需求仍不回傳）
+    const compRow = document.getElementById('lr-companions-row');
+    const compBox = document.getElementById('lr-companions');
+    const comps = d.companions || [];
+    if(comps.length){
+      compBox.innerHTML = comps.map(n=> `<span class="lr-chip">${escapeHtml(n)}</span>`).join('');
+      compRow.style.display = 'flex';
+    } else {
+      compRow.style.display = 'none';
+    }
+
     const NOTE = {
-      [ST.BANK]:      {zh:'已確認收到您的付款，我們活動現場見！', en:'Payment confirmed — see you at the event!'},
-      [ST.MANUAL]:    {zh:'已確認收到您的付款，我們活動現場見！', en:'Payment confirmed — see you at the event!'},
-      [ST.REPORTED]:  {zh:'已收到你的匯款回報，主辦單位正在核對銀行帳戶確認中。', en:'We have received your transfer report and are confirming it against the bank statement.'},
-      [ST.NO_REPORT]: {zh:'尚未收到您的匯款回報，請至「匯款轉帳」頁面完成轉帳並回報。', en:'We have not received your transfer report yet — please complete it on the Payment tab.'},
-      [ST.ONSITE]:    {zh:'請於活動當天現場付款，工作人員會協助收款。', en:'Please pay on-site on the day; staff will assist you.'},
-      [ST.REVIEW]:    {zh:'金額與應付金額對不上，主辦單位將盡快與您聯繫確認。', en:'The reported amount does not match the amount due — the organizer will contact you.'}
+      paid:     {zh:'已確認收到您的付款，我們活動現場見！', en:'Payment confirmed — see you at the event!'},
+      reported: {zh:'已收到你的匯款回報，主辦單位正在核對銀行帳戶確認中。', en:'We have received your transfer report and are confirming it against the bank statement.'},
+      none:     {zh:'尚未收到您的匯款回報，請至「匯款轉帳」頁面完成轉帳並回報。', en:'We have not received your transfer report yet — please complete it on the Payment tab.'},
+      onsite:   {zh:'請於活動當天現場付款，工作人員會協助收款。', en:'Please pay on-site on the day; staff will assist you.'},
+      mismatch: {zh:'回報金額與應付金額對不上，主辦單位將盡快與您聯繫確認。', en:'The reported amount does not match the amount due — the organizer will contact you.'},
+      cancelled:{zh:'這筆報名已取消。', en:'This registration has been cancelled.'}
     };
-    const n = NOTE[d.status];
+    const n = NOTE[d.detail];
     document.getElementById('lr-note').textContent = n ? (currentLang === 'en' ? n.en : n.zh) : '';
 
     // 只有線上付款且尚未收款完成，才提供產生繳費代碼
-    const canPay = isOnline && !isPaidStatus(d.status);
+    const canPay = isOnline && d.status !== ST.SUCCESS && d.status !== ST.CANCELLED;
     document.getElementById('paycode-btn').style.display = canPay ? 'block' : 'none';
+    if(d.payCode) showPayCode(d.payCode, d.due, d.payCodeExpiry);
 
-    if(d.payCode){
-      showPayCode(d.payCode, d.due, d.payCodeExpiry);
-    }
+    // 取消申請：已送出申請就只顯示提示，不再重複顯示按鈕
+    const pending = !!d.cancelPending;
+    document.getElementById('cancel-pending-note').style.display = pending ? 'block' : 'none';
+    document.getElementById('cancel-area').style.display =
+      (!pending && d.status !== ST.CANCELLED) ? 'block' : 'none';
+
     lookupResult.classList.add('show');
   }
+
+  // ---- 使用者申請取消報名 ----
+  // 送出的是「申請」而不是直接取消：查詢頁無法驗證身份，
+  // 若做成一鍵直接取消，任何知道電話的人都能刪掉別人的報名，且無法復原。
+  document.getElementById('cancel-btn').addEventListener('click', async ()=>{
+    if(!lastLookupPhone) return;
+    const confirmText = currentLang === 'en'
+      ? 'Submit a cancellation request for this registration?\nThe organizer will confirm it. Refunds follow the event policy on the Event Info page.'
+      : '確定要申請取消這筆報名嗎？\n送出後由主辦單位確認。退費依「活動訊息」頁面的注意事項辦理。';
+    if(!confirm(confirmText)) return;
+
+    const btn = document.getElementById('cancel-btn');
+    btn.disabled = true;
+    btn.textContent = currentLang === 'en' ? 'Submitting…' : '送出中…';
+
+    const r = await postToBackend({
+      type: 'cancelRequest',
+      phone: lastLookupPhone,
+      reason: document.getElementById('cancel-reason').value.trim()
+    });
+    const body = r.body || {};
+
+    if(body.result === 'success'){
+      document.getElementById('cancel-area').style.display = 'none';
+      document.getElementById('cancel-pending-note').style.display = 'block';
+      showToast(currentLang === 'en' ? '✅ Cancellation request submitted' : '✅ 已送出取消申請');
+    } else {
+      showToast(body.message || (currentLang === 'en' ? '⚠️ Request failed' : '⚠️ 申請失敗，請稍後再試'));
+    }
+
+    btn.disabled = false;
+    btn.textContent = currentLang === 'en' ? I18N.cancel_btn.en : '申請取消報名';
+  });
 
   // ---- 超商繳費代碼（金流串接佔位） ----
   document.getElementById('paycode-btn').addEventListener('click', async ()=>{
@@ -1786,8 +1907,7 @@
     qrLibPromise = new Promise((resolve, reject)=>{
       const s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-      s.onload = resolve;
-      s.onerror = reject;
+      s.onload = resolve; s.onerror = reject;
       document.head.appendChild(s);
     });
     return qrLibPromise;
@@ -1796,7 +1916,7 @@
     const box = document.getElementById('paycode-qr');
     box.innerHTML = '';
     loadQrLib().then(()=>{
-      new window.QRCode(box, { text: String(text), width: 160, height: 160, correctLevel: window.QRCode.CorrectLevel.M });
+      new window.QRCode(box, { text:String(text), width:160, height:160, correctLevel: window.QRCode.CorrectLevel.M });
     }).catch(()=>{
       box.textContent = currentLang === 'en' ? '(QR code unavailable)' : '（QR Code 載入失敗，請直接使用上方代碼）';
     });
@@ -1804,18 +1924,36 @@
 
   // ==========================================================
   // 後台
-  // 密碼只保存在這個變數裡（記憶體），不寫進網頁原始碼、不存瀏覽器儲存空間。
-  // 所有驗證都在 Google Apps Script 後端做，前端拿不到也改不了結果。
+  // 密碼只存在這個變數裡（記憶體），不寫進網頁原始碼、不存瀏覽器儲存空間。
+  // 驗證一律在後端做，前端拿不到也改不了結果。
   // ==========================================================
   let adminPassword = '';
   let adminData = [];
   let adminFilter = 'all';
+  let demoMode = false;
 
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
-  }
+  // 展示模式用的範例資料：輸入密碼 demo 即可在沒有部署後端的情況下預覽後台介面
+  const DEMO_DATA = [
+    {regId:'TP001',name:'王小明',companions:['阿哲'],phone:'0912345678',total:2,due:2400,
+     paymethod:'線上付款',paidSum:2400,matchedCount:1,last5List:['12345'],
+     status:'報名成功',detail:'paid',note:'已核對，銀行已確認入帳 NT$2400',cancelPending:false,cancelReason:'',tableWith:''},
+    {regId:'TP002',name:'Jamie',companions:[],phone:'0922333444',total:1,due:1200,
+     paymethod:'線上付款',paidSum:1200,matchedCount:1,last5List:['54321'],
+     status:'已報名',detail:'reported',note:'已回報 NT$1200，待銀行核實',cancelPending:false,cancelReason:'',tableWith:'王小明 / @ming'},
+    {regId:'TP003',name:'陳雅婷',companions:['小華','大方'],phone:'0933555666',total:3,due:3600,
+     paymethod:'線上付款',paidSum:2400,matchedCount:1,last5List:['67890'],
+     status:'已報名',detail:'mismatch',note:'金額不符：應付 NT$3600，已回報 NT$2400（需人工確認）',cancelPending:false,cancelReason:'',tableWith:''},
+    {regId:'TP004',name:'Kenji',companions:[],phone:'0944777888',total:1,due:1200,
+     paymethod:'現場付款',paidSum:0,matchedCount:0,last5List:[],
+     status:'已報名',detail:'onsite',note:'現場付款，待活動當天收款',cancelPending:false,cancelReason:'',tableWith:''},
+    {regId:'TP005',name:'Alex',companions:['Sam'],phone:'0955111222',total:2,due:2400,
+     paymethod:'線上付款',paidSum:0,matchedCount:0,last5List:[],
+     status:'已報名',detail:'none',note:'⚠ 使用者已申請取消 · 尚未回報匯款',cancelPending:true,
+     cancelReason:'[2026/08/12 21:30] 臨時出國無法出席',tableWith:''},
+    {regId:'TP006',name:'林大同',companions:[],phone:'0966888999',total:1,due:1200,
+     paymethod:'線上付款',paidSum:0,matchedCount:0,last5List:[],
+     status:'已取消',detail:'cancelled',note:'已取消',cancelPending:false,cancelReason:'',tableWith:''}
+  ];
 
   async function tryUnlockAdmin(){
     const val = document.getElementById('admin-pw').value;
@@ -1827,17 +1965,30 @@
     btn.disabled = true;
     btn.textContent = currentLang === 'en' ? 'Logging in…' : '登入中…';
 
-    const r = await postToBackend({ type:'adminList', password: val });
-    const body = r.body || {};
-
-    if(body.result === 'success'){
-      adminPassword = val;
+    const enterAdmin = ()=>{
       document.getElementById('admin-pw').value = '';
       document.getElementById('admin-gate').style.display = 'none';
       document.getElementById('admin-content').style.display = 'block';
-      applyAdminData(body.results || []);
+      document.getElementById('demo-banner').style.display = demoMode ? 'block' : 'none';
+    };
+
+    if(val === 'demo'){
+      // 純前端展示，不打後端，讓你在部署前就能確認介面與操作流程
+      demoMode = true;
+      adminPassword = '';
+      enterAdmin();
+      applyAdminData(JSON.parse(JSON.stringify(DEMO_DATA)));
     } else {
-      errEl.style.display = 'block';
+      const r = await postToBackend({ type:'adminList', password: val });
+      const body = r.body || {};
+      if(body.result === 'success'){
+        demoMode = false;
+        adminPassword = val;
+        enterAdmin();
+        applyAdminData(body.results || []);
+      } else {
+        errEl.style.display = 'block';
+      }
     }
 
     btn.disabled = false;
@@ -1849,6 +2000,7 @@
   });
 
   document.getElementById('admin-refresh-btn').addEventListener('click', async ()=>{
+    if(demoMode){ showToast('🧪 展示模式：資料為範例，未連接後端'); return; }
     const btn = document.getElementById('admin-refresh-btn');
     btn.disabled = true;
     const r = await postToBackend({ type:'adminList', password: adminPassword });
@@ -1863,17 +2015,14 @@
   });
 
   document.getElementById('admin-seating-btn').addEventListener('click', async ()=>{
+    if(demoMode){ showToast('🧪 展示模式：無法實際重建座位表'); return; }
     const btn = document.getElementById('admin-seating-btn');
     btn.disabled = true;
     const r = await postToBackend({ type:'adminSeating', password: adminPassword });
     const body = r.body || {};
-    if(body.result === 'success'){
-      showToast(currentLang === 'en'
-        ? `✅ Seating sheet rebuilt (${body.count} groups)`
-        : `✅ 座位安排表已重建（${body.count} 組）`);
-    } else {
-      showToast(currentLang === 'en' ? '⚠️ Failed' : '⚠️ 重建失敗');
-    }
+    showToast(body.result === 'success'
+      ? (currentLang === 'en' ? `✅ Seating sheet rebuilt (${body.count} groups)` : `✅ 座位安排表已重建（${body.count} 組）`)
+      : (currentLang === 'en' ? '⚠️ Failed' : '⚠️ 重建失敗'));
     btn.disabled = false;
   });
 
@@ -1890,38 +2039,42 @@
     adminData = Array.isArray(results) ? results : [];
     renderAdminStats();
     renderAdminTable();
-    const stamp = document.getElementById('admin-last-updated');
     const t = new Date().toLocaleTimeString(currentLang==='en' ? 'en-US' : 'zh-TW',
       { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    stamp.textContent = (currentLang === 'en' ? 'Last updated: ' : '最後更新：') + t;
+    document.getElementById('admin-last-updated').textContent =
+      (currentLang === 'en' ? 'Last updated: ' : '最後更新：') + t
+      + (demoMode ? (currentLang === 'en' ? ' (demo)' : '（展示模式）') : '');
   }
 
   function renderAdminStats(){
-    // 作廢的組別完全不計入任何統計
-    const active = adminData.filter(r=> !r.voided);
+    // 已取消的完全不計入統計；申請取消但還沒核准的仍算在內，
+    // 但會單獨列出數量，讓你知道有多少人數可能會變動
+    const active = adminData.filter(r=> r.status !== ST.CANCELLED);
     const people = active.reduce((s,r)=> s + (Number(r.total)||0), 0);
     const revenue = active.reduce((s,r)=> s + (Number(r.due)||0), 0);
-    const paid = active.filter(r=> isPaidStatus(r.status));
+    const success = active.filter(r=> r.status === ST.SUCCESS);
     const outstanding = active
-      .filter(r=> !isPaidStatus(r.status))
+      .filter(r=> r.status !== ST.SUCCESS)
       .reduce((s,r)=> s + (Number(r.due)||0), 0);
+    const pending = active.filter(r=> r.cancelPending);
 
     document.getElementById('stat-groups').textContent = active.length;
     document.getElementById('stat-people').textContent = people;
-    document.getElementById('stat-paid').textContent = paid.length;
+    document.getElementById('stat-paid').textContent = success.length;
     document.getElementById('stat-outstanding').textContent = 'NT$' + outstanding.toLocaleString();
-    document.getElementById('stat-revenue').textContent = 'NT$' + revenue.toLocaleString();
+    document.getElementById('stat-pending').textContent = pending.length;
   }
 
   function matchesFilter(r){
     switch(adminFilter){
-      case 'all':      return !r.voided;
-      case 'void':     return !!r.voided;
-      case 'paid':     return !r.voided && isPaidStatus(r.status);
-      case 'reported': return !r.voided && r.status === ST.REPORTED;
-      case 'review':   return !r.voided && r.status === ST.REVIEW;
-      case 'unpaid':   return !r.voided && (r.status === ST.NO_REPORT || r.status === ST.ONSITE);
-      default:         return true;
+      case 'all':       return r.status !== ST.CANCELLED;
+      case 'cancelreq': return !!r.cancelPending && r.status !== ST.CANCELLED;
+      case 'cancelled': return r.status === ST.CANCELLED;
+      case 'success':   return r.status === ST.SUCCESS;
+      case 'reported':  return r.detail === 'reported';
+      case 'mismatch':  return r.detail === 'mismatch';
+      case 'unpaid':    return r.status === ST.REGISTERED && (r.detail === 'none' || r.detail === 'onsite');
+      default:          return true;
     }
   }
 
@@ -1937,50 +2090,57 @@
 
     const frag = document.createDocumentFragment();
     rows.forEach(r=>{
-      const meta = statusMeta(r.status);
-      const companions = r.companions || [];
-      const nameCell = companions.length
-        ? `${escapeHtml(r.name)} <span style="color:var(--text-muted);">(+${escapeHtml(companions.join('、'))})</span>`
+      const meta = stMeta(r.status, r.detail);
+      const comps = r.companions || [];
+      const nameCell = comps.length
+        ? `${escapeHtml(r.name)} <span style="color:var(--text-muted);">(+${escapeHtml(comps.join('、'))})</span>`
         : escapeHtml(r.name);
-      const phoneCell = r.phoneShared
-        ? `${escapeHtml(r.phone)} <span class="warn-dot" title="${currentLang==='en'
-            ? 'This phone number is used by more than one active registration'
-            : '這支電話被多組有效報名使用，配對可能不準'}">⚠️</span>`
-        : escapeHtml(r.phone);
 
       let actions = '';
-      if(r.voided){
-        actions = `<button class="mini-btn" data-act="unvoid" data-id="${escapeHtml(r.regId)}">${
-          currentLang==='en' ? 'Restore' : '取消作廢'}</button>`;
+      if(r.cancelPending){
+        // 取消申請優先處理，避免混在其他操作裡被忽略
+        actions += `<button class="mini-btn danger" data-act="cancel-approve" data-id="${escapeHtml(r.regId)}">${
+          currentLang==='en' ? 'Approve cancel' : '核准取消'}</button>`;
+        actions += `<button class="mini-btn" data-act="cancel-reject" data-id="${escapeHtml(r.regId)}">${
+          currentLang==='en' ? 'Reject' : '駁回'}</button>`;
+      } else if(r.status === ST.CANCELLED){
+        actions += `<button class="mini-btn" data-act="restore" data-id="${escapeHtml(r.regId)}">${
+          currentLang==='en' ? 'Restore' : '恢復報名'}</button>`;
       } else {
-        if(!isPaidStatus(r.status)){
+        if(r.status !== ST.SUCCESS){
           if(r.matchedCount > 0){
             actions += `<button class="mini-btn ok" data-act="bank" data-id="${escapeHtml(r.regId)}">${
               currentLang==='en' ? 'Bank verified' : '銀行已核實'}</button>`;
           }
-          actions += `<button class="mini-btn ok" data-act="paid" data-id="${escapeHtml(r.regId)}">${
-            currentLang==='en' ? 'Mark paid' : '確認收款'}</button>`;
-        } else if(r.manuallyMarkedPaid){
-          actions += `<button class="mini-btn" data-act="unpaid" data-id="${escapeHtml(r.regId)}">${
-            currentLang==='en' ? 'Undo' : '取消收款'}</button>`;
+          actions += `<button class="mini-btn ok" data-act="success" data-id="${escapeHtml(r.regId)}">${
+            currentLang==='en' ? 'Mark confirmed' : '直接確認收款'}</button>`;
+        } else {
+          actions += `<button class="mini-btn" data-act="unconfirm" data-id="${escapeHtml(r.regId)}">${
+            currentLang==='en' ? 'Undo' : '退回已報名'}</button>`;
         }
-        actions += `<button class="mini-btn danger" data-act="void" data-id="${escapeHtml(r.regId)}">${
-          currentLang==='en' ? 'Void' : '作廢'}</button>`;
+        actions += `<button class="mini-btn danger" data-act="cancel" data-id="${escapeHtml(r.regId)}">${
+          currentLang==='en' ? 'Cancel' : '取消報名'}</button>`;
       }
 
+      const noteCell = r.cancelPending && r.cancelReason
+        ? `${escapeHtml(r.note)}<br><span style="color:var(--orange); font-size:0.72rem;">${escapeHtml(r.cancelReason)}</span>`
+        : escapeHtml(r.note || '');
+
       const tr = document.createElement('tr');
-      if(r.voided) tr.className = 'row-void';
+      if(r.status === ST.CANCELLED) tr.className = 'row-void';
+      else if(r.cancelPending) tr.className = 'cancel-pending-row';
+
       tr.innerHTML = `
         <td>${escapeHtml(r.regId)}</td>
         <td>${nameCell}</td>
-        <td>${phoneCell}</td>
+        <td>${escapeHtml(r.phone)}</td>
         <td>${r.total}</td>
         <td>NT$${Number(r.due||0).toLocaleString()}</td>
         <td>${escapeHtml(r.paymethod)}</td>
         <td>${r.matchedCount ? 'NT$'+Number(r.paidSum||0).toLocaleString() : '—'}</td>
         <td>${escapeHtml((r.last5List||[]).join(', ')) || '—'}</td>
-        <td><span class="st-badge ${meta.cls}">${statusText(r.status)}</span></td>
-        <td>${escapeHtml(r.tableWith) || '—'}</td>
+        <td><span class="st-badge ${meta.cls}">${stText(r.status, r.detail)}</span></td>
+        <td style="white-space:normal; max-width:260px;">${noteCell || '—'}</td>
         <td>${actions}</td>
       `;
       frag.appendChild(tr);
@@ -1998,22 +2158,32 @@
     const regId = btn.dataset.id;
 
     const CONFIRM = {
-      paid:   {zh:`確定「${regId}」的款項已經收到？`, en:`Confirm payment received for ${regId}?`},
-      unpaid: {zh:`確定要取消「${regId}」的收款標記？`, en:`Undo the paid mark for ${regId}?`},
-      bank:   {zh:`確定已在銀行帳戶看到「${regId}」這筆入帳？`, en:`Confirm you have seen this transfer in the bank account for ${regId}?`},
-      void:   {zh:`確定要作廢「${regId}」？\n資料會完整保留在試算表中，但不列入統計，公開查詢也查不到。`,
-               en:`Void ${regId}?\nThe raw data stays in the sheet but is excluded from stats and public lookup.`},
-      unvoid: {zh:`確定要恢復「${regId}」？`, en:`Restore ${regId}?`}
+      success:          {zh:`確定「${regId}」的款項已經收到？\n狀態會變成「報名成功」。`, en:`Confirm payment received for ${regId}?`},
+      unconfirm:        {zh:`確定要把「${regId}」退回「已報名」？`, en:`Move ${regId} back to Registered?`},
+      bank:             {zh:`確定已在銀行帳戶看到「${regId}」這筆入帳？\n金額相符時狀態會自動變成「報名成功」。`, en:`Confirm this transfer appears in the bank account for ${regId}?`},
+      cancel:           {zh:`確定要取消「${regId}」？\n資料會完整保留，但不列入人數統計，這支電話也能重新報名。`, en:`Cancel ${regId}?`},
+      restore:          {zh:`確定要恢復「${regId}」？`, en:`Restore ${regId}?`},
+      'cancel-approve': {zh:`核准「${regId}」的取消申請？\n狀態會變成「已取消」，這支電話可以重新報名。`, en:`Approve the cancellation request for ${regId}?`},
+      'cancel-reject':  {zh:`駁回「${regId}」的取消申請？\n報名維持有效，申請標記會被清除。`, en:`Reject the cancellation request for ${regId}?`}
     };
     const c = CONFIRM[act];
     if(c && !confirm(currentLang === 'en' ? c.en : c.zh)) return;
 
+    if(demoMode){
+      showToast(currentLang === 'en'
+        ? '🧪 Demo mode — no changes are saved'
+        : '🧪 展示模式：操作不會實際寫入試算表');
+      return;
+    }
+
     const PAYLOAD = {
-      paid:   { type:'adminMarkPaid',   regId, value:true },
-      unpaid: { type:'adminMarkPaid',   regId, value:false },
-      bank:   { type:'adminBankVerify', regId, value:true },
-      void:   { type:'adminSetVoid',    regId, value:true },
-      unvoid: { type:'adminSetVoid',    regId, value:false }
+      success:          { type:'adminSetStatus', regId, status:'報名成功' },
+      unconfirm:        { type:'adminSetStatus', regId, status:'已報名' },
+      cancel:           { type:'adminSetStatus', regId, status:'已取消' },
+      restore:          { type:'adminSetStatus', regId, status:'已報名' },
+      bank:             { type:'adminBankVerify', regId, value:true },
+      'cancel-approve': { type:'adminResolveCancel', regId, approve:true },
+      'cancel-reject':  { type:'adminResolveCancel', regId, approve:false }
     };
     const payload = PAYLOAD[act];
     if(!payload) return;
