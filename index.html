@@ -387,22 +387,6 @@
   .admin-logic h4{margin:0 0 10px; font-family:'Baloo 2'; font-size:1rem;}
   .admin-logic ol{margin:0; padding-left:18px;}
   .admin-logic li{margin-bottom:6px; color:var(--text-light);}
-  .table-scroll{
-    overflow:auto; max-height:65vh; border-radius:var(--radius);
-    border:1px solid var(--line);
-  }
-  table.admin-table thead th{
-    position:sticky; top:0; z-index:5;
-    background:var(--bg-surface);
-  }
-  .admin-toolbar{
-    display:flex; align-items:center; gap:14px; margin-bottom:14px; flex-wrap:wrap;
-  }
-  .admin-toolbar .btn-secondary{padding:10px 16px;}
-  table.admin-table{width:100%; min-width:900px; border-collapse:collapse; background:var(--bg-surface);}
-  table.admin-table th, table.admin-table td{padding:12px 14px; text-align:left; border-bottom:1px solid var(--line); font-size:0.82rem; white-space:nowrap;}
-  table.admin-table th{color:var(--text-muted); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.5px;}
-  table.admin-table tr:last-child td{border-bottom:none;}
 
   footer{
     border-top:1px solid var(--line); margin-top:40px; padding:30px 20px;
@@ -483,23 +467,6 @@
   .st-review{background:rgba(255,75,92,0.16); color:var(--red); border:1px solid rgba(255,75,92,0.4);}
   .st-void{background:rgba(120,120,140,0.18); color:#8b86a3; border:1px solid #4a4368;}
 
-  .row-void td{opacity:0.45;}
-  .comp-badge{
-    display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px;
-    background:var(--bg-surface-2); border:1px solid var(--purple); color:var(--text-light);
-    font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap;
-  }
-  .comp-badge:hover{background:var(--purple);}
-  .comp-popover{
-    display:none; margin-top:6px; padding:8px 10px; border-radius:10px;
-    background:var(--bg-deep); border:1px solid var(--purple);
-    font-size:0.78rem; color:var(--text-light); white-space:normal; max-width:220px;
-  }
-  .comp-popover.open{display:block;}
-  .comp-popover .chip{
-    display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; border-radius:999px;
-    background:var(--bg-surface-2); border:1px solid var(--line); font-weight:600;
-  }
   .mini-btn{
     padding:5px 10px; border-radius:8px; cursor:pointer;
     font-family:'Inter'; font-weight:600; font-size:0.72rem;
@@ -564,25 +531,13 @@
   input.country-input::placeholder{text-transform:none;}
 
   /* ===== 展示模式提示 ===== */
-  .demo-banner{
-    background:rgba(255,217,61,0.12); border:1px solid var(--yellow); color:var(--yellow);
-    border-radius:var(--radius); padding:14px 18px; margin-bottom:18px;
-    font-size:0.86rem; font-weight:600; line-height:1.6;
-  }
   /* ===== 取消申請 ===== */
-  .cancel-pending-row td{background:rgba(255,159,64,0.08);}
   .lr-companions{
     display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end;
   }
   .lr-chip{
     background:var(--bg-surface-2); border:1px solid var(--line); border-radius:999px;
     padding:3px 10px; font-size:0.8rem; font-weight:600;
-  }
-  .cancel-area{margin-top:18px; padding-top:16px; border-top:1px solid var(--line);}
-  .cancel-area textarea{
-    width:100%; padding:10px 12px; margin-top:8px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    color:var(--text-light); font-family:'Inter'; font-size:0.9rem;
   }
   .btn-danger{
     width:100%; padding:12px; border-radius:12px; margin-top:10px;
@@ -591,11 +546,142 @@
   }
   .btn-danger:hover{background:rgba(255,75,92,0.1);}
   .btn-danger:disabled{opacity:0.5; cursor:not-allowed;}
-  .cancel-pending-note{
-    margin-top:14px; padding:12px 14px; border-radius:10px;
-    background:rgba(255,159,64,0.12); border:1px solid var(--orange);
-    color:var(--orange); font-size:0.86rem; font-weight:600; line-height:1.6;
+
+  /* ===== 後台：卡片式名單 ===== */
+  .adm-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+  .adm-viewtabs{display:flex; gap:6px; margin-bottom:16px;}
+  .adm-viewtab{
+    padding:9px 18px; border-radius:10px; border:1px solid var(--line);
+    background:var(--bg-surface); color:var(--text-muted);
+    font-family:'Inter'; font-weight:600; font-size:0.85rem; cursor:pointer; transition:all .2s;
   }
+  .adm-viewtab.active{background:var(--purple); border-color:var(--purple); color:#fff;}
+
+  .adm-list{display:flex; flex-direction:column; gap:10px;}
+  .adm-card{
+    background:var(--bg-surface); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; transition:border-color .2s;
+  }
+  .adm-card.is-open{border-color:var(--purple);}
+  .adm-card.is-void{opacity:0.5;}
+  .adm-card.has-req{border-color:rgba(255,159,64,0.6);}
+  .adm-head{
+    display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer;
+    flex-wrap:wrap;
+  }
+  .adm-head:hover{background:var(--bg-surface-2);}
+  .adm-id{
+    font-family:'Baloo 2'; font-weight:700; font-size:0.82rem; color:var(--text-muted);
+    background:var(--bg-deep); border:1px solid var(--line); border-radius:7px; padding:2px 8px;
+  }
+  .adm-name{font-weight:700; font-size:0.98rem;}
+  .adm-plus{
+    font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px;
+    background:var(--bg-surface-2); border:1px solid var(--purple); color:var(--text-light);
+  }
+  .adm-spacer{flex:1 1 auto;}
+  .adm-caret{color:var(--text-muted); font-size:0.8rem; transition:transform .2s;}
+  .adm-card.is-open .adm-caret{transform:rotate(90deg);}
+  .adm-sub{
+    padding:0 16px 12px; display:flex; gap:10px; flex-wrap:wrap;
+    font-size:0.78rem; color:var(--text-muted);
+  }
+  .adm-sub b{color:var(--text-light); font-weight:600;}
+  .adm-req{color:var(--orange); font-weight:700;}
+
+  .adm-detail{display:none; border-top:1px solid var(--line); padding:16px; background:var(--bg-deep);}
+  .adm-card.is-open .adm-detail{display:block;}
+  .adm-sec{margin-bottom:16px;}
+  .adm-sec:last-child{margin-bottom:0;}
+  .adm-sec h5{
+    margin:0 0 8px; font-family:'Inter'; font-size:0.7rem; font-weight:700;
+    letter-spacing:1px; text-transform:uppercase; color:var(--text-muted);
+  }
+  .mem-row{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:9px 12px; border-radius:10px; background:var(--bg-surface);
+    border:1px solid var(--line); margin-bottom:6px;
+  }
+  .mem-row.is-cancelled{opacity:0.5;}
+  .mem-row.is-pending{border-color:var(--orange);}
+  .mem-role{
+    font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:6px;
+    background:var(--bg-surface-2); color:var(--text-muted); border:1px solid var(--line);
+  }
+  .mem-name{font-weight:600; font-size:0.88rem;}
+  .mem-ig{font-size:0.76rem; color:var(--text-muted);}
+  .kv{display:grid; grid-template-columns:auto 1fr; gap:5px 14px; font-size:0.82rem;}
+  .kv dt{color:var(--text-muted); white-space:nowrap;}
+  .kv dd{margin:0; color:var(--text-light); word-break:break-word;}
+  .pay-line{
+    display:flex; gap:10px; flex-wrap:wrap; font-size:0.8rem;
+    padding:7px 12px; border-radius:8px; background:var(--bg-surface);
+    border:1px solid var(--line); margin-bottom:5px;
+  }
+  .adm-actions{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;}
+  .adm-editor{display:none; margin-top:10px;}
+  .adm-editor.is-open{display:block;}
+  .adm-editor input, .adm-editor textarea{
+    width:100%; padding:8px 10px; margin-bottom:6px;
+    background:var(--bg-surface); border:1px solid var(--line); border-radius:8px;
+    color:var(--text-light); font-family:'Inter'; font-size:0.84rem;
+  }
+  .adm-editor label{display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom:3px;}
+  .adm-edit-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0 12px;}
+
+  .log-list{display:flex; flex-direction:column; gap:8px;}
+  .log-item{
+    background:var(--bg-surface); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; font-size:0.82rem;
+  }
+  .log-top{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:5px;}
+  .log-time{font-size:0.74rem; color:var(--text-muted);}
+  .log-act{
+    font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px;
+    background:var(--bg-surface-2); border:1px solid var(--purple);
+  }
+  .log-src{font-size:0.72rem; color:var(--text-muted);}
+  .log-sum{color:var(--text-light); line-height:1.5; word-break:break-word;}
+  .adm-empty{text-align:center; color:var(--text-muted); padding:40px 20px; font-size:0.88rem;}
+
+  /* ===== 前台查詢結果：成員清單 ===== */
+  .lr-members{margin:14px 0 4px;}
+  .lr-mem{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:10px 12px; border-radius:10px;
+    background:var(--bg-surface-2); border:1px solid var(--line); margin-bottom:7px;
+  }
+  .lr-mem.is-cancelled{opacity:0.5;}
+  .lr-mem.is-pending{border-color:var(--orange);}
+  .lr-mem .mem-name{flex:1 1 auto;}
+  .lr-editbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .edit-banner{
+    display:none; align-items:center; gap:10px; flex-wrap:wrap;
+    background:rgba(155,93,229,0.14); border:1px solid var(--purple);
+    border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:0.86rem;
+  }
+  .edit-banner.show{display:flex;}
+  .existing-mem{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:9px 12px; border-radius:10px; background:var(--bg-surface-2);
+    border:1px dashed var(--line); margin-bottom:6px; font-size:0.85rem;
+  }
+  .existing-mem.is-cancelled{opacity:0.45;}
+  .topup-note{
+    margin-top:10px; padding:11px 14px; border-radius:10px;
+    background:rgba(255,159,64,0.14); border:1px solid var(--orange);
+    color:var(--orange); font-size:0.84rem; font-weight:600;
+  }
+  .warn-banner{
+    background:rgba(255,159,64,0.14); border:1px solid var(--orange);
+    border-radius:12px; padding:14px 16px; margin-bottom:16px;
+    font-size:0.85rem; color:var(--orange); line-height:1.6;
+  }
+  .warn-banner b{display:block; margin-bottom:6px; font-size:0.9rem;}
+  .warn-banner ul{margin:0; padding-left:18px;}
+  .st-na{background:rgba(183,174,218,0.12); color:var(--text-muted); border:1px dashed var(--line);}
+  .st-topup{background:rgba(255,159,64,0.16); color:var(--orange); border:1px solid rgba(255,159,64,0.45);}
+  .st-checking{background:rgba(77,150,255,0.16); color:var(--blue); border:1px solid rgba(77,150,255,0.45);}
 </style>
 </head>
 <body>
@@ -723,6 +809,11 @@
       <button data-form="lookup" data-i18n="toggle_lookup">查詢報名狀態</button>
     </div>
 
+    <div class="edit-banner" id="edit-banner">
+      <span id="edit-banner-text">✏️ 正在修改報名編號 <b id="edit-banner-id"></b> 的資料</span>
+      <button type="button" class="btn-secondary" id="edit-cancel-btn" data-i18n="edit_cancel_btn">放棄修改</button>
+    </div>
+
     <form id="signup-form">
       <div class="field-row">
         <div class="field">
@@ -761,6 +852,8 @@
 
       <div class="guest-section">
         <label data-i18n="guest_label">攜伴（不含本人，最多 9 位，總人數上限 10 人）</label>
+        <div id="existing-members" style="display:none;"></div>
+        <div class="hint" id="existing-members-hint" style="display:none;" data-i18n="existing_hint">※ 已報名的人不能在這裡刪除。若有人無法出席，請回到查詢結果，針對該位送出取消申請，由主辦單位確認。</div>
         <div id="guest-rows"></div>
         <button type="button" id="add-guest-btn" class="btn-secondary" data-i18n="guest_add_btn">+ 新增攜伴</button>
         <div class="hint" id="guest-count-hint" data-i18n="guest_hint_0">尚未新增攜伴（總人數：1人，含本人）</div>
@@ -831,18 +924,23 @@
       <div class="form-msg" id="lookup-msg" data-i18n="lookup_msg">查無資料，請確認電話輸入是否正確，或聯繫主辦單位協助查詢。</div>
     </form>
 
-    <!-- 查詢結果（刻意不顯示攜伴姓名等個人資訊，只顯示本人核對得到的資訊） -->
+    <!-- 查詢結果：列出整組成員，可個別申請取消，也可直接修改／加人 -->
     <div class="lookup-result" id="lookup-result">
       <div class="lr-head">
         <span class="lr-title" id="lr-name">—</span>
         <span class="st-badge" id="lr-badge">—</span>
       </div>
       <div class="lr-row"><span class="lr-label" data-i18n="lr_regid">報名編號</span><span class="lr-value" id="lr-regid">—</span></div>
-      <div class="lr-row"><span class="lr-label" data-i18n="lr_count">報名人數</span><span class="lr-value" id="lr-count">—</span></div>
-      <div class="lr-row" id="lr-companions-row" style="display:none;"><span class="lr-label" data-i18n="lr_companions">攜伴</span><span class="lr-value lr-companions" id="lr-companions"></span></div>
+      <div class="lr-row"><span class="lr-label" data-i18n="lr_count">出席人數</span><span class="lr-value" id="lr-count">—</span></div>
       <div class="lr-row"><span class="lr-label" data-i18n="lr_due">應付金額</span><span class="lr-value" id="lr-due">—</span></div>
       <div class="lr-row"><span class="lr-label" data-i18n="lr_method">付款方式</span><span class="lr-value" id="lr-method">—</span></div>
       <div class="lr-note" id="lr-note"></div>
+
+      <div class="lr-members" id="lr-members"></div>
+
+      <div class="lr-editbar">
+        <button type="button" class="btn-secondary" id="lr-edit-btn" data-i18n="lr_edit_btn">✏️ 修改報名資料 / 加人</button>
+      </div>
 
       <button type="button" class="btn-primary" id="paycode-btn" style="display:none;" data-i18n="paycode_btn">🏪 產生超商繳費代碼</button>
 
@@ -852,16 +950,6 @@
         <div class="paycode-num" id="paycode-num">—</div>
         <div class="paycode-meta" id="paycode-meta"></div>
         <div id="paycode-qr"></div>
-      </div>
-
-      <div class="cancel-pending-note" id="cancel-pending-note" style="display:none;" data-i18n="cancel_pending_note">
-        ⏳ 你已送出取消申請，主辦單位確認後會將這筆報名改為「已取消」。如果是誤按，請直接聯繫主辦單位。
-      </div>
-
-      <div class="cancel-area" id="cancel-area" style="display:none;">
-        <label class="lr-label" for="cancel-reason" data-i18n="cancel_reason_label">如果無法出席，可以在這裡申請取消報名（送出後由主辦單位確認）</label>
-        <textarea id="cancel-reason" rows="2" data-i18n-ph="cancel_reason_ph" placeholder="取消原因（選填）"></textarea>
-        <button type="button" class="btn-danger" id="cancel-btn" data-i18n="cancel_btn">申請取消報名</button>
       </div>
     </div>
   </section>
@@ -1003,72 +1091,68 @@
     </div>
 
     <div class="admin-content" id="admin-content" style="display:none;">
-      <div class="demo-banner" id="demo-banner" style="display:none;" data-i18n="demo_banner">
-        🧪 展示模式：目前顯示的是內建的範例資料，沒有連接後端，任何操作都不會真的寫入試算表。部署 Google Apps Script 後，用真實密碼登入即可看到實際資料。
-      </div>
+      <div class="warn-banner" id="warn-banner" style="display:none;"></div>
 
       <div class="admin-banner">
         <span class="ic">🔧</span>
-        <span data-i18n="admin_banner_text">報名與匯款回報直接寫入「報名資料」「匯款回報」兩張原始分頁。報名狀態只有三種（已報名／報名成功／已取消），系統會即時算好同步寫回試算表，不另外維護對帳總表。電話是唯一識別碼，原始資料只會新增、不會被覆寫。</span>
+        <span data-i18n="admin_banner_text">款項狀態就是唯一判斷依據，系統不做金額比對：使用者回報匯款會自動變成「帳款確認中」，你確認錢真的進來後按「已收款」即可。每一次異動都會記錄在「異動紀錄」分頁，含操作者。電話是唯一識別碼，同一支電話永遠只有一組報名。</span>
       </div>
 
-      <div class="admin-stats">
-        <div class="stat-box"><div class="stat-num" id="stat-groups">0</div><div class="stat-label" data-i18n="stat_groups">有效報名組數</div></div>
-        <div class="stat-box"><div class="stat-num" id="stat-people">0</div><div class="stat-label" data-i18n="stat_people">總人數</div></div>
-        <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">報名成功組數</div></div>
-        <div class="stat-box"><div class="stat-num" style="color:var(--orange);" id="stat-outstanding">NT$0</div><div class="stat-label" data-i18n="stat_outstanding">未收金額</div></div>
-        <div class="stat-box"><div class="stat-num" style="color:var(--red);" id="stat-pending">0</div><div class="stat-label" data-i18n="stat_pending">待處理取消申請</div></div>
-        <div class="stat-box"><div class="stat-num" style="color:var(--yellow);" id="stat-revenue">NT$0</div><div class="stat-label" data-i18n="stat_revenue">預期總營收</div></div>
+      <div class="adm-viewtabs">
+        <button type="button" class="adm-viewtab active" data-view="list" data-i18n="admin_view_list">📋 報名名單</button>
+        <button type="button" class="adm-viewtab" data-view="log" data-i18n="admin_view_log">🕓 異動紀錄</button>
       </div>
 
-      <div class="admin-toolbar">
-        <button type="button" class="btn-secondary" id="admin-refresh-btn" data-i18n="admin_refresh_btn">🔄 更新資料</button>
-        <button type="button" class="btn-secondary" id="admin-seating-btn" data-i18n="admin_seating_btn">🪑 重建座位安排表</button>
-        <span class="hint" id="admin-last-updated"></span>
+      <div id="admin-view-list">
+        <div class="admin-stats">
+          <div class="stat-box"><div class="stat-num" id="stat-groups">0</div><div class="stat-label" data-i18n="stat_groups">有效報名組數</div></div>
+          <div class="stat-box"><div class="stat-num" id="stat-people">0</div><div class="stat-label" data-i18n="stat_people">總人數</div></div>
+          <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">已收款組數</div></div>
+          <div class="stat-box"><div class="stat-num" style="color:var(--orange);" id="stat-outstanding">NT$0</div><div class="stat-label" data-i18n="stat_outstanding">未收金額</div></div>
+          <div class="stat-box"><div class="stat-num" style="color:var(--yellow);" id="stat-topup">0</div><div class="stat-label" data-i18n="stat_topup">待補款組數</div></div>
+          <div class="stat-box"><div class="stat-num" style="color:var(--red);" id="stat-pending">0</div><div class="stat-label" data-i18n="stat_pending">待處理取消申請</div></div>
+        </div>
+
+        <div class="adm-toolbar">
+          <button type="button" class="btn-secondary" id="admin-refresh-btn" data-i18n="admin_refresh_btn">🔄 更新資料</button>
+          <span class="hint" id="admin-last-updated"></span>
+        </div>
+
+        <div class="admin-filters" id="admin-filters">
+          <button type="button" class="filter-btn active" data-filter="all" data-i18n="filter_all">全部</button>
+          <button type="button" class="filter-btn" data-filter="cancelreq" data-i18n="filter_cancelreq">⚠ 取消申請</button>
+          <button type="button" class="filter-btn" data-filter="none" data-i18n="filter_unpaid">未收款</button>
+          <button type="button" class="filter-btn" data-filter="checking" data-i18n="filter_checking">帳款確認中</button>
+          <button type="button" class="filter-btn" data-filter="topup" data-i18n="filter_topup">待補款</button>
+          <button type="button" class="filter-btn" data-filter="done" data-i18n="filter_success">已收款</button>
+          <button type="button" class="filter-btn" data-filter="cancelled" data-i18n="filter_cancelled">全數取消</button>
+        </div>
+
+        <div class="adm-list" id="admin-list">
+          <div class="adm-empty" data-i18n="admin_loading">載入中…</div>
+        </div>
       </div>
 
-      <div class="admin-filters" id="admin-filters">
-        <button type="button" class="filter-btn active" data-filter="all" data-i18n="filter_all">全部</button>
-        <button type="button" class="filter-btn" data-filter="cancelreq" data-i18n="filter_cancelreq">⚠ 取消申請</button>
-        <button type="button" class="filter-btn" data-filter="unpaid" data-i18n="filter_unpaid">尚未收款</button>
-        <button type="button" class="filter-btn" data-filter="reported" data-i18n="filter_reported">待銀行核實</button>
-        <button type="button" class="filter-btn" data-filter="mismatch" data-i18n="filter_mismatch">金額不符</button>
-        <button type="button" class="filter-btn" data-filter="success" data-i18n="filter_success">報名成功</button>
-        <button type="button" class="filter-btn" data-filter="cancelled" data-i18n="filter_cancelled">已取消</button>
-      </div>
-
-      <div class="table-scroll">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th data-i18n="admin_th_id">報名編號</th>
-              <th data-i18n="admin_th_name">姓名</th>
-              <th data-i18n="admin_th_phone">電話</th>
-              <th data-i18n="admin_th_total">總人數</th>
-              <th data-i18n="admin_th_due">應付金額</th>
-              <th data-i18n="admin_th_method">付款方式</th>
-              <th data-i18n="admin_th_paid">已回報金額</th>
-              <th data-i18n="admin_th_last5">後五碼</th>
-              <th data-i18n="admin_th_status">報名狀態</th>
-              <th data-i18n="admin_th_note">對帳備註</th>
-              <th data-i18n="admin_th_actions">操作</th>
-            </tr>
-          </thead>
-          <tbody id="admin-tbody">
-            <tr><td colspan="11" style="text-align:center; color:var(--text-muted);" data-i18n="admin_empty">尚無報名資料</td></tr>
-          </tbody>
-        </table>
+      <div id="admin-view-log" style="display:none;">
+        <div class="adm-toolbar">
+          <button type="button" class="btn-secondary" id="admin-log-refresh-btn" data-i18n="admin_log_refresh">🔄 重新載入紀錄</button>
+          <span class="hint" data-i18n="admin_log_hint">顯示最近 300 筆異動，完整內容（含修改前後的 JSON）保存在試算表的「異動紀錄」分頁。</span>
+        </div>
+        <div class="log-list" id="admin-log-list">
+          <div class="adm-empty" data-i18n="admin_loading">載入中…</div>
+        </div>
       </div>
 
       <div class="admin-logic" style="margin-top:22px;">
-        <h4 data-i18n="admin_logic_title">對帳與操作說明</h4>
+        <h4 data-i18n="admin_logic_title">操作說明</h4>
         <ol>
-          <li data-i18n="admin_logic_1">報名狀態只有三種：<b>已報名</b>（尚未確認收款）→ <b>報名成功</b>（款項已確認）→ 或 <b>已取消</b></li>
-          <li data-i18n="admin_logic_2">應付金額 =（攜伴人數 + 1）× NT$1,200；匯款回報以「電話」自動配對，報名編號由系統帶入</li>
-          <li data-i18n="admin_logic_3">按「銀行已核實」＝你已實際在銀行帳戶看到這筆錢，金額相符時狀態會自動變成報名成功；按「直接確認收款」＝現場收現等其他方式已收到</li>
-          <li data-i18n="admin_logic_4">狀態只會往前走，系統不會把你手動確認過的「報名成功」自動退回，避免辛苦核對的結果被蓋掉</li>
-          <li data-i18n="admin_logic_5">使用者可以在查詢頁申請取消，會出現在「⚠ 取消申請」分頁等你核准或駁回；核准後該電話就能重新報名</li>
-          <li data-i18n="admin_logic_6">同一支電話同時只能有一筆有效報名。有人填錯要重報時，請先核准取消再讓對方重新填</li>
+          <li data-i18n="admin_logic_1">款項狀態四種：<b>未收款</b> → <b>帳款確認中</b>（使用者回報匯款後自動變成這個）→ <b>已收款</b>，另有 <b>待補款</b>（報名後又加人）</li>
+          <li data-i18n="admin_logic_2">系統不比對金額。你在「匯款回報」分頁看到錢確實進來，直接按「已收款」即可，金額對不對由你判斷</li>
+          <li data-i18n="admin_logic_3">出席狀態（已報名／已取消）每個人各自獨立，主揪與攜伴都能單獨取消；取消後有效人數與應付金額會自動重算</li>
+          <li data-i18n="admin_logic_4">主揪取消後，這組仍然掛在他原本的電話底下，其他人照常用同一支電話查詢</li>
+          <li data-i18n="admin_logic_5">已收款的組別若事後加人，款項狀態會自動變成「待補款」，補款金額 = 新增人數 × NT$1,200</li>
+          <li data-i18n="admin_logic_6">退不退款、退多少由你決定，系統不會自動處理；決定後可寫在該組的「後台備註」留底</li>
+          <li data-i18n="admin_logic_7">後台不顯示完整電話。需要聯絡對方時請直接到試算表查看</li>
         </ol>
       </div>
     </div>
@@ -1169,31 +1253,26 @@
     gallery_slot:{en:'Photo slot'},
     countdown_label:{en:'Countdown to Taiwan Pride'},
     countdown_days:{en:'Days'}, countdown_hours:{en:'Hours'}, countdown_mins:{en:'Minutes'}, countdown_secs:{en:'Seconds'},
-    admin_title:{en:'Admin'}, admin_desc:{en:'Staff only — view registration and payment data.'},
+    admin_title:{en:'Admin'}, admin_desc:{en:'Staff only — view and manage registrations, payments and change history.'},
     admin_gate_title:{en:'Staff Login'}, admin_gate_desc:{en:'Enter the password to view backend data'},
     admin_gate_ph:{en:'Enter password'}, admin_gate_btn:{en:'Log In'},
     admin_refresh_btn:{en:'🔄 Refresh'},
     admin_gate_error:{en:'Incorrect password — please try again'},
     admin_refresh_btn:{en:'🔄 Refresh Data'},
     admin_loading:{en:'Loading…'}, admin_no_data:{en:'No registrations yet'},
-    admin_banner_text:{en:'Registrations and transfer reports are written straight into the raw "報名資料" / "匯款回報" tabs. Reconciliation status is computed live and synced back into the registration sheet — there is no separate reconciliation tab any more. Raw data is only ever appended, never overwritten.'},
+    admin_banner_text:{en:'The payment status column is the single source of truth — the system never compares amounts. A transfer report automatically moves a group to \"Verifying\"; once you see the money in the bank, press \"Paid\". Every change is recorded in the 異動紀錄 tab with the operator name. One phone number always maps to exactly one registration.'},
     admin_logic_title:{en:'Reconciliation & Actions'},
-    admin_logic_1:{en:'Amount due = (plus-ones + 1) × NT$1,200, derived from the number of people — not stored as a separate field'},
-    admin_logic_2:{en:'If a transfer report includes a registration number, that is used for matching; otherwise the system falls back to matching by phone number'},
-    admin_logic_3:{en:'Amount matches → "Reported, pending bank check"; amount differs → "Needs manual review"'},
-    admin_logic_4:{en:'"Bank verified" means you have confirmed the money in the actual bank account; "Mark paid" means payment was collected another way (e.g. cash on the day). Either one moves the row to Confirmed'},
-    admin_logic_5:{en:'If one phone number is used by several active registrations, a ⚠️ appears next to it — matching may be unreliable, please check manually'},
-    admin_th_id:{en:'Reg. ID'}, admin_th_name:{en:'Name'}, admin_th_phone:{en:'Phone'},
-    admin_th_total:{en:'People'}, admin_th_due:{en:'Amount Due'},
-    admin_th_method:{en:'Method'}, admin_th_paid:{en:'Reported'}, admin_th_last5:{en:'Last 5'},
-    admin_th_status:{en:'Status'}, admin_th_table:{en:'Table Notes'}, admin_th_actions:{en:'Actions'},
+    admin_logic_1:{en:'Four payment statuses: Unpaid → Verifying (set automatically when the guest reports a transfer) → Paid, plus Top-up due (people added after payment)'},
+    admin_logic_2:{en:'The system does not compare amounts. When you see the money in the 匯款回報 tab, press \"Paid\" — whether the amount is right is your call'},
+    admin_logic_3:{en:'Attendance (registered / cancelled) is per person — the main registrant and each plus-one can be cancelled individually, and headcount and amount due are recalculated automatically'},
+    admin_logic_4:{en:'If the main registrant cancels, the group stays under their original phone number — everyone else still looks it up with the same number'},
+    admin_logic_5:{en:'If a paid group adds people later, the status automatically becomes Top-up due; the amount owed is (new people) × NT$1,200'},
     admin_empty:{en:'No registrations yet'},
-    admin_seating_btn:{en:'🪑 Rebuild Seating Sheet'},
-    stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Confirmed'},
+    stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Paid Groups'},
     stat_outstanding:{en:'Outstanding'}, stat_revenue:{en:'Expected Revenue'},
-    filter_all:{en:'All'}, filter_unpaid:{en:'Unpaid'}, filter_reported:{en:'Pending Bank'},
-    admin_logic_6:{en:'If someone re-registers after a mistake, mark the old entry "Void": the raw data stays in the sheet for reference, but it is excluded from stats, duplicate-phone warnings, and public lookup'},
-    lr_regid:{en:'Registration No.'}, lr_count:{en:'Party Size'}, lr_due:{en:'Amount Due'}, lr_method:{en:'Payment Method'},
+    filter_all:{en:'All'}, filter_unpaid:{en:'Unpaid'},
+    admin_logic_6:{en:'Refund decisions are yours — the system never processes them automatically. Record what you decided in that group\'s staff note'},
+    lr_regid:{en:'Registration No.'}, lr_count:{en:'Attending'}, lr_due:{en:'Amount Due'}, lr_method:{en:'Payment Method'},
     paycode_btn:{en:'🏪 Generate convenience-store payment code'},
     paycode_sim:{en:'⚠️ This is a simulated code for testing — real payment processing is not connected yet, so it cannot be used at a store. Once integration is complete, a usable code will appear here.'},
     paycode_label:{en:'Payment Code'},
@@ -1204,10 +1283,8 @@
     cancel_reason_ph:{en:'Reason (optional)'},
     cancel_btn:{en:'Request Cancellation'},
     cancel_pending_note:{en:'⏳ Your cancellation request has been submitted. The organizer will confirm and mark this registration as cancelled. If this was a mistake, please contact the organizer directly.'},
-    demo_banner:{en:'🧪 Demo mode: showing built-in sample data with no backend connected — nothing you do here is written to the spreadsheet. Deploy the Apps Script and log in with the real password to see live data.'},
     filter_cancelreq:{en:'⚠ Cancel Requests'}, filter_mismatch:{en:'Amount Mismatch'},
-    filter_success:{en:'Confirmed'}, filter_cancelled:{en:'Cancelled'},
-    admin_th_note:{en:'Reconciliation Note'},
+    filter_success:{en:'Paid'}, filter_cancelled:{en:'Cancelled'},
     stat_pending:{en:'Cancel Requests'},
     footer_text:{en:'Taiwan Pride — Proud Together · Contact the organizer with any questions'},
     line_modal_title:{en:'Welcome to Taiwan Pride!'},
@@ -1215,6 +1292,15 @@
     line_modal_ph:{en:'LINE group QR code placeholder — replace with the real image'},
     line_modal_note:{en:'Be sure to join the event group for the latest announcements or to ask questions'},
     line_modal_regid_hint:{en:'Enter this number when you report your payment — it helps us match things up accurately'},
+    admin_view_list:{en:'📋 Registrations'}, admin_view_log:{en:'🕓 Change Log'},
+    admin_log_refresh:{en:'🔄 Reload log'},
+    admin_log_hint:{en:'Showing the latest 300 changes. Full details (including before/after JSON) are kept in the 異動紀錄 tab of the spreadsheet.'},
+    stat_topup:{en:'Top-up Due'},
+    filter_checking:{en:'Verifying'}, filter_topup:{en:'Top-up Due'},
+    lr_edit_btn:{en:'✏️ Edit registration / add people'},
+    edit_cancel_btn:{en:'Discard changes'},
+    existing_hint:{en:'※ People already registered cannot be removed here. If someone can no longer attend, go back to your lookup result and submit a cancellation request for that person.'},
+    admin_logic_7:{en:'Full phone numbers are not shown in the admin panel. Check the spreadsheet directly when you need to contact someone'},
     line_modal_close_btn:{en:'Got it'}
   };
 
@@ -1254,7 +1340,7 @@
     updateGuestHint();
     if(typeof adminData !== 'undefined' && adminData.length){
       renderAdminStats();
-      renderAdminTable();
+      renderAdminList();
     }
     document.querySelectorAll('.country-input').forEach(function(inp){
       if(inp._countryUpdate) inp._countryUpdate(false);
@@ -1292,6 +1378,11 @@
   });
 
   // ---- dynamic guest rows ----
+  // 進入修改模式時，這裡放的是查詢到的那一組資料；一般報名時為 null。
+  // 刻意用 var 並提前宣告：底下的人數／金額計算會用到它，
+  // 而那些函式在頁面初始化時就會先跑一次。
+  var editingGroup = null;
+
   const guestRowsContainer = document.getElementById('guest-rows');
   const addGuestBtn = document.getElementById('add-guest-btn');
   const guestCountHint = document.getElementById('guest-count-hint');
@@ -1309,26 +1400,34 @@
   function removeLabelText(){
     return currentLang === 'en' ? 'Remove' : '移除';
   }
+  /** 修改模式下，既有的有效人數要一起算進總人數與金額 */
+  function baseHeadcount(){
+    return editingGroup ? (Number(editingGroup.activeCount) || 1) : 1;
+  }
+  function totalHeadcount(){
+    return baseHeadcount() + guestCount;
+  }
   function updateGuestHint(){
+    const base = baseHeadcount();
+    const total = totalHeadcount();
     if(currentLang === 'en'){
       guestCountHint.textContent = guestCount === 0
-        ? 'No plus-ones added yet (total: 1 person, including you)'
-        : `${guestCount} plus-one(s) added (total: ${guestCount+1} people, including you)`;
+        ? (editingGroup ? `${base} people currently registered` : 'No plus-ones added yet (total: 1 person, including you)')
+        : `${guestCount} more added (total: ${total} people)`;
     } else {
       guestCountHint.textContent = guestCount === 0
-        ? '尚未新增攜伴（總人數：1人，含本人）'
-        : `已新增 ${guestCount} 位攜伴（總人數：${guestCount+1}人，含本人）`;
+        ? (editingGroup ? `目前這組共 ${base} 人` : '尚未新增攜伴（總人數：1人，含本人）')
+        : `新增 ${guestCount} 位（總人數：${total}人）`;
     }
-    addGuestBtn.disabled = guestCount >= maxGuests;
+    addGuestBtn.disabled = total >= 10;
     updatePaymethodAvailability();
     const subtotalEl = document.getElementById('subtotal-amount');
     if(subtotalEl){
-      const total = (guestCount + 1) * 1200;
-      subtotalEl.textContent = 'NT$' + total.toLocaleString();
+      subtotalEl.textContent = 'NT$' + (total * 1200).toLocaleString();
     }
   }
   function updatePaymethodAvailability(){
-    const total = guestCount + 1;
+    const total = totalHeadcount();
     const overLimit = total > 2;
     payOnsiteRadio.disabled = overLimit;
     payOnsitePill.classList.toggle('is-disabled', overLimit);
@@ -1350,7 +1449,7 @@
     return kind==='name' ? '姓名' : kind==='country' ? '國籍（如 TW）' : 'IG';
   }
   function addGuestRow(){
-    if(guestCount >= maxGuests) return;
+    if(totalHeadcount() >= 10) return;
     guestCount++;
     const row = document.createElement('div');
     row.className = 'guest-row';
@@ -1429,60 +1528,158 @@
   document.getElementById('line-modal-close').addEventListener('click', closeLineModal);
   document.getElementById('line-modal-ok').addEventListener('click', closeLineModal);
 
-  // ---- helper: post to Apps Script backend (no-ops gracefully if GAS_URL is empty) ----
+  // ==========================================================
+  // 後端連線層
+  //
+  // LINE、Instagram 等 App 的內建瀏覽器常常擋掉對 Apps Script 的 fetch POST
+  // （/exec 會 302 轉址到 script.googleusercontent.com，那些 WebView 對這種
+  //  跨網域轉址的處理很不穩），所以這裡做成兩段式：
+  //    1. 先照正常方式送 POST
+  //    2. 失敗或超過 12 秒沒回應，就自動改用 JSONP（塞一個 <script> 標籤打 doGet）
+  // JSONP 完全不受 CORS 限制，在 LINE 裡也一定通。後端兩條路走同一個 route()，
+  // 所以不管走哪一條，行為與回傳格式都一模一樣。
+  // ==========================================================
+  const REQUEST_TIMEOUT = 12000;
+
+  function withTimeout(promise, ms){
+    return new Promise((resolve, reject)=>{
+      const timer = setTimeout(()=> reject(new Error('timeout')), ms);
+      promise.then(v=>{ clearTimeout(timer); resolve(v); },
+                   e=>{ clearTimeout(timer); reject(e); });
+    });
+  }
+
+  /** 走 <script> 標籤，繞過 CORS。同一包 payload 直接塞進網址的 p 參數。 */
+  let jsonpSeq = 0;
+  function jsonpRequest(payload){
+    return new Promise((resolve, reject)=>{
+      const cbName = '__tpcb' + (++jsonpSeq) + '_' + Date.now();
+      const script = document.createElement('script');
+      let done = false;
+
+      const cleanup = ()=>{
+        done = true;
+        try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
+        if(script.parentNode) script.parentNode.removeChild(script);
+      };
+
+      window[cbName] = (data)=>{ if(done) return; cleanup(); resolve(data); };
+
+      const timer = setTimeout(()=>{
+        if(done) return;
+        cleanup();
+        reject(new Error('jsonp-timeout'));
+      }, REQUEST_TIMEOUT);
+
+      script.onerror = ()=>{
+        if(done) return;
+        clearTimeout(timer); cleanup();
+        reject(new Error('jsonp-error'));
+      };
+
+      const url = GAS_URL + '?callback=' + cbName
+                + '&p=' + encodeURIComponent(JSON.stringify(payload))
+                + '&_=' + Date.now();
+
+      // 網址有長度上限（約 8000 字元），太長就不要嘗試，直接讓上層報錯
+      if(url.length > 7500){ clearTimeout(timer); cleanup(); reject(new Error('payload-too-large')); return; }
+
+      script.src = url;
+      document.head.appendChild(script);
+    });
+  }
+
+  /**
+   * 統一的後端呼叫。回傳 { ok, body, via }：
+   *   ok=false 代表兩條路都不通（真的沒網路 / 網址錯 / 部署權限沒開）
+   *   via 是實際走通的路（post 或 jsonp），只拿來 debug 用
+   */
   async function postToBackend(payload){
     if(!GAS_URL) return { ok:false, reason:'no-url' };
+
+    // ── 第一段：正常的 POST ──
     try{
-      const res = await fetch(GAS_URL, {
+      const res = await withTimeout(fetch(GAS_URL, {
         method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // avoids CORS preflight with Apps Script
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // 純文字才不會觸發 CORS 預檢
         body: JSON.stringify(payload)
-      });
+      }), REQUEST_TIMEOUT);
       const raw = await res.text();
-      let body = null;
-      try{ body = JSON.parse(raw); }catch(e){ /* 不是合法 JSON，下面用 raw 顯示真正拿到的內容 */ }
-      // body 解析失敗時，把 HTTP 狀態碼與原始內容（通常是 Google 的錯誤頁面）
-      // 一起帶回去，前端才能顯示真正發生的事，而不是誤判成密碼錯誤。
-      return { ok:true, status:res.status, body: body, raw: body ? null : raw.slice(0,300) };
+      const body = JSON.parse(raw);
+      return { ok:true, via:'post', status:res.status, body:body };
     }catch(err){
-      console.error('Backend POST failed', err);
-      return { ok:false, reason:'network', error:String(err) };
+      console.warn('POST 失敗，改走 JSONP：', err);
+    }
+
+    // ── 第二段：JSONP ──
+    try{
+      const body = await jsonpRequest(payload);
+      return { ok:true, via:'jsonp', body:body };
+    }catch(err2){
+      console.error('JSONP 也失敗：', err2);
+      return { ok:false, reason:'network', error:String(err2) };
     }
   }
 
-  // ---- signup form ----
+  // ==========================================================
+  // 報名送出
+  // 同一支電話送第二次不會變成第二筆，而是修改原本那一組（後端依電話判斷）。
+  // editingGroup 有值時 = 使用者是從查詢結果按「修改」進來的，
+  // 此時電話鎖住不給改（改了就等於換一組，會對不上匯款紀錄），
+  // 且既有成員只能看不能刪 —— 要減人一律走取消申請。
+  // ==========================================================
   document.getElementById('signup-form').addEventListener('submit', async (e)=>{
     e.preventDefault();
     const form = e.target;
     const errorEl = document.getElementById('signup-error');
+    const showError = (text, ms)=>{
+      errorEl.textContent = text;
+      errorEl.classList.add('show');
+      setTimeout(()=> errorEl.classList.remove('show'), ms || 8000);
+    };
 
     if(!form.checkValidity()){
-      errorEl.classList.add('show');
-      setTimeout(()=> errorEl.classList.remove('show'), 7000);
+      showError(currentLang === 'en' ? I18N.signup_error.en
+        : '請完整填寫必填欄位（姓名、國籍、Email、電話），並勾選同意注意事項後再送出');
       if(form.reportValidity) form.reportValidity();
+      return;
+    }
+
+    // 國籍必須是清單裡的國家（打錯字擋在這裡，不會寫進試算表變成髒資料）
+    const badCountry = validateAllCountries();
+    if(badCountry){
+      showError(currentLang === 'en'
+        ? 'Country "' + badCountry + '" is not in our list — please pick one from the dropdown.'
+        : '國籍「' + badCountry + '」不在清單中，請從下拉選單挑選正確的國家');
       return;
     }
     errorEl.classList.remove('show');
 
     const submitBtn = document.getElementById('signup-submit-btn');
+    const restoreBtn = ()=>{
+      submitBtn.disabled = false;
+      submitBtn.textContent = editingGroup
+        ? (currentLang === 'en' ? 'Save changes' : '儲存修改')
+        : (currentLang === 'en' ? I18N.signup_submit.en : '送出報名');
+    };
     submitBtn.disabled = true;
     submitBtn.textContent = currentLang === 'en' ? I18N.signup_submitting.en : '處理中…';
 
+    // 這裡收到的 guest-row 一律是「新增的人」；既有成員顯示在唯讀區，不會混進來
     const guests = Array.from(guestRowsContainer.querySelectorAll('.guest-row')).map(row=>({
       name: row.querySelector('.guest-name-input').value.trim(),
       country: readCountry(row.querySelector('.guest-country-input')),
       ig: row.querySelector('.guest-ig-input').value.trim()
-    })).filter(g => g.name); // 至少要有姓名才算一筆有效攜伴
+    })).filter(g => g.name);
+
     const payload = {
       type: 'registration',
-      id: 'reg-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
       name: document.getElementById('su-name').value.trim(),
       country: readCountry(document.getElementById('su-country')),
       email: document.getElementById('su-email').value.trim(),
       phone: document.getElementById('su-phone').value.trim(),
       ig: document.getElementById('su-ig').value.trim(),
       igPublic: document.getElementById('su-ig-public').checked,
-      guestCount: guestCount,
       guests: guests,
       notes: document.getElementById('su-notes').value.trim(),
       tableWithName: document.getElementById('su-tablewith-name').value.trim(),
@@ -1490,34 +1687,128 @@
       tableWithPhone: document.getElementById('su-tablewith-phone').value.trim(),
       paymethod: document.querySelector('input[name="paymethod"]:checked').value
     };
-    const backendResult = await postToBackend(payload);
-    const body = backendResult.body || {};
 
-    // 電話已經有一筆有效報名：不覆寫舊資料，改成提示使用者先取消再重報
-    if(body.result === 'error' && body.code === 'duplicate-phone'){
-      errorEl.textContent = currentLang === 'en'
-        ? `This phone number already has a registration (${body.existingRegId}). To change it, please request cancellation under "Check Status" first, then register again.`
-        : `這支電話已經有一筆報名紀錄（${body.existingRegId}）。若要修改內容，請先到「查詢報名狀態」申請取消原本那筆，再重新報名。`;
-      errorEl.classList.add('show');
-      setTimeout(()=> errorEl.classList.remove('show'), 12000);
-      submitBtn.disabled = false;
-      submitBtn.textContent = currentLang === 'en' ? I18N.signup_submit.en : '送出報名';
+    const r = await postToBackend(payload);
+    const body = r.body || {};
+
+    if(!r.ok || body.result !== 'success'){
+      showError(body.message || (currentLang === 'en'
+        ? 'Could not reach the server — please check your connection and try again.'
+        : '連線失敗，請確認網路後再試一次'), 10000);
+      restoreBtn();
       return;
     }
 
-    const assignedRegId = body.id || '';
-    const msg = document.getElementById('signup-msg');
-    msg.classList.add('show');
-    setTimeout(()=> msg.classList.remove('show'), 6000);
-    openLineModal(assignedRegId);
+    if(body.mode === 'updated'){
+      // 修改成功：留在原地顯示結果，順便把查詢結果重新拉一次
+      showToast(currentLang === 'en' ? '✅ Your registration has been updated' : '✅ 報名資料已更新');
+      if(body.topup > 0){
+        alert(currentLang === 'en'
+          ? 'Added ' + guests.length + ' more people. Please transfer an additional NT$' + Number(body.topup).toLocaleString() + ' and report it on the Payment tab.'
+          : '已加入 ' + guests.length + ' 位，需補款 NT$' + Number(body.topup).toLocaleString() + '。\n請至「匯款轉帳」頁面完成補匯並回報。');
+      }
+      exitEditMode();
+      const phone = payload.phone;
+      document.getElementById('lk-query').value = phone;
+      await doLookup(phone);
+      switchToLookupTab();
+    } else {
+      const msg = document.getElementById('signup-msg');
+      msg.classList.add('show');
+      setTimeout(()=> msg.classList.remove('show'), 6000);
+      openLineModal(body.id || '');
+      signupForm.reset();
+      guestRowsContainer.innerHTML = '';
+      guestCount = 0;
+      updateGuestHint();
+    }
 
-    signupForm.reset();
+    restoreBtn();
+  });
+
+  /** 切到「查詢報名狀態」那一頁（修改完成後把使用者帶回結果畫面） */
+  function switchToLookupTab(){
+    formToggleBtns.forEach(b=> b.classList.toggle('active', b.dataset.form === 'lookup'));
+    signupForm.style.display = 'none';
+    lookupForm.style.display = 'block';
+    document.getElementById('lookup-result').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // ---- 進入 / 離開修改模式 ----
+  function enterEditMode(g){
+    editingGroup = g;
+
+    document.getElementById('su-name').value = g.name || '';
+    document.getElementById('su-country').value = g.country || '';
+    document.getElementById('su-email').value = g.email || '';
+    document.getElementById('su-phone').value = g.phone || '';
+    document.getElementById('su-ig').value = g.ig || '';
+    document.getElementById('su-ig-public').checked = !!g.igPublic;
+    document.getElementById('su-notes').value = g.notes || '';
+    document.getElementById('su-tablewith-name').value = g.tableWithName || '';
+    document.getElementById('su-tablewith-ig').value = g.tableWithIg || '';
+    document.getElementById('su-tablewith-phone').value = g.tableWithPhone || '';
+    document.getElementById('su-agree').checked = true;
+    const onsite = g.paymethod === '現場付款';
+    (onsite ? payOnsiteRadio : payOnlineRadio).checked = true;
+
+    // 電話是這組的鑰匙，修改時不給動
+    const phoneInput = document.getElementById('su-phone');
+    phoneInput.readOnly = true;
+    phoneInput.style.opacity = '0.6';
+
+    // 既有成員唯讀列出（含已取消的，讓使用者知道系統上的實際狀態）
+    const box = document.getElementById('existing-members');
+    box.innerHTML = (g.members || []).map(m=>{
+      const tags = m.cancelled
+        ? '<span class="st-badge st-void">' + (currentLang==='en'?'Cancelled':'已取消') + '</span>'
+        : (m.cancelPending
+            ? '<span class="st-badge st-topup">' + (currentLang==='en'?'Cancel requested':'取消申請中') + '</span>'
+            : '');
+      return '<div class="existing-mem' + (m.cancelled ? ' is-cancelled' : '') + '">'
+        + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
+        + '<span class="mem-name">' + flagOf(m.country) + ' ' + escapeHtml(m.name) + '</span>'
+        + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
+        + tags + '</div>';
+    }).join('');
+    box.style.display = 'block';
+    document.getElementById('existing-members-hint').style.display = 'block';
+
     guestRowsContainer.innerHTML = '';
     guestCount = 0;
     updateGuestHint();
 
-    submitBtn.disabled = false;
-    submitBtn.textContent = currentLang === 'en' ? I18N.signup_submit.en : '送出報名';
+    document.getElementById('edit-banner-id').textContent = g.regId;
+    document.getElementById('edit-banner').classList.add('show');
+    document.getElementById('signup-submit-btn').textContent =
+      currentLang === 'en' ? 'Save changes' : '儲存修改';
+
+    formToggleBtns.forEach(b=> b.classList.toggle('active', b.dataset.form === 'signup'));
+    signupForm.style.display = 'block';
+    lookupForm.style.display = 'none';
+    document.getElementById('edit-banner').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function exitEditMode(){
+    editingGroup = null;
+    const phoneInput = document.getElementById('su-phone');
+    phoneInput.readOnly = false;
+    phoneInput.style.opacity = '';
+    document.getElementById('existing-members').style.display = 'none';
+    document.getElementById('existing-members').innerHTML = '';
+    document.getElementById('existing-members-hint').style.display = 'none';
+    document.getElementById('edit-banner').classList.remove('show');
+    document.getElementById('signup-submit-btn').textContent =
+      currentLang === 'en' ? I18N.signup_submit.en : '送出報名';
+    signupForm.reset();
+    guestRowsContainer.innerHTML = '';
+    guestCount = 0;
+    updateGuestHint();
+  }
+
+  document.getElementById('edit-cancel-btn').addEventListener('click', ()=>{
+    exitEditMode();
+    switchToLookupTab();
   });
 
   // ---- payment form ----
@@ -1667,8 +1958,9 @@
 
   /**
    * 把任何寫法轉成標準代碼。
-   * 回傳 {code, ok}：ok=true 代表有對應到清單裡的國家；
-   * ok=false 代表認不出來，此時 code 是使用者原文（去空白轉大寫），仍然允許送出。
+   * 回傳 {code, ok}：ok=true 代表對應到清單裡的國家。
+   * 認不出來的寫法「不允許送出」——國籍要用來顯示國旗與統計，
+   * 放任自由輸入的話同一國會出現十幾種寫法，之後沒辦法整理。
    */
   function normalizeCountry(raw){
     const s = String(raw || '').trim();
@@ -1684,6 +1976,25 @@
     return currentLang === 'en' ? n.en : (n.zh + ' ' + n.en);
   }
 
+  /**
+   * 國碼轉國旗 emoji：把兩個英文字母換成對應的 Regional Indicator 符號。
+   * UK 在 emoji 標準裡是 GB，要另外對應，不然會變成空白方框。
+   */
+  const FLAG_FIX = { UK:'GB' };
+  function flagOf(code){
+    const c = String(code || '').trim().toUpperCase();
+    if(!/^[A-Z]{2}$/.test(FLAG_FIX[c] || c)) return '🏳️‍🌈';
+    const cc = FLAG_FIX[c] || c;
+    return String.fromCodePoint(cc.charCodeAt(0) + 127397, cc.charCodeAt(1) + 127397);
+  }
+
+  /** 後台與查詢結果統一用「國旗 + 代碼」顯示 */
+  function countryTag(code){
+    const c = String(code || '').trim().toUpperCase();
+    if(!c) return '';
+    return flagOf(c) + ' ' + c;
+  }
+
   /** 綁定一個國籍輸入框：離開欄位時自動改寫成標準代碼，並顯示對應到哪一國 */
   function bindCountryInput(input, hintEl){
     if(!input) return;
@@ -1692,18 +2003,22 @@
       if(r.empty){
         hintEl.className = 'country-hint idle';
         hintEl.textContent = '';
+        input.setCustomValidity('');
         return;
       }
       if(r.ok){
         if(commit) input.value = r.code;   // 真正改寫成代碼，確保送出的一定是標準值
         hintEl.className = 'country-hint ok';
-        hintEl.textContent = '✓ ' + r.code + ' · ' + countryDisplayName(r.code);
+        hintEl.textContent = flagOf(r.code) + ' ' + r.code + ' · ' + countryDisplayName(r.code);
+        input.setCustomValidity('');
       } else {
-        if(commit) input.value = r.code;
         hintEl.className = 'country-hint unknown';
         hintEl.textContent = '⚠ ' + (currentLang === 'en'
-          ? I18N.country_unknown.en
-          : '不在清單中，將以原文送出');
+          ? 'Not in the list — please pick a country from the dropdown'
+          : '不在清單中，請從下拉選單挑選');
+        input.setCustomValidity(currentLang === 'en'
+          ? 'Please choose a country from the list'
+          : '請從清單中挑選國籍');
       }
     };
     input.addEventListener('input', function(){ update(false); });
@@ -1717,6 +2032,19 @@
   /** 送出前最後再正規化一次，避免使用者打完沒離開欄位就直接按送出 */
   function readCountry(input){
     return normalizeCountry(input && input.value).code;
+  }
+
+  /** 送出前檢查表單上所有國籍欄位；有問題就回傳那個打錯的字串，沒問題回傳空字串 */
+  function validateAllCountries(){
+    const inputs = [document.getElementById('su-country')]
+      .concat(Array.from(guestRowsContainer.querySelectorAll('.guest-country-input')));
+    for(let i = 0; i < inputs.length; i++){
+      const el = inputs[i];
+      if(!el || !el.value.trim()) continue;
+      const r = normalizeCountry(el.value);
+      if(!r.ok){ el.focus(); return el.value.trim(); }
+    }
+    return '';
   }
 
   // ---- toast ----
@@ -1736,43 +2064,54 @@
   }
 
   // ==========================================================
-  // 報名狀態：只有三種，與後端字串必須完全一致
-  // detail 是同一狀態下的細分原因，只影響顯示與篩選，不影響狀態本身
+  // 狀態
+  //
+  // 款項狀態（整組一個）：試算表第 25 欄長什麼樣，這裡就顯示什麼，
+  // 前端不做任何金額比對、不推算。要改狀態只有兩條路：
+  // 使用者回報匯款（後端自動 → 帳款確認中）、或工作人員在後台按按鈕。
+  //
+  // 出席狀態（每個人各自一個）：已報名／已取消。
   // ==========================================================
-  const ST = { REGISTERED:'已報名', SUCCESS:'報名成功', CANCELLED:'已取消' };
-  const ST_META = {
-    [ST.REGISTERED]: {cls:'st-none',  zh:'已報名',   en:'Registered'},
-    [ST.SUCCESS]:    {cls:'st-paid',  zh:'報名成功', en:'Confirmed'},
-    [ST.CANCELLED]:  {cls:'st-void',  zh:'已取消',   en:'Cancelled'}
+  const PS = { NONE:'未收款', CHECKING:'帳款確認中', TOPUP:'待補款', DONE:'已收款' };
+  const PS_META = {
+    [PS.NONE]:     { cls:'st-none',     zh:'未收款',     en:'Unpaid' },
+    [PS.CHECKING]: { cls:'st-checking', zh:'帳款確認中', en:'Verifying' },
+    [PS.TOPUP]:    { cls:'st-topup',    zh:'待補款',     en:'Top-up due' },
+    [PS.DONE]:     { cls:'st-paid',     zh:'已收款',     en:'Paid' }
   };
-  // 「已報名」底下依細分原因換顏色，讓後台一眼看出哪些要處理
-  const DETAIL_CLS = {
-    none:'st-none', onsite:'st-onsite', reported:'st-reported',
-    mismatch:'st-review', paid:'st-paid', cancelled:'st-void'
-  };
-  function stMeta(status, detail){
-    const base = ST_META[status] || {cls:'st-none', zh:String(status||'—'), en:String(status||'—')};
-    return { cls: DETAIL_CLS[detail] || base.cls, zh: base.zh, en: base.en };
+  const CANCELLED_META = { cls:'st-void', zh:'已取消', en:'Cancelled' };
+  // 後端在試算表缺少「款項狀態」欄時會回 N/A。刻意不假裝成「未收款」——
+  // 那會讓你以為錢真的沒收到，比直接說「讀不到」危險得多。
+  const NA_META = { cls:'st-na', zh:'N/A', en:'N/A' };
+
+  function psMeta(g){
+    if(g && g.allCancelled) return CANCELLED_META;
+    if(g && g.payStatus === 'N/A') return NA_META;
+    return PS_META[g && g.payStatus] || PS_META[PS.NONE];
   }
-  function stText(status, detail){
-    const m = stMeta(status, detail);
+  function psText(g){
+    const m = psMeta(g);
     return currentLang === 'en' ? m.en : m.zh;
   }
 
-  // ---- lookup form ----
+  // ---- 查詢 ----
   const lookupResult = document.getElementById('lookup-result');
   let lastLookupPhone = '';
+  let lastLookupData = null;
 
   document.getElementById('lookup-form').addEventListener('submit', async (e)=>{
     e.preventDefault();
-    const phone = document.getElementById('lk-query').value.trim();
+    await doLookup(document.getElementById('lk-query').value.trim());
+  });
+
+  async function doLookup(phone){
     const msg = document.getElementById('lookup-msg');
+    const btn = document.getElementById('lookup-submit-btn');
     msg.classList.remove('show');
     lookupResult.classList.remove('show');
     document.getElementById('paycode-box').style.display = 'none';
     document.getElementById('paycode-btn').style.display = 'none';
 
-    const btn = document.getElementById('lookup-submit-btn');
     btn.disabled = true;
     btn.textContent = currentLang === 'en' ? I18N.lookup_submitting.en : '查詢中…';
 
@@ -1784,111 +2123,125 @@
       setTimeout(()=> msg.classList.remove('show'), 8000);
     };
 
-    if(!GAS_URL){
-      notFound();
+    const r = await postToBackend({ type:'lookup', phone: phone });
+    const data = r.body || {};
+
+    if(!r.ok){
+      notFound(currentLang === 'en'
+        ? 'Could not reach the server — please check your connection and try again.'
+        : '連線失敗，請確認網路後再試一次。');
+    } else if(data.found){
+      lastLookupPhone = phone;
+      lastLookupData = data;
+      renderLookup(data);
     } else {
-      try{
-        const res = await fetch(`${GAS_URL}?action=lookup&phone=${encodeURIComponent(phone)}`);
-        const data = await res.json();
-        if(data && data.found){
-          lastLookupPhone = phone;
-          renderLookup(data);
-        } else {
-          notFound();
-        }
-      }catch(err){
-        notFound(currentLang === 'en' ? 'Lookup failed — please try again later.' : '查詢發生問題，請稍後再試。');
-      }
+      notFound();
     }
 
     btn.disabled = false;
     btn.textContent = currentLang === 'en' ? I18N.lookup_submit.en : '查詢狀態';
-  });
+  }
 
   function renderLookup(d){
     const isOnline = d.paymethod !== '現場付款';
-    const meta = stMeta(d.status, d.detail);
 
     document.getElementById('lr-name').textContent = d.name || '—';
     const badge = document.getElementById('lr-badge');
-    badge.className = 'st-badge ' + meta.cls;
-    badge.textContent = stText(d.status, d.detail);
+    badge.className = 'st-badge ' + psMeta(d).cls;
+    badge.textContent = psText(d);
 
     document.getElementById('lr-regid').textContent = d.regId || '—';
     document.getElementById('lr-count').textContent = currentLang === 'en'
-      ? `${d.totalCount} people` : `${d.totalCount} 人`;
+      ? d.activeCount + ' people' : d.activeCount + ' 人';
     document.getElementById('lr-due').textContent = 'NT$' + Number(d.due || 0).toLocaleString();
     document.getElementById('lr-method').textContent = isOnline
       ? (currentLang === 'en' ? 'Online' : '線上付款')
       : (currentLang === 'en' ? 'On-site' : '現場付款');
 
-    // 攜伴姓名（依主辦需求顯示；Email、備註、同桌需求仍不回傳）
-    const compRow = document.getElementById('lr-companions-row');
-    const compBox = document.getElementById('lr-companions');
-    const comps = d.companions || [];
-    if(comps.length){
-      compBox.innerHTML = comps.map(n=> `<span class="lr-chip">${escapeHtml(n)}</span>`).join('');
-      compRow.style.display = 'flex';
-    } else {
-      compRow.style.display = 'none';
-    }
-
+    // 說明文字完全對應款項狀態，不另外推算
     const NOTE = {
-      paid:     {zh:'已確認收到您的付款，我們活動現場見！', en:'Payment confirmed — see you at the event!'},
-      reported: {zh:'已收到你的匯款回報，主辦單位正在核對銀行帳戶確認中。', en:'We have received your transfer report and are confirming it against the bank statement.'},
-      none:     {zh:'尚未收到您的匯款回報，請至「匯款轉帳」頁面完成轉帳並回報。', en:'We have not received your transfer report yet — please complete it on the Payment tab.'},
-      onsite:   {zh:'請於活動當天現場付款，工作人員會協助收款。', en:'Please pay on-site on the day; staff will assist you.'},
-      mismatch: {zh:'回報金額與應付金額對不上，主辦單位將盡快與您聯繫確認。', en:'The reported amount does not match the amount due — the organizer will contact you.'},
-      cancelled:{zh:'這筆報名已取消。', en:'This registration has been cancelled.'}
+      [PS.DONE]:     {zh:'已確認收到您的付款，我們活動現場見！', en:'Payment confirmed — see you at the event!'},
+      [PS.CHECKING]: {zh:'已收到你的匯款回報，主辦單位正在核對中，確認後這裡會變成「已收款」。', en:'We have received your transfer report and are verifying it.'},
+      [PS.TOPUP]:    {zh:'報名後有新增人數，請補匯差額並至「匯款轉帳」頁面回報。', en:'People were added after payment — please transfer the difference and report it on the Payment tab.'},
+      [PS.NONE]:     {zh:'尚未收到您的匯款回報，請至「匯款轉帳」頁面完成轉帳並回報。', en:'We have not received your transfer report yet — please complete it on the Payment tab.'}
     };
-    const n = NOTE[d.detail];
-    document.getElementById('lr-note').textContent = n ? (currentLang === 'en' ? n.en : n.zh) : '';
+    const onsiteNote = {zh:'請於活動當天現場付款，工作人員會協助收款。', en:'Please pay on-site on the day; staff will assist you.'};
+    const cancelledNote = {zh:'這組報名的成員都已取消。', en:'Everyone in this registration has been cancelled.'};
 
-    // 只有線上付款且尚未收款完成，才提供產生繳費代碼
-    const canPay = isOnline && d.status !== ST.SUCCESS && d.status !== ST.CANCELLED;
+    let note;
+    if(d.allCancelled) note = cancelledNote;
+    else if(!isOnline && d.payStatus === PS.NONE) note = onsiteNote;
+    else note = NOTE[d.payStatus] || NOTE[PS.NONE];
+    document.getElementById('lr-note').textContent = currentLang === 'en' ? note.en : note.zh;
+
+    // 成員清單：每個人各自一列，各自可以申請取消
+    const box = document.getElementById('lr-members');
+    box.innerHTML = (d.members || []).map(m=>{
+      let right = '';
+      if(m.cancelled){
+        right = '<span class="st-badge st-void">' + (currentLang==='en'?'Cancelled':'已取消') + '</span>';
+      } else if(m.cancelPending){
+        right = '<span class="st-badge st-topup">' + (currentLang==='en'?'Cancel requested':'取消申請處理中') + '</span>';
+      } else {
+        right = '<button type="button" class="mini-btn danger" data-cancel-member="' + m.index + '">'
+              + (currentLang==='en'?'Request cancel':'申請取消') + '</button>';
+      }
+      return '<div class="lr-mem' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
+        + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
+        + '<span class="mem-name">' + countryTag(m.country) + ' ' + escapeHtml(m.name) + '</span>'
+        + right + '</div>';
+    }).join('');
+
+    document.getElementById('lr-edit-btn').style.display = d.allCancelled ? 'none' : 'inline-block';
+
+    // 只有線上付款、還沒收款完成、也還沒全部取消，才提供產生繳費代碼
+    const canPay = isOnline && d.payStatus !== PS.DONE && !d.allCancelled;
     document.getElementById('paycode-btn').style.display = canPay ? 'block' : 'none';
-    if(d.payCode) showPayCode(d.payCode, d.due, d.payCodeExpiry);
-
-    // 取消申請：已送出申請就只顯示提示，不再重複顯示按鈕
-    const pending = !!d.cancelPending;
-    document.getElementById('cancel-pending-note').style.display = pending ? 'block' : 'none';
-    document.getElementById('cancel-area').style.display =
-      (!pending && d.status !== ST.CANCELLED) ? 'block' : 'none';
+    if(d.payCode && canPay) showPayCode(d.payCode, d.due, d.payCodeExpiry);
 
     lookupResult.classList.add('show');
   }
 
-  // ---- 使用者申請取消報名 ----
-  // 送出的是「申請」而不是直接取消：查詢頁無法驗證身份，
-  // 若做成一鍵直接取消，任何知道電話的人都能刪掉別人的報名，且無法復原。
-  document.getElementById('cancel-btn').addEventListener('click', async ()=>{
-    if(!lastLookupPhone) return;
-    const confirmText = currentLang === 'en'
-      ? 'Submit a cancellation request for this registration?\nThe organizer will confirm it. Refunds follow the event policy on the Event Info page.'
-      : '確定要申請取消這筆報名嗎？\n送出後由主辦單位確認。退費依「活動訊息」頁面的注意事項辦理。';
-    if(!confirm(confirmText)) return;
+  // ---- 個別申請取消 ----
+  // 一樣是「申請」而不是直接取消：只靠電話沒辦法確認送出的人是誰，
+  // 做成一鍵直接取消的話，任何知道這支電話的人都能把別人踢掉，而且無法復原。
+  document.getElementById('lr-members').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-cancel-member]');
+    if(!btn || !lastLookupPhone) return;
 
-    const btn = document.getElementById('cancel-btn');
+    const idx = btn.dataset.cancelMember;
+    const member = (lastLookupData.members || []).filter(m=> String(m.index) === String(idx))[0];
+    const who = member ? member.name : '';
+
+    const ok = confirm(currentLang === 'en'
+      ? 'Submit a cancellation request for "' + who + '"?\nThe organizer will confirm it. Refunds follow the policy on the Event Info page.'
+      : '確定要為「' + who + '」送出取消申請嗎？\n送出後由主辦單位確認。退費依「活動訊息」頁面的注意事項辦理。');
+    if(!ok) return;
+
+    const reason = prompt(currentLang === 'en' ? 'Reason (optional)' : '取消原因（選填）', '') || '';
+
     btn.disabled = true;
     btn.textContent = currentLang === 'en' ? 'Submitting…' : '送出中…';
 
     const r = await postToBackend({
-      type: 'cancelRequest',
-      phone: lastLookupPhone,
-      reason: document.getElementById('cancel-reason').value.trim()
+      type:'cancelRequest', phone: lastLookupPhone, memberIndex: idx, reason: reason
     });
     const body = r.body || {};
 
     if(body.result === 'success'){
-      document.getElementById('cancel-area').style.display = 'none';
-      document.getElementById('cancel-pending-note').style.display = 'block';
       showToast(currentLang === 'en' ? '✅ Cancellation request submitted' : '✅ 已送出取消申請');
+      await doLookup(lastLookupPhone);
     } else {
       showToast(body.message || (currentLang === 'en' ? '⚠️ Request failed' : '⚠️ 申請失敗，請稍後再試'));
+      btn.disabled = false;
+      btn.textContent = currentLang === 'en' ? 'Request cancel' : '申請取消';
     }
+  });
 
-    btn.disabled = false;
-    btn.textContent = currentLang === 'en' ? I18N.cancel_btn.en : '申請取消報名';
+  // ---- 修改報名資料 / 加人 ----
+  document.getElementById('lr-edit-btn').addEventListener('click', ()=>{
+    if(!lastLookupData) return;
+    enterEditMode(Object.assign({}, lastLookupData, { phone: lastLookupPhone }));
   });
 
   // ---- 超商繳費代碼（金流串接佔位） ----
@@ -1947,129 +2300,107 @@
 
   // ==========================================================
   // 後台
-  // 密碼只存在這個變數裡（記憶體），不寫進網頁原始碼、不存瀏覽器儲存空間。
-  // 驗證一律在後端做，前端拿不到也改不了結果。
+  //
+  // 【登入】密碼比對在前端完成，所以按下去是「秒進」，
+  // 進去之後才非同步撈資料 —— 不會像以前那樣卡在登入按鈕等後端撈完整張表。
+  //
+  // 【之後要換掉】密碼寫在這裡只是暫時的，任何人看網頁原始碼都找得到。
+  // 要換成 Firebase Auth 或雲端密碼表時，只要改寫 verifyAdminLocal() 這一個
+  // 函式（把它變成 async、去打驗證服務），底下所有程式都不用動。
+  // 後端 GS 那邊也有一個對應的 verifyAdmin()，兩邊各改一個函式就完成。
+  //
+  // 【操作者】每組密碼對應一個名字，所有後台動作都會把名字寫進「異動紀錄」，
+  // 之後查得到某一筆是誰按的。
   // ==========================================================
-  let adminPassword = '';
+  const ADMIN_USERS = {
+    '88888888': '主辦',
+    '11112222': '工作人員A',
+    '33334444': '工作人員B'
+  };
+
+  function verifyAdminLocal(pw){
+    const name = ADMIN_USERS[String(pw || '').trim()];
+    return name ? { ok:true, operator:name } : { ok:false };
+  }
+
+  let adminOperator = '';
   let adminData = [];
+  let adminLogs = [];
   let adminFilter = 'all';
-  let demoMode = false;
+  let adminView = 'list';
 
-  // 展示模式用的範例資料：輸入密碼 demo 即可在沒有部署後端的情況下預覽後台介面
-  const DEMO_DATA = [
-    {regId:'TP001',name:'王小明',companions:['阿哲'],phone:'0912345678',total:2,due:2400,
-     paymethod:'線上付款',paidSum:2400,matchedCount:1,last5List:['12345'],
-     status:'報名成功',detail:'paid',note:'已核對，銀行已確認入帳 NT$2400',cancelPending:false,cancelReason:'',tableWith:''},
-    {regId:'TP002',name:'Jamie',companions:[],phone:'0922333444',total:1,due:1200,
-     paymethod:'線上付款',paidSum:1200,matchedCount:1,last5List:['54321'],
-     status:'已報名',detail:'reported',note:'已回報 NT$1200，待銀行核實',cancelPending:false,cancelReason:'',tableWith:'王小明 / @ming'},
-    {regId:'TP003',name:'陳雅婷',companions:['小華','大方'],phone:'0933555666',total:3,due:3600,
-     paymethod:'線上付款',paidSum:2400,matchedCount:1,last5List:['67890'],
-     status:'已報名',detail:'mismatch',note:'金額不符：應付 NT$3600，已回報 NT$2400（需人工確認）',cancelPending:false,cancelReason:'',tableWith:''},
-    {regId:'TP004',name:'Kenji',companions:[],phone:'0944777888',total:1,due:1200,
-     paymethod:'現場付款',paidSum:0,matchedCount:0,last5List:[],
-     status:'已報名',detail:'onsite',note:'現場付款，待活動當天收款',cancelPending:false,cancelReason:'',tableWith:''},
-    {regId:'TP005',name:'Alex',companions:['Sam'],phone:'0955111222',total:2,due:2400,
-     paymethod:'線上付款',paidSum:0,matchedCount:0,last5List:[],
-     status:'已報名',detail:'none',note:'⚠ 使用者已申請取消 · 尚未回報匯款',cancelPending:true,
-     cancelReason:'[2026/08/12 21:30] 臨時出國無法出席',tableWith:''},
-    {regId:'TP006',name:'林大同',companions:[],phone:'0966888999',total:1,due:1200,
-     paymethod:'線上付款',paidSum:0,matchedCount:0,last5List:[],
-     status:'已取消',detail:'cancelled',note:'已取消',cancelPending:false,cancelReason:'',tableWith:''}
-  ];
-
-  async function tryUnlockAdmin(){
-    const val = document.getElementById('admin-pw').value;
+  function tryUnlockAdmin(){
+    const input = document.getElementById('admin-pw');
     const errEl = document.getElementById('admin-gate-error');
-    const btn = document.getElementById('admin-unlock-btn');
-    if(!val) return;
+    const v = verifyAdminLocal(input.value);
 
-    errEl.style.display = 'none';
-    btn.disabled = true;
-    btn.textContent = currentLang === 'en' ? 'Logging in…' : '登入中…';
-
-    const enterAdmin = ()=>{
-      document.getElementById('admin-pw').value = '';
-      document.getElementById('admin-gate').style.display = 'none';
-      document.getElementById('admin-content').style.display = 'block';
-      document.getElementById('demo-banner').style.display = demoMode ? 'block' : 'none';
-    };
-
-    if(val === 'demo'){
-      // 純前端展示，不打後端，讓你在部署前就能確認介面與操作流程
-      demoMode = true;
-      adminPassword = '';
-      enterAdmin();
-      applyAdminData(JSON.parse(JSON.stringify(DEMO_DATA)));
-    } else {
-      const r = await postToBackend({ type:'adminList', password: val });
-      const body = r.body || {};
-      if(body.result === 'success'){
-        demoMode = false;
-        adminPassword = val;
-        enterAdmin();
-        applyAdminData(body.results || []);
-      } else {
-        // 顯示真正發生的事，而不是一律說「密碼錯誤」——
-        // 分頁沒建立、部署權限沒開、網址填錯、或後端根本沒回 JSON
-        // （常見於某些內建瀏覽器，例如 LINE），都會走到這裡，
-        // 蓋成密碼錯誤只會讓人往錯的方向找問題。
-        let why;
-        if(!r.ok){
-          why = currentLang === 'en'
-            ? `Cannot reach the backend (${r.reason||'network error'}). Check that GAS_URL is correct and the deployment allows access from "Anyone".`
-            : `連不到後端（${r.reason||'網路錯誤'}）。請確認 GAS_URL 網址正確，且部署時「誰可以存取」有設為「任何人」。`;
-        } else if(!body || (body.result === undefined && body.error === undefined)){
-          // fetch 有回應，但內容不是我們預期的 JSON——通常是 Google 回傳了
-          // 錯誤頁面或登入頁面而不是資料，把實際拿到的內容顯示出來方便判斷。
-          why = (currentLang === 'en' ? 'Unexpected response (HTTP ' : '收到非預期的回應（HTTP ')
-            + (r.status || '?') + (currentLang === 'en' ? '): ' : '）：')
-            + (r.raw ? r.raw : (currentLang === 'en' ? 'empty response' : '空白回應'));
-        } else if(body.message && String(body.message).indexOf('unauthorized') < 0){
-          why = (currentLang === 'en' ? 'Backend error: ' : '後端回報：') + body.message;
-        } else if(body.error && body.error !== 'unauthorized'){
-          why = (currentLang === 'en' ? 'Backend error: ' : '後端回報：') + body.error;
-        } else {
-          why = currentLang === 'en' ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次';
-        }
-        errEl.textContent = why;
-        errEl.style.display = 'block';
-      }
+    if(!v.ok){
+      errEl.textContent = currentLang === 'en' ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次';
+      errEl.style.display = 'block';
+      input.select();
+      return;
     }
 
-    btn.disabled = false;
-    btn.textContent = currentLang === 'en' ? I18N.admin_gate_btn.en : '登入';
+    // 驗證通過就立刻開畫面，資料在背景載入
+    adminOperator = v.operator;
+    errEl.style.display = 'none';
+    input.value = '';
+    document.getElementById('admin-gate').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('admin-list').innerHTML =
+      '<div class="adm-empty">' + (currentLang==='en' ? 'Loading…' : '載入中…') + '</div>';
+    showToast((currentLang === 'en' ? 'Welcome, ' : '歡迎，') + adminOperator);
+    loadAdminList();
   }
   document.getElementById('admin-unlock-btn').addEventListener('click', tryUnlockAdmin);
   document.getElementById('admin-pw').addEventListener('keydown', (e)=>{
     if(e.key === 'Enter') tryUnlockAdmin();
   });
 
-  document.getElementById('admin-refresh-btn').addEventListener('click', async ()=>{
-    if(demoMode){ showToast('🧪 展示模式：資料為範例，未連接後端'); return; }
+  async function loadAdminList(){
     const btn = document.getElementById('admin-refresh-btn');
     btn.disabled = true;
-    const r = await postToBackend({ type:'adminList', password: adminPassword });
+    const r = await postToBackend({ type:'adminList', operator: adminOperator });
     const body = r.body || {};
+    showWarnings(body);
     if(body.result === 'success'){
       applyAdminData(body.results || []);
-      showToast(currentLang === 'en' ? '✅ Updated' : '✅ 資料已更新');
     } else {
-      showToast(currentLang === 'en' ? '⚠️ Update failed' : '⚠️ 更新失敗');
+      document.getElementById('admin-list').innerHTML =
+        '<div class="adm-empty">' + escapeHtml(body.message || (currentLang==='en'
+          ? 'Could not load data — check that GAS_URL is correct and the deployment allows access from "Anyone".'
+          : '讀取失敗。請確認 GAS_URL 網址正確，且部署時「誰可以存取」有設為「任何人」。')) + '</div>';
     }
     btn.disabled = false;
-  });
+  }
 
-  document.getElementById('admin-seating-btn').addEventListener('click', async ()=>{
-    if(demoMode){ showToast('🧪 展示模式：無法實際重建座位表'); return; }
-    const btn = document.getElementById('admin-seating-btn');
+  async function loadAdminLog(){
+    const btn = document.getElementById('admin-log-refresh-btn');
     btn.disabled = true;
-    const r = await postToBackend({ type:'adminSeating', password: adminPassword });
+    document.getElementById('admin-log-list').innerHTML =
+      '<div class="adm-empty">' + (currentLang==='en' ? 'Loading…' : '載入中…') + '</div>';
+    const r = await postToBackend({ type:'adminLog', operator: adminOperator, limit: 300 });
     const body = r.body || {};
-    showToast(body.result === 'success'
-      ? (currentLang === 'en' ? `✅ Seating sheet rebuilt (${body.count} groups)` : `✅ 座位安排表已重建（${body.count} 組）`)
-      : (currentLang === 'en' ? '⚠️ Failed' : '⚠️ 重建失敗'));
+    adminLogs = (body.result === 'success') ? (body.logs || []) : [];
+    renderAdminLog();
     btn.disabled = false;
+  }
+
+  document.getElementById('admin-refresh-btn').addEventListener('click', async ()=>{
+    await loadAdminList();
+    showToast(currentLang === 'en' ? '✅ Updated' : '✅ 資料已更新');
+  });
+  document.getElementById('admin-log-refresh-btn').addEventListener('click', loadAdminLog);
+
+  document.querySelectorAll('.adm-viewtab').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.adm-viewtab').forEach(x=> x.classList.remove('active'));
+      b.classList.add('active');
+      adminView = b.dataset.view;
+      document.getElementById('admin-view-list').style.display = adminView === 'list' ? 'block' : 'none';
+      document.getElementById('admin-view-log').style.display = adminView === 'log' ? 'block' : 'none';
+      if(adminView === 'log' && adminLogs.length === 0) loadAdminLog();
+    });
   });
 
   document.querySelectorAll('#admin-filters .filter-btn').forEach(b=>{
@@ -2077,191 +2408,281 @@
       document.querySelectorAll('#admin-filters .filter-btn').forEach(x=> x.classList.remove('active'));
       b.classList.add('active');
       adminFilter = b.dataset.filter;
-      renderAdminTable();
+      renderAdminList();
     });
   });
+
+  /**
+   * 後端每個回應都可能帶 warnings（缺欄位、標題重複、某次寫入被略過…）。
+   * 一定要顯示出來：降級處理最怕的就是安靜地發生，
+   * 你以為按下去存好了，其實那一格根本沒有寫進去。
+   */
+  function showWarnings(body){
+    const box = document.getElementById('warn-banner');
+    const list = (body && body.warnings) || [];
+    if(list.length === 0){ box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.innerHTML = '<b>⚠️ ' + (currentLang==='en'
+        ? 'Spreadsheet column issues detected'
+        : '試算表欄位有問題') + '</b><ul>'
+      + list.map(function(t){ return '<li>' + escapeHtml(t) + '</li>'; }).join('')
+      + '</ul>';
+    box.style.display = 'block';
+  }
 
   function applyAdminData(results){
     adminData = Array.isArray(results) ? results : [];
     renderAdminStats();
-    renderAdminTable();
+    renderAdminList();
     const t = new Date().toLocaleTimeString(currentLang==='en' ? 'en-US' : 'zh-TW',
       { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     document.getElementById('admin-last-updated').textContent =
-      (currentLang === 'en' ? 'Last updated: ' : '最後更新：') + t
-      + (demoMode ? (currentLang === 'en' ? ' (demo)' : '（展示模式）') : '');
+      (currentLang === 'en' ? 'Last updated: ' : '最後更新：') + t;
   }
 
   function renderAdminStats(){
-    // 已取消的完全不計入統計；申請取消但還沒核准的仍算在內，
-    // 但會單獨列出數量，讓你知道有多少人數可能會變動
-    const active = adminData.filter(r=> r.status !== ST.CANCELLED);
-    const people = active.reduce((s,r)=> s + (Number(r.total)||0), 0);
-    const revenue = active.reduce((s,r)=> s + (Number(r.due)||0), 0);
-    const success = active.filter(r=> r.status === ST.SUCCESS);
-    const outstanding = active
-      .filter(r=> r.status !== ST.SUCCESS)
-      .reduce((s,r)=> s + (Number(r.due)||0), 0);
-    const pending = active.filter(r=> r.cancelPending);
+    const active = adminData.filter(g=> !g.allCancelled);
+    const people = active.reduce((s,g)=> s + (Number(g.activeCount)||0), 0);
+    const done = active.filter(g=> g.payStatus === PS.DONE);
+    const outstanding = active.filter(g=> g.payStatus !== PS.DONE)
+                              .reduce((s,g)=> s + (Number(g.due)||0), 0);
+    const topup = active.filter(g=> g.payStatus === PS.TOPUP);
+    const pending = adminData.reduce((s,g)=> s + (Number(g.cancelPendingCount)||0), 0);
 
     document.getElementById('stat-groups').textContent = active.length;
     document.getElementById('stat-people').textContent = people;
-    document.getElementById('stat-paid').textContent = success.length;
+    document.getElementById('stat-paid').textContent = done.length;
     document.getElementById('stat-outstanding').textContent = 'NT$' + outstanding.toLocaleString();
-    document.getElementById('stat-pending').textContent = pending.length;
+    document.getElementById('stat-topup').textContent = topup.length;
+    document.getElementById('stat-pending').textContent = pending;
   }
 
-  function matchesFilter(r){
+  function matchesFilter(g){
     switch(adminFilter){
-      case 'all':       return r.status !== ST.CANCELLED;
-      case 'cancelreq': return !!r.cancelPending && r.status !== ST.CANCELLED;
-      case 'cancelled': return r.status === ST.CANCELLED;
-      case 'success':   return r.status === ST.SUCCESS;
-      case 'reported':  return r.detail === 'reported';
-      case 'mismatch':  return r.detail === 'mismatch';
-      case 'unpaid':    return r.status === ST.REGISTERED && (r.detail === 'none' || r.detail === 'onsite');
+      case 'all':       return !g.allCancelled;
+      case 'cancelreq': return (Number(g.cancelPendingCount)||0) > 0;
+      case 'cancelled': return !!g.allCancelled;
+      case 'none':      return !g.allCancelled && g.payStatus === PS.NONE;
+      case 'checking':  return !g.allCancelled && g.payStatus === PS.CHECKING;
+      case 'topup':     return !g.allCancelled && g.payStatus === PS.TOPUP;
+      case 'done':      return !g.allCancelled && g.payStatus === PS.DONE;
       default:          return true;
     }
   }
 
-  function renderAdminTable(){
-    const tbody = document.getElementById('admin-tbody');
+  const L = (zh, en)=> currentLang === 'en' ? en : zh;
+
+  function renderAdminList(){
+    const box = document.getElementById('admin-list');
     const rows = adminData.filter(matchesFilter);
 
     if(rows.length === 0){
-      tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:var(--text-muted);">${
-        currentLang==='en' ? 'No matching records' : '沒有符合條件的資料'}</td></tr>`;
+      box.innerHTML = '<div class="adm-empty">' + L('沒有符合條件的資料','No matching records') + '</div>';
+      return;
+    }
+    box.innerHTML = rows.map(cardHtml).join('');
+  }
+
+  function cardHtml(g){
+    const meta = psMeta(g);
+    const members = g.members || [];
+    const extra = members.filter(m=> m.role !== '本人' && !m.cancelled).length;
+    const req = Number(g.cancelPendingCount) || 0;
+
+    // ── 成員清單 ──
+    const memHtml = members.map(m=>{
+      let right = '';
+      if(m.cancelPending){
+        right = '<span class="st-badge st-topup">' + L('取消申請中','Cancel requested') + '</span>'
+              + '<button class="mini-btn danger" data-act="approve" data-idx="' + m.index + '">' + L('核准取消','Approve') + '</button>'
+              + '<button class="mini-btn" data-act="reject" data-idx="' + m.index + '">' + L('駁回','Reject') + '</button>';
+      } else if(m.cancelled){
+        right = '<span class="st-badge st-void">' + L('已取消','Cancelled') + '</span>'
+              + '<button class="mini-btn" data-act="restore" data-idx="' + m.index + '">' + L('恢復出席','Restore') + '</button>';
+      } else {
+        right = '<button class="mini-btn danger" data-act="kick" data-idx="' + m.index + '">' + L('取消這位','Cancel') + '</button>';
+      }
+      return '<div class="mem-row' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
+        + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
+        + '<span class="mem-name">' + countryTag(m.country) + ' ' + escapeHtml(m.name) + '</span>'
+        + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
+        + '<span class="adm-spacer"></span>' + right
+        + (m.cancelReason ? '<div style="width:100%; font-size:0.74rem; color:var(--orange);">' + escapeHtml(m.cancelReason) + '</div>' : '')
+        + (m.staffNote ? '<div style="width:100%; font-size:0.74rem; color:var(--text-muted);">' + escapeHtml(m.staffNote) + '</div>' : '')
+        + '</div>';
+    }).join('');
+
+    // ── 匯款回報明細 ──
+    const payHtml = (g.payments || []).length
+      ? g.payments.map(p=> '<div class="pay-line"><b>' + escapeHtml(p.date || '—') + '</b>'
+          + '<span>NT$' + Number(p.amount||0).toLocaleString() + '</span>'
+          + '<span>' + L('後五碼','Last 5') + ' ' + escapeHtml(p.last5 || '—') + '</span></div>').join('')
+      : '<div class="adm-sub" style="padding:0;">' + L('尚無匯款回報','No transfer reported yet') + '</div>';
+
+    // ── 款項狀態切換 ──
+    const statusBtns = [PS.NONE, PS.CHECKING, PS.TOPUP, PS.DONE].map(s=>{
+      const on = (g.payStatus === s);
+      const cls = (s === PS.DONE) ? 'mini-btn ok' : 'mini-btn';
+      return '<button class="' + cls + '" data-act="pay" data-status="' + s + '"' + (on ? ' disabled' : '') + '>'
+        + (on ? '● ' : '') + (currentLang==='en' ? PS_META[s].en : s) + '</button>';
+    }).join('');
+
+    // ── 編輯表單 ──
+    const f = (label, key, val)=>
+      '<div><label>' + label + '</label><input data-edit="' + key + '" value="' + escapeHtml(val || '') + '"></div>';
+    const memEdit = members.map(m=>
+      '<div class="adm-edit-grid" data-member="' + m.index + '">'
+      + f(L('姓名','Name'), 'name', m.name)
+      + f(L('國籍','Country'), 'country', m.country)
+      + f('IG', 'ig', m.ig)
+      + '</div>').join('');
+
+    const editHtml = '<div class="adm-editor">'
+      + '<div class="adm-edit-grid">'
+      + f(L('姓名','Name'), 'name', g.name)
+      + f(L('國籍','Country'), 'country', g.country)
+      + f('IG', 'ig', g.ig)
+      + f(L('付款方式','Method'), 'paymethod', g.paymethod)
+      + f(L('桌次','Table'), 'seatNo', g.seatNo)
+      + '</div>'
+      + '<div><label>' + L('備註','Notes') + '</label><input data-edit="notes" value="' + escapeHtml(g.notes || '') + '"></div>'
+      + '<div class="adm-edit-grid">'
+      + f(L('同桌姓名','With (name)'), 'tableWithName', g.tableWithName)
+      + f(L('同桌IG','With (IG)'), 'tableWithIg', g.tableWithIg)
+      + f(L('同桌電話','With (phone)'), 'tableWithPhone', g.tableWithPhone)
+      + '</div>'
+      + '<div><label>' + L('後台備註（退款決定等，只有工作人員看得到）','Staff note') + '</label>'
+      + '<input data-edit="staffNote" value="' + escapeHtml(g.staffNote || '') + '"></div>'
+      + '<h5 style="margin-top:12px;">' + L('成員資料','Members') + '</h5>' + memEdit
+      + '<div class="adm-actions"><button class="mini-btn ok" data-act="save-edit">' + L('儲存修改','Save') + '</button>'
+      + '<button class="mini-btn" data-act="close-edit">' + L('取消','Discard') + '</button></div>'
+      + '</div>';
+
+    return '<div class="adm-card' + (g.allCancelled?' is-void':'') + (req?' has-req':'') + '" data-id="' + escapeHtml(g.regId) + '">'
+      + '<div class="adm-head">'
+        + '<span class="adm-id">' + escapeHtml(g.regId) + '</span>'
+        + '<span class="adm-name">' + countryTag(g.country) + ' ' + escapeHtml(g.name) + '</span>'
+        + (extra ? '<span class="adm-plus">+' + extra + '</span>' : '')
+        + '<span class="adm-spacer"></span>'
+        + (req ? '<span class="adm-req">⚠ ' + req + '</span>' : '')
+        + '<span class="st-badge ' + meta.cls + '">' + psText(g) + '</span>'
+        + '<span class="adm-caret">▶</span>'
+      + '</div>'
+      + '<div class="adm-sub">'
+        + '<span>' + L('應付','Due') + ' <b>NT$' + Number(g.due||0).toLocaleString() + '</b></span>'
+        + '<span>' + L('已回報','Reported') + ' <b>NT$' + Number(g.reportedSum||0).toLocaleString() + '</b></span>'
+        + '<span>' + escapeHtml(g.paymethod || '') + '</span>'
+        + '<span>' + L('出席','Attending') + ' <b>' + g.activeCount + '</b> ' + L('人','') + '</span>'
+        + (g.seatNo ? '<span>' + L('桌次','Table') + ' <b>' + escapeHtml(String(g.seatNo)) + '</b></span>' : '')
+        + (g.editCount ? '<span>' + L('已修改','Edited') + ' ' + g.editCount + ' ' + L('次','times') + '</span>' : '')
+      + '</div>'
+      + '<div class="adm-detail">'
+        + '<div class="adm-sec"><h5>' + L('成員','Members') + '</h5>' + memHtml + '</div>'
+        + '<div class="adm-sec"><h5>' + L('匯款回報','Transfer reports') + '</h5>' + payHtml + '</div>'
+        + '<div class="adm-sec"><h5>' + L('其他資料','Details') + '</h5><dl class="kv">'
+          + '<dt>IG</dt><dd>' + escapeHtml(g.ig || '—') + (g.igPublic ? ' <span class="mem-ig">(' + L('願意公開','public') + ')</span>' : '') + '</dd>'
+          + '<dt>' + L('同桌需求','Table request') + '</dt><dd>' + escapeHtml(g.tableWith || '—') + '</dd>'
+          + '<dt>' + L('備註','Notes') + '</dt><dd>' + escapeHtml(g.notes || '—') + '</dd>'
+          + '<dt>' + L('最後修改','Last edited') + '</dt><dd>' + escapeHtml(g.lastEdited || '—') + '</dd>'
+        + '</dl></div>'
+        + '<div class="adm-sec"><h5>' + L('款項狀態','Payment status') + '</h5>'
+          + '<div class="adm-actions">' + statusBtns + '</div></div>'
+        + '<div class="adm-actions"><button class="mini-btn" data-act="open-edit">✏️ ' + L('編輯資料','Edit') + '</button></div>'
+        + editHtml
+      + '</div></div>';
+  }
+
+  function renderAdminLog(){
+    const box = document.getElementById('admin-log-list');
+    if(adminLogs.length === 0){
+      box.innerHTML = '<div class="adm-empty">' + L('目前沒有異動紀錄','No changes recorded yet') + '</div>';
+      return;
+    }
+    box.innerHTML = adminLogs.map(x=>
+      '<div class="log-item">'
+      + '<div class="log-top">'
+        + '<span class="log-act">' + escapeHtml(x.action || '') + '</span>'
+        + '<span class="log-src">' + escapeHtml(x.source || '') + ' · ' + escapeHtml(x.operator || '') + '</span>'
+        + '<span class="adm-spacer"></span>'
+        + '<span class="log-time">' + escapeHtml(x.timestamp || '') + '</span>'
+      + '</div>'
+      + '<div class="log-sum"><b>' + escapeHtml(x.regId || '') + '</b> '
+        + escapeHtml(x.name || '') + (x.target ? '（' + escapeHtml(x.target) + '）' : '') + '<br>'
+        + escapeHtml(x.summary || '') + '</div>'
+      + '</div>').join('');
+  }
+
+  // ---- 卡片互動（事件委派：重繪時不用重新綁定每顆按鈕） ----
+  document.getElementById('admin-list').addEventListener('click', async (e)=>{
+    const card = e.target.closest('.adm-card');
+    if(!card) return;
+    const regId = card.dataset.id;
+
+    // 點標題列 = 展開／收合
+    if(e.target.closest('.adm-head')){
+      card.classList.toggle('is-open');
       return;
     }
 
-    const frag = document.createDocumentFragment();
-    rows.forEach(r=>{
-      const meta = stMeta(r.status, r.detail);
-      const comps = r.companions || [];
-      const nameCell = comps.length
-        ? `${escapeHtml(r.name)}<span class="comp-badge" data-toggle-comp="${escapeHtml(r.regId)}">+${comps.length}</span>
-           <div class="comp-popover" id="comp-${escapeHtml(r.regId)}">${
-             comps.map(n=>`<span class="chip">${escapeHtml(n)}</span>`).join('')}</div>`
-        : escapeHtml(r.name);
-
-      let actions = '';
-      if(r.cancelPending){
-        // 取消申請優先處理，避免混在其他操作裡被忽略
-        actions += `<button class="mini-btn danger" data-act="cancel-approve" data-id="${escapeHtml(r.regId)}">${
-          currentLang==='en' ? 'Approve cancel' : '核准取消'}</button>`;
-        actions += `<button class="mini-btn" data-act="cancel-reject" data-id="${escapeHtml(r.regId)}">${
-          currentLang==='en' ? 'Reject' : '駁回'}</button>`;
-      } else if(r.status === ST.CANCELLED){
-        actions += `<button class="mini-btn" data-act="restore" data-id="${escapeHtml(r.regId)}">${
-          currentLang==='en' ? 'Restore' : '恢復報名'}</button>`;
-      } else {
-        if(r.status !== ST.SUCCESS){
-          if(r.matchedCount > 0){
-            actions += `<button class="mini-btn ok" data-act="bank" data-id="${escapeHtml(r.regId)}">${
-              currentLang==='en' ? 'Bank verified' : '銀行已核實'}</button>`;
-          }
-          actions += `<button class="mini-btn ok" data-act="success" data-id="${escapeHtml(r.regId)}">${
-            currentLang==='en' ? 'Mark confirmed' : '直接確認收款'}</button>`;
-        } else {
-          actions += `<button class="mini-btn" data-act="unconfirm" data-id="${escapeHtml(r.regId)}">${
-            currentLang==='en' ? 'Undo' : '退回已報名'}</button>`;
-        }
-        actions += `<button class="mini-btn danger" data-act="cancel" data-id="${escapeHtml(r.regId)}">${
-          currentLang==='en' ? 'Cancel' : '取消報名'}</button>`;
-      }
-
-      const noteCell = r.cancelPending && r.cancelReason
-        ? `${escapeHtml(r.note)}<br><span style="color:var(--orange); font-size:0.72rem;">${escapeHtml(r.cancelReason)}</span>`
-        : escapeHtml(r.note || '');
-
-      const tr = document.createElement('tr');
-      if(r.status === ST.CANCELLED) tr.className = 'row-void';
-      else if(r.cancelPending) tr.className = 'cancel-pending-row';
-
-      tr.innerHTML = `
-        <td>${escapeHtml(r.regId)}</td>
-        <td>${nameCell}</td>
-        <td>${escapeHtml(r.phone)}</td>
-        <td>${r.total}</td>
-        <td>NT$${Number(r.due||0).toLocaleString()}</td>
-        <td>${escapeHtml(r.paymethod)}</td>
-        <td>${r.matchedCount ? 'NT$'+Number(r.paidSum||0).toLocaleString() : '—'}</td>
-        <td>${escapeHtml((r.last5List||[]).join(', ')) || '—'}</td>
-        <td><span class="st-badge ${meta.cls}">${stText(r.status, r.detail)}</span></td>
-        <td style="white-space:normal; max-width:260px;">${noteCell || '—'}</td>
-        <td>${actions}</td>
-      `;
-      frag.appendChild(tr);
-    });
-
-    tbody.innerHTML = '';
-    tbody.appendChild(frag);
-  }
-
-  // 事件委派：表格重繪時不用重新綁定每顆按鈕
-  // 攜伴徽章：點擊展開/收合，再點別的地方自動收合
-  document.getElementById('admin-tbody').addEventListener('click', (e)=>{
-    const badge = e.target.closest('.comp-badge');
-    if(!badge) return;
-    const pop = document.getElementById('comp-' + badge.dataset.toggleComp);
-    if(!pop) return;
-    const willOpen = !pop.classList.contains('open');
-    document.querySelectorAll('.comp-popover.open').forEach(p=> p.classList.remove('open'));
-    if(willOpen) pop.classList.add('open');
-  });
-  document.addEventListener('click', (e)=>{
-    if(e.target.closest('.comp-badge') || e.target.closest('.comp-popover')) return;
-    document.querySelectorAll('.comp-popover.open').forEach(p=> p.classList.remove('open'));
-  });
-
-  document.getElementById('admin-tbody').addEventListener('click', async (e)=>{
     const btn = e.target.closest('.mini-btn');
     if(!btn) return;
     const act = btn.dataset.act;
-    const regId = btn.dataset.id;
 
-    const CONFIRM = {
-      success:          {zh:`確定「${regId}」的款項已經收到？\n狀態會變成「報名成功」。`, en:`Confirm payment received for ${regId}?`},
-      unconfirm:        {zh:`確定要把「${regId}」退回「已報名」？`, en:`Move ${regId} back to Registered?`},
-      bank:             {zh:`確定已在銀行帳戶看到「${regId}」這筆入帳？\n金額相符時狀態會自動變成「報名成功」。`, en:`Confirm this transfer appears in the bank account for ${regId}?`},
-      cancel:           {zh:`確定要取消「${regId}」？\n資料會完整保留，但不列入人數統計，這支電話也能重新報名。`, en:`Cancel ${regId}?`},
-      restore:          {zh:`確定要恢復「${regId}」？`, en:`Restore ${regId}?`},
-      'cancel-approve': {zh:`核准「${regId}」的取消申請？\n狀態會變成「已取消」，這支電話可以重新報名。`, en:`Approve the cancellation request for ${regId}?`},
-      'cancel-reject':  {zh:`駁回「${regId}」的取消申請？\n報名維持有效，申請標記會被清除。`, en:`Reject the cancellation request for ${regId}?`}
-    };
-    const c = CONFIRM[act];
-    if(c && !confirm(currentLang === 'en' ? c.en : c.zh)) return;
+    if(act === 'open-edit'){ card.querySelector('.adm-editor').classList.add('is-open'); return; }
+    if(act === 'close-edit'){ card.querySelector('.adm-editor').classList.remove('is-open'); return; }
 
-    if(demoMode){
-      showToast(currentLang === 'en'
-        ? '🧪 Demo mode — no changes are saved'
-        : '🧪 展示模式：操作不會實際寫入試算表');
-      return;
+    let payload = null;
+
+    if(act === 'pay'){
+      const status = btn.dataset.status;
+      if(!confirm(L('確定把「' + regId + '」的款項狀態改成「' + status + '」？',
+                    'Change payment status of ' + regId + ' to "' + status + '"?'))) return;
+      payload = { type:'adminSetPayStatus', regId: regId, status: status };
+
+    } else if(act === 'approve' || act === 'reject'){
+      const approve = (act === 'approve');
+      if(!confirm(approve
+        ? L('核准這位的取消申請？\n他將不列入出席人數，應付金額會自動重算。', 'Approve this cancellation request?')
+        : L('駁回這位的取消申請？\n申請標記會被清除，維持出席。', 'Reject this cancellation request?'))) return;
+      const note = prompt(L('備註（選填，會留在後台備註欄）','Note (optional)'), '') || '';
+      payload = { type:'adminResolveCancel', memberIndex: btn.dataset.idx, approve: approve, note: note };
+
+    } else if(act === 'kick' || act === 'restore'){
+      const restore = (act === 'restore');
+      if(!confirm(restore
+        ? L('確定恢復這位的出席？應付金額會自動重算。', 'Restore this person?')
+        : L('確定直接取消這位？\n資料會保留，但不列入出席人數，應付金額會自動重算。', 'Cancel this person?'))) return;
+      const note = prompt(L('備註（選填）','Note (optional)'), '') || '';
+      payload = { type:'adminCancelPerson', memberIndex: btn.dataset.idx, restore: restore, note: note };
+
+    } else if(act === 'save-edit'){
+      const editor = card.querySelector('.adm-editor');
+      const fields = {};
+      editor.querySelectorAll(':scope > div > [data-edit], :scope > .adm-edit-grid > div > [data-edit]')
+        .forEach(el=>{ fields[el.dataset.edit] = el.value.trim(); });
+      const members = Array.from(editor.querySelectorAll('[data-member]')).map(row=>{
+        const o = { index: row.dataset.member };
+        row.querySelectorAll('[data-edit]').forEach(el=>{ o[el.dataset.edit] = el.value.trim(); });
+        return o;
+      });
+      payload = { type:'adminEdit', regId: regId, fields: fields, members: members };
     }
 
-    const PAYLOAD = {
-      success:          { type:'adminSetStatus', regId, status:'報名成功' },
-      unconfirm:        { type:'adminSetStatus', regId, status:'已報名' },
-      cancel:           { type:'adminSetStatus', regId, status:'已取消' },
-      restore:          { type:'adminSetStatus', regId, status:'已報名' },
-      bank:             { type:'adminBankVerify', regId, value:true },
-      'cancel-approve': { type:'adminResolveCancel', regId, approve:true },
-      'cancel-reject':  { type:'adminResolveCancel', regId, approve:false }
-    };
-    const payload = PAYLOAD[act];
     if(!payload) return;
-    payload.password = adminPassword;
+    payload.operator = adminOperator;
 
-    document.querySelectorAll('#admin-tbody .mini-btn').forEach(b=> b.disabled = true);
-
+    card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = true);
     const r = await postToBackend(payload);
     const body = r.body || {};
+    showWarnings(body);
+
     if(body.result === 'success'){
       applyAdminData(body.results || []);
       showToast(currentLang === 'en' ? '✅ Updated' : '✅ 已更新');
+      if(adminView === 'log') loadAdminLog();
+      else adminLogs = [];   // 讓下次切到紀錄分頁時重新抓
     } else {
       showToast(body.message || (currentLang === 'en' ? '⚠️ Update failed' : '⚠️ 更新失敗'));
-      document.querySelectorAll('#admin-tbody .mini-btn').forEach(b=> b.disabled = false);
+      card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = false);
     }
   });
 
