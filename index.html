@@ -249,13 +249,19 @@
     background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
   }
 
-  .radio-group{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;}
-  .radio-pill{
-    flex:1; min-width:140px;
-    display:flex; align-items:center; gap:8px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    padding:12px 14px; cursor:pointer; font-size:0.9rem; font-weight:600;
+  /* 兩顆永遠並排且置中，不換行 */
+  .radio-group{
+    display:flex; justify-content:center; align-items:stretch;
+    gap:10px; flex-wrap:nowrap; margin-bottom:8px;
   }
+  .radio-pill{
+    flex:1 1 0; min-width:0; max-width:220px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
+    padding:12px 10px; cursor:pointer; font-weight:600;
+    font-size:clamp(0.78rem, 3.1vw, 0.9rem); white-space:nowrap;
+  }
+  .radio-pill.is-checked{border-color:var(--yellow); background:rgba(255,209,102,0.10);}
   .radio-pill input{accent-color:var(--yellow);}
   .radio-pill.is-disabled{opacity:0.4; cursor:not-allowed;}
 
@@ -347,16 +353,26 @@
     padding:24px; margin-bottom:26px; text-align:center;
   }
   .countdown-label{font-family:'Baloo 2'; font-size:1rem; margin-bottom:14px; color:var(--text-muted);}
-  .countdown-grid{display:flex; justify-content:center; gap:14px; flex-wrap:wrap;}
+  /* 四格永遠在同一排：不換行，改成隨視窗寬度等比縮放。
+     clamp() 讓字級與間距在小螢幕自動縮小，min-width 拿掉才不會撐破。 */
+  .countdown-grid{
+    display:flex; justify-content:center; align-items:stretch;
+    gap:clamp(5px, 1.6vw, 14px); flex-wrap:nowrap;
+  }
   .countdown-unit{
     background:var(--bg-deep); border:1px solid var(--line); border-radius:12px;
-    padding:14px 18px; min-width:70px;
+    padding:clamp(9px, 2.2vw, 14px) clamp(6px, 2.6vw, 18px);
+    flex:1 1 0; min-width:0; max-width:110px;
   }
   .cd-num{
-    display:block; font-family:'Baloo 2'; font-size:1.8rem; font-weight:700;
+    display:block; font-family:'Baloo 2'; font-size:clamp(1.05rem, 5.2vw, 1.8rem);
+    font-weight:700; line-height:1.15; white-space:nowrap;
     background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .cd-unit{display:block; font-size:0.75rem; color:var(--text-muted); margin-top:4px;}
+  .cd-unit{
+    display:block; font-size:clamp(0.6rem, 2.2vw, 0.75rem);
+    color:var(--text-muted); margin-top:4px; white-space:nowrap;
+  }
 
   .admin-banner{
     background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
@@ -519,6 +535,39 @@
   #paycode-qr img, #paycode-qr canvas{border-radius:10px; background:#fff; padding:10px;}
 
   /* ===== 國籍標準化欄位 ===== */
+  /* 新增攜伴：這是表單裡的主要動作之一，用彩色外框讓它跳出來 */
+  .btn-add-guest{
+    display:inline-flex; align-items:center; gap:7px;
+    padding:11px 20px; border-radius:12px; cursor:pointer;
+    font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
+    color:#2A1B3D; background:var(--rainbow); border:none;
+    box-shadow:0 3px 12px rgba(155,93,229,0.35); transition:all .2s;
+  }
+  .btn-add-guest:hover{transform:translateY(-1px); box-shadow:0 5px 18px rgba(155,93,229,0.5);}
+  .btn-add-guest:disabled{
+    opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none;
+    background:var(--bg-surface-2); color:var(--text-muted);
+  }
+
+  /* 同桌 IG 的相似帳號提示 */
+  .ig-suggest{
+    display:none; margin-top:6px; padding:9px 12px; border-radius:9px;
+    background:rgba(77,150,255,0.10); border:1px solid rgba(77,150,255,0.4);
+    font-size:0.78rem; color:var(--blue); line-height:1.6;
+  }
+  .ig-suggest.show{display:block;}
+  .ig-pick{
+    display:inline-block; margin:4px 5px 0 0; padding:3px 10px; border-radius:999px;
+    background:var(--bg-surface-2); border:1px solid var(--blue); color:var(--text-light);
+    font-size:0.76rem; cursor:pointer;
+  }
+  .ig-pick:hover{background:var(--blue); color:#fff;}
+
+  /* 國籍下拉：以選單為主，找不到再用搜尋 */
+  .country-row{display:flex; gap:8px; align-items:stretch; flex-wrap:wrap;}
+  .country-row select{flex:2 1 190px; min-width:0;}
+  .country-row .country-search{flex:1 1 140px; min-width:0;}
+
   .country-hint{
     font-size:0.78rem; margin-top:5px; min-height:1.2em;
     display:flex; align-items:center; gap:5px;
@@ -680,6 +729,18 @@
   .warn-banner b{display:block; margin-bottom:6px; font-size:0.9rem;}
   .warn-banner ul{margin:0; padding-left:18px;}
   .st-na{background:rgba(183,174,218,0.12); color:var(--text-muted); border:1px dashed var(--line);}
+
+  /* 款項狀態四色：一眼分辨，不用讀字 */
+  .st-none{background:rgba(255,107,107,0.16); color:var(--red); border:1px solid rgba(255,107,107,0.45);}
+
+  /* 狀態切換鈕：只有「目前的狀態」那一顆會亮起對應顏色，其餘一律中性。
+     這樣按鈕的顏色代表「現在是什麼狀態」，而不是「按下去會變什麼顏色」——
+     否則四顆都上色時，已收款那顆永遠是綠的，看起來像已經收到錢了。 */
+  .mini-btn.is-current{font-weight:700; cursor:default;}
+  .mini-btn.is-current.cur-none{border-color:var(--red); color:var(--red); background:rgba(255,107,107,0.14);}
+  .mini-btn.is-current.cur-checking{border-color:var(--blue); color:var(--blue); background:rgba(77,150,255,0.14);}
+  .mini-btn.is-current.cur-topup{border-color:var(--orange); color:var(--orange); background:rgba(255,159,64,0.14);}
+  .mini-btn.is-current.cur-done{border-color:var(--green); color:var(--green); background:rgba(6,214,160,0.14);}
   .st-topup{background:rgba(255,159,64,0.16); color:var(--orange); border:1px solid rgba(255,159,64,0.45);}
   .st-checking{background:rgba(77,150,255,0.16); color:var(--blue); border:1px solid rgba(77,150,255,0.45);}
 </style>
@@ -822,7 +883,12 @@
         </div>
         <div class="field">
           <label for="su-country" data-i18n="field_country">國籍 / Country</label>
-          <input type="text" id="su-country" class="country-input" list="country-list"
+          <div class="country-row">
+            <select id="su-country-select" required></select>
+            <input type="text" id="su-country-search" class="country-search"
+                   data-i18n-ph="country_search_ph" placeholder="搜尋國家…">
+          </div>
+          <input type="hidden" id="su-country" class="country-input" list="country-list"
                  autocomplete="off" data-i18n-ph="field_country_ph"
                  placeholder="可直接打 TW、Taiwan 或 台灣" required>
           <div class="country-hint idle" id="su-country-hint"></div>
@@ -855,7 +921,7 @@
         <div id="existing-members" style="display:none;"></div>
         <div class="hint" id="existing-members-hint" style="display:none;" data-i18n="existing_hint">※ 已報名的人不能在這裡刪除。若有人無法出席，請回到查詢結果，針對該位送出取消申請，由主辦單位確認。</div>
         <div id="guest-rows"></div>
-        <button type="button" id="add-guest-btn" class="btn-secondary" data-i18n="guest_add_btn">+ 新增攜伴</button>
+        <button type="button" id="add-guest-btn" class="btn-add-guest" data-i18n="guest_add_btn">＋ 新增攜伴</button>
         <div class="hint" id="guest-count-hint" data-i18n="guest_hint_0">尚未新增攜伴（總人數：1人，含本人）</div>
       </div>
 
@@ -874,9 +940,11 @@
         <label data-i18n="field_tablewith">同桌需求（選填）</label>
         <div class="field-row three-col">
           <input type="text" id="su-tablewith-name" data-i18n-ph="field_tablewith_name_ph" placeholder="姓名">
-          <input type="text" id="su-tablewith-ig" data-i18n-ph="field_tablewith_ig_ph" placeholder="IG">
+          <input type="text" id="su-tablewith-ig" list="ig-list" required
+                 data-i18n-ph="field_tablewith_ig_ph" placeholder="IG（必填）">
           <input type="text" id="su-tablewith-phone" data-i18n-ph="field_tablewith_phone_ph" placeholder="電話">
         </div>
+        <div class="ig-suggest" id="ig-suggest"></div>
         <div class="hint" data-i18n="field_tablewith_hint">※務必填寫對方姓名、IG 帳號、電話其中至少兩項以避免同姓名/綽號；描述不清無法辨識者恕不安排</div>
       </div>
 
@@ -1179,6 +1247,7 @@
 </div>
 
 <datalist id="country-list"></datalist>
+<datalist id="ig-list"></datalist>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1301,6 +1370,7 @@
     edit_cancel_btn:{en:'Discard changes'},
     existing_hint:{en:'※ People already registered cannot be removed here. If someone can no longer attend, go back to your lookup result and submit a cancellation request for that person.'},
     admin_logic_7:{en:'Full phone numbers are not shown in the admin panel. Check the spreadsheet directly when you need to contact someone'},
+    country_search_ph:{en:'Search country…'},
     line_modal_close_btn:{en:'Got it'}
   };
 
@@ -1338,6 +1408,7 @@
     document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
     renumberGuests();
     updateGuestHint();
+    if(window.__rebuildCountrySelect) window.__rebuildCountrySelect();
     if(typeof adminData !== 'undefined' && adminData.length){
       renderAdminStats();
       renderAdminList();
@@ -1391,6 +1462,17 @@
   const payOnsiteRadio = payOnsitePill.querySelector('input');
   const payOnlineRadio = payOnlinePill.querySelector('input');
   const paymethodWarn = document.getElementById('paymethod-warn');
+
+  // 選中的那顆加高亮外框（純視覺，不影響邏輯）
+  function syncPayPills(){
+    document.querySelectorAll('input[name="paymethod"]').forEach(function(r){
+      r.closest('.radio-pill').classList.toggle('is-checked', r.checked);
+    });
+  }
+  document.querySelectorAll('input[name="paymethod"]').forEach(function(r){
+    r.addEventListener('change', syncPayPills);
+  });
+  syncPayPills();
   const maxGuests = 9;
   let guestCount = 0;
 
@@ -1645,6 +1727,16 @@
       return;
     }
 
+    // 同桌 IG 必填
+    const twIg = document.getElementById('su-tablewith-ig');
+    if(!twIg.value.trim()){
+      showError(currentLang === 'en'
+        ? 'Please fill in the IG handle of the person you want to sit with.'
+        : '請填寫想同桌對象的 IG 帳號');
+      twIg.focus();
+      return;
+    }
+
     // 國籍必須是清單裡的國家（打錯字擋在這裡，不會寫進試算表變成髒資料）
     const badCountry = validateAllCountries();
     if(badCountry){
@@ -1718,6 +1810,7 @@
       setTimeout(()=> msg.classList.remove('show'), 6000);
       openLineModal(body.id || '');
       signupForm.reset();
+      if(window.__setCountrySelect) window.__setCountrySelect('');
       guestRowsContainer.innerHTML = '';
       guestCount = 0;
       updateGuestHint();
@@ -1739,7 +1832,7 @@
     editingGroup = g;
 
     document.getElementById('su-name').value = g.name || '';
-    document.getElementById('su-country').value = g.country || '';
+    if(window.__setCountrySelect) window.__setCountrySelect(g.country || '');
     document.getElementById('su-email').value = g.email || '';
     document.getElementById('su-phone').value = g.phone || '';
     document.getElementById('su-ig').value = g.ig || '';
@@ -1791,6 +1884,7 @@
 
   function exitEditMode(){
     editingGroup = null;
+    if(window.__setCountrySelect) window.__setCountrySelect('');
     const phoneInput = document.getElementById('su-phone');
     phoneInput.readOnly = false;
     phoneInput.style.opacity = '';
@@ -2027,25 +2121,196 @@
     input._countryUpdate = update;
   }
 
-  bindCountryInput(document.getElementById('su-country'), document.getElementById('su-country-hint'));
+  /**
+   * 主報名人的國籍：下拉選單為主、搜尋框為輔。
+   *
+   * 值存在一個 hidden input（#su-country）裡，因為表單送出、修改模式回填、
+   * 送出前驗證都是對那個欄位操作，換成下拉之後不用改那些地方。
+   * 因為只能從選單挑，清單外的國家從源頭就不可能出現。
+   */
+  (function initCountrySelect(){
+    const sel = document.getElementById('su-country-select');
+    const search = document.getElementById('su-country-search');
+    const hidden = document.getElementById('su-country');
+    const hint = document.getElementById('su-country-hint');
+    if(!sel) return;
+
+    /** 依關鍵字重建選項；keyword 空字串代表列出全部 */
+    function build(keyword){
+      const kw = countryKey(keyword || '');
+      const keep = sel.value;
+      sel.innerHTML = '';
+
+      const ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = currentLang === 'en' ? 'Select your country…' : '請選擇國籍…';
+      sel.appendChild(ph);
+
+      let shown = 0;
+      COUNTRIES.forEach(function(row){
+        const code = row[0], zh = row[1], en = row[2];
+        if(kw){
+          const hay = countryKey(code + zh + en);
+          if(hay.indexOf(kw) < 0) return;
+        }
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = flagOf(code) + '  ' + code + ' · ' + (currentLang === 'en' ? en : zh + ' ' + en);
+        sel.appendChild(opt);
+        shown++;
+      });
+
+      // 篩選後原本選的還在就保留，避免打字時把已選的國家弄不見
+      if(keep && sel.querySelector('option[value="' + keep + '"]')) sel.value = keep;
+
+      if(kw && shown === 0){
+        hint.className = 'country-hint unknown';
+        hint.textContent = currentLang === 'en'
+          ? 'No country matches "' + keyword + '"'
+          : '找不到符合「' + keyword + '」的國家';
+      } else if(kw){
+        hint.className = 'country-hint idle';
+        hint.textContent = (currentLang === 'en' ? shown + ' matches' : '找到 ' + shown + ' 個國家');
+      }
+    }
+
+    function sync(){
+      hidden.value = sel.value;
+      if(sel.value){
+        hint.className = 'country-hint ok';
+        hint.textContent = flagOf(sel.value) + ' ' + sel.value + ' · ' + countryDisplayName(sel.value);
+      } else {
+        hint.className = 'country-hint idle';
+        hint.textContent = '';
+      }
+    }
+
+    sel.addEventListener('change', sync);
+    search.addEventListener('input', function(){ build(search.value); });
+
+    // 只剩一個結果時直接幫忙選起來，省一次點擊
+    search.addEventListener('change', function(){
+      const opts = sel.querySelectorAll('option[value]:not([value=""])');
+      if(opts.length === 1){ sel.value = opts[0].value; sync(); }
+    });
+
+    build('');
+    window.__rebuildCountrySelect = function(){ build(search.value); sync(); };
+    window.__setCountrySelect = function(code){
+      search.value = '';
+      build('');
+      sel.value = code || '';
+      sync();
+    };
+  })();
 
   /** 送出前最後再正規化一次，避免使用者打完沒離開欄位就直接按送出 */
   function readCountry(input){
     return normalizeCountry(input && input.value).code;
   }
 
-  /** 送出前檢查表單上所有國籍欄位；有問題就回傳那個打錯的字串，沒問題回傳空字串 */
+  /** 送出前檢查所有國籍欄位；有問題就回傳那個打錯的字串，沒問題回傳空字串 */
   function validateAllCountries(){
-    const inputs = [document.getElementById('su-country')]
-      .concat(Array.from(guestRowsContainer.querySelectorAll('.guest-country-input')));
-    for(let i = 0; i < inputs.length; i++){
-      const el = inputs[i];
-      if(!el || !el.value.trim()) continue;
+    const main = document.getElementById('su-country');
+    if(!main.value.trim()){
+      document.getElementById('su-country-select').focus();
+      return currentLang === 'en' ? '(not selected)' : '（未選擇）';
+    }
+    const guests = Array.from(guestRowsContainer.querySelectorAll('.guest-country-input'));
+    for(let i = 0; i < guests.length; i++){
+      const el = guests[i];
+      if(!el.value.trim()) continue;
       const r = normalizeCountry(el.value);
       if(!r.ok){ el.focus(); return el.value.trim(); }
     }
     return '';
   }
+
+  // ==========================================================
+  // 同桌對象的 IG：可以從清單挑，也可以自己打
+  //
+  // 自己打的時候會做「模糊比對」提醒：不只比對開頭，字串中間出現也算。
+  // 例如清單裡有 @xiaoming_tw，使用者打 ming 也會被提示。
+  // 比對前會把 @、大小寫、底線、點號都拉平，因為這些是 IG 帳號最常打錯的地方。
+  //
+  // 清單只包含報名時勾了「願意公開 IG」的人 —— 沒勾的人不同意曝光，
+  // 不應該出現在別人的選單裡。
+  // ==========================================================
+  let igDirectory = [];
+
+  /** 把 IG 帳號拉平成可比對的形式 */
+  function igKey(v){
+    return String(v || '').trim().toLowerCase().replace(/^@/, '').replace(/[._\s-]/g, '');
+  }
+
+  async function loadIgDirectory(){
+    const r = await postToBackend({ type:'igList' });
+    const body = r.body || {};
+    if(body.result !== 'success') return;
+    igDirectory = body.igs || [];
+
+    const dl = document.getElementById('ig-list');
+    dl.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    igDirectory.forEach(function(ig){
+      const opt = document.createElement('option');
+      opt.value = ig;
+      frag.appendChild(opt);
+    });
+    dl.appendChild(frag);
+  }
+
+  /** 找出「包含關係」的相似帳號：輸入包含清單項目、或清單項目包含輸入，都算 */
+  function findSimilarIgs(input){
+    const k = igKey(input);
+    if(k.length < 2) return { exact:false, similar:[] };
+
+    let exact = false;
+    const similar = [];
+    igDirectory.forEach(function(ig){
+      const t = igKey(ig);
+      if(t === k){ exact = true; return; }
+      if(t.indexOf(k) >= 0 || k.indexOf(t) >= 0) similar.push(ig);
+    });
+    return { exact: exact, similar: similar.slice(0, 6) };
+  }
+
+  (function initIgSuggest(){
+    const input = document.getElementById('su-tablewith-ig');
+    const box = document.getElementById('ig-suggest');
+    if(!input) return;
+
+    function update(){
+      const v = input.value.trim();
+      if(!v){ box.classList.remove('show'); box.innerHTML = ''; return; }
+
+      const res = findSimilarIgs(v);
+      if(res.exact || res.similar.length === 0){
+        box.classList.remove('show');
+        box.innerHTML = '';
+        return;
+      }
+
+      box.innerHTML = (currentLang === 'en'
+          ? 'Did you mean one of these? Tap to use:'
+          : '找到相似的帳號，你是不是要找這幾個？點一下就會填入：')
+        + '<br>' + res.similar.map(function(ig){
+            return '<span class="ig-pick" data-ig="' + escapeHtml(ig) + '">' + escapeHtml(ig) + '</span>';
+          }).join('');
+      box.classList.add('show');
+    }
+
+    input.addEventListener('input', update);
+    input.addEventListener('focus', update);
+
+    box.addEventListener('click', function(e){
+      const pick = e.target.closest('.ig-pick');
+      if(!pick) return;
+      input.value = pick.dataset.ig;
+      box.classList.remove('show');
+      box.innerHTML = '';
+    });
+  })();
 
   // ---- toast ----
   let toastTimer = null;
@@ -2181,7 +2446,11 @@
       if(m.cancelled){
         right = '<span class="st-badge st-void">' + (currentLang==='en'?'Cancelled':'已取消') + '</span>';
       } else if(m.cancelPending){
-        right = '<span class="st-badge st-topup">' + (currentLang==='en'?'Cancel requested':'取消申請處理中') + '</span>';
+        // 申請中還能反悔：最常見的情況就是「本來不能來，後來又可以了」，
+        // 沒有這顆按鈕的話使用者只能回頭麻煩主辦
+        right = '<span class="st-badge st-topup">' + (currentLang==='en'?'Cancel requested':'取消申請處理中') + '</span>'
+              + '<button type="button" class="mini-btn" data-withdraw-member="' + m.index + '">'
+              + (currentLang==='en'?'Undo request':'撤回申請') + '</button>';
       } else {
         right = '<button type="button" class="mini-btn danger" data-cancel-member="' + m.index + '">'
               + (currentLang==='en'?'Request cancel':'申請取消') + '</button>';
@@ -2235,6 +2504,38 @@
       showToast(body.message || (currentLang === 'en' ? '⚠️ Request failed' : '⚠️ 申請失敗，請稍後再試'));
       btn.disabled = false;
       btn.textContent = currentLang === 'en' ? 'Request cancel' : '申請取消';
+    }
+  });
+
+  // ---- 撤回取消申請 ----
+  document.getElementById('lr-members').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-withdraw-member]');
+    if(!btn || !lastLookupPhone) return;
+
+    const idx = btn.dataset.withdrawMember;
+    const member = (lastLookupData.members || []).filter(m=> String(m.index) === String(idx))[0];
+    const who = member ? member.name : '';
+
+    const ok = confirm(currentLang === 'en'
+      ? 'Undo the cancellation request for "' + who + '"? They will stay registered.'
+      : '確定要撤回「' + who + '」的取消申請嗎？\n撤回後這位維持出席，費用照原本計算。');
+    if(!ok) return;
+
+    btn.disabled = true;
+    btn.textContent = currentLang === 'en' ? 'Undoing…' : '處理中…';
+
+    const r = await postToBackend({
+      type:'withdrawCancel', phone: lastLookupPhone, memberIndex: idx
+    });
+    const body = r.body || {};
+
+    if(body.result === 'success'){
+      showToast(currentLang === 'en' ? '✅ Request withdrawn' : '✅ 已撤回取消申請');
+      await doLookup(lastLookupPhone);
+    } else {
+      showToast(body.message || (currentLang === 'en' ? '⚠️ Failed' : '⚠️ 撤回失敗，請稍後再試'));
+      btn.disabled = false;
+      btn.textContent = currentLang === 'en' ? 'Undo request' : '撤回申請';
     }
   });
 
@@ -2519,11 +2820,17 @@
       : '<div class="adm-sub" style="padding:0;">' + L('尚無匯款回報','No transfer reported yet') + '</div>';
 
     // ── 款項狀態切換 ──
-    const statusBtns = [PS.NONE, PS.CHECKING, PS.TOPUP, PS.DONE].map(s=>{
-      const on = (g.payStatus === s);
-      const cls = (s === PS.DONE) ? 'mini-btn ok' : 'mini-btn';
-      return '<button class="' + cls + '" data-act="pay" data-status="' + s + '"' + (on ? ' disabled' : '') + '>'
-        + (on ? '● ' : '') + (currentLang==='en' ? PS_META[s].en : s) + '</button>';
+    // 只有「目前的狀態」那一顆亮起對應顏色，其他一律中性。
+    // 四顆都上色的話，已收款那顆永遠是綠的，看起來像錢已經收到了。
+    const CUR_CLS = {
+      [PS.NONE]:'cur-none', [PS.CHECKING]:'cur-checking',
+      [PS.TOPUP]:'cur-topup', [PS.DONE]:'cur-done'
+    };
+    const statusBtns = [PS.NONE, PS.CHECKING, PS.TOPUP, PS.DONE].map(st=>{
+      const on = (g.payStatus === st);
+      const cls = 'mini-btn' + (on ? ' is-current ' + CUR_CLS[st] : '');
+      return '<button class="' + cls + '" data-act="pay" data-status="' + st + '"' + (on ? ' disabled' : '') + '>'
+        + (on ? '● ' : '') + (currentLang==='en' ? PS_META[st].en : st) + '</button>';
     }).join('');
 
     // ── 編輯表單 ──
@@ -2685,6 +2992,9 @@
       card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = false);
     }
   });
+
+  // 頁面載入後在背景抓可選的 IG 清單，抓不到也不影響報名（只是少了建議）
+  loadIgDirectory().catch(function(){});
 
   // ---- countdown to the event ----
   const EVENT_TIME = new Date('2026-10-30T19:00:00+08:00').getTime();
