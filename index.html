@@ -256,13 +256,19 @@
   }
   .radio-pill{
     flex:1 1 0; min-width:0; max-width:220px;
-    display:flex; align-items:center; justify-content:center; gap:8px;
+    display:flex; align-items:center; justify-content:center; gap:6px;
     background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    padding:12px 10px; cursor:pointer; font-weight:600;
-    font-size:clamp(0.78rem, 3.1vw, 0.9rem); white-space:nowrap;
+    padding:12px 8px; cursor:pointer; font-weight:600;
+    font-size:clamp(0.75rem, 3vw, 0.9rem); white-space:nowrap;
+    transition:border-color .2s, background .2s;
   }
+  /* 藏掉原生圓鈕：它連同間距會吃掉約 24px，正是文字擠出外框的主因。
+     選取狀態改用整顆按鈕的外框、底色與前面那個勾來表示。 */
+  .radio-pill input{position:absolute; opacity:0; width:0; height:0; pointer-events:none;}
+  .radio-pill::before{content:'○'; font-size:0.85em; color:var(--text-muted); flex:none;}
+  .radio-pill.is-checked::before{content:'✓'; color:var(--yellow); font-weight:700;}
+  .radio-pill span{overflow:hidden; text-overflow:ellipsis;}
   .radio-pill.is-checked{border-color:var(--yellow); background:rgba(255,209,102,0.10);}
-  .radio-pill input{accent-color:var(--yellow);}
   .radio-pill.is-disabled{opacity:0.4; cursor:not-allowed;}
 
   .agree-row{
@@ -536,32 +542,46 @@
 
   /* ===== 國籍標準化欄位 ===== */
   /* 新增攜伴：這是表單裡的主要動作之一，用彩色外框讓它跳出來 */
+  /* 彩虹框線 + 彩虹光暈：底色維持透明，只有邊框是漸層。
+     漸層不能直接用在 border-color，所以用兩層背景疊：
+     底層鋪漸層（border-box）、上層用卡片底色蓋回內部（padding-box），
+     露出來的那 2px 邊框就是彩虹。 */
   .btn-add-guest{
     display:inline-flex; align-items:center; gap:7px;
-    padding:11px 20px; border-radius:12px; cursor:pointer;
+    padding:11px 22px; border-radius:12px; cursor:pointer;
     font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
-    color:#2A1B3D; background:var(--rainbow); border:none;
-    box-shadow:0 3px 12px rgba(155,93,229,0.35); transition:all .2s;
+    color:var(--text-light);
+    border:2px solid transparent;
+    background:
+      linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
+      var(--rainbow) border-box;
+    box-shadow:0 0 14px rgba(155,93,229,0.30), 0 0 26px rgba(255,107,107,0.16);
+    transition:box-shadow .25s, transform .2s;
   }
-  .btn-add-guest:hover{transform:translateY(-1px); box-shadow:0 5px 18px rgba(155,93,229,0.5);}
+  .btn-add-guest:hover{
+    transform:translateY(-1px);
+    box-shadow:0 0 20px rgba(155,93,229,0.55), 0 0 38px rgba(255,107,107,0.28);
+  }
   .btn-add-guest:disabled{
-    opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none;
-    background:var(--bg-surface-2); color:var(--text-muted);
+    opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none;
+    background:var(--bg-surface-2); border-color:var(--line); color:var(--text-muted);
   }
 
   /* 同桌 IG 的相似帳號提示 */
+  /* 同桌 IG 的自訂下拉清單 */
   .ig-suggest{
-    display:none; margin-top:6px; padding:9px 12px; border-radius:9px;
-    background:rgba(77,150,255,0.10); border:1px solid rgba(77,150,255,0.4);
-    font-size:0.78rem; color:var(--blue); line-height:1.6;
+    display:none; margin-top:6px; border-radius:10px;
+    background:var(--bg-surface-2); border:1px solid var(--purple);
+    max-height:220px; overflow-y:auto;
   }
   .ig-suggest.show{display:block;}
-  .ig-pick{
-    display:inline-block; margin:4px 5px 0 0; padding:3px 10px; border-radius:999px;
-    background:var(--bg-surface-2); border:1px solid var(--blue); color:var(--text-light);
-    font-size:0.76rem; cursor:pointer;
+  .ig-opt{
+    padding:9px 13px; font-size:0.84rem; cursor:pointer;
+    border-bottom:1px solid var(--line); color:var(--text-light);
   }
-  .ig-pick:hover{background:var(--blue); color:#fff;}
+  .ig-opt:last-child{border-bottom:none;}
+  .ig-opt:hover, .ig-opt.active{background:var(--purple); color:#fff;}
+  .ig-empty{padding:10px 13px; font-size:0.78rem; color:var(--text-muted);}
 
   /* 國籍下拉：以選單為主，找不到再用搜尋 */
   .country-row{display:flex; gap:8px; align-items:stretch; flex-wrap:wrap;}
@@ -909,13 +929,8 @@
       <div class="field">
         <label for="su-ig" data-i18n="field_ig">Instagram 帳號</label>
         <input type="text" id="su-ig" placeholder="@your_ig" required>
-        <div class="hint" data-i18n="field_ig_hint">※務必填寫，以利匯款或對帳有誤時聯繫</div>
+        <div class="hint" data-i18n="field_ig_hint">※務必填寫，以利匯款或對帳有誤時聯繫；此帳號會出現在其他賓客的「想同桌對象」選單中，方便大家指名同桌</div>
       </div>
-      <div class="toggle-row">
-        <input type="checkbox" id="su-ig-public">
-        <label for="su-ig-public"><span data-i18n="field_ig_public">公開我的 IG 帳號，方便現場交友</span><span class="sub" data-i18n="field_ig_public_sub">勾選後，你的 IG 帳號可能會顯示給其他報名賓客</span></label>
-      </div>
-
       <div class="guest-section">
         <label data-i18n="guest_label">攜伴（不含本人，最多 9 位，總人數上限 10 人）</label>
         <div id="existing-members" style="display:none;"></div>
@@ -940,7 +955,7 @@
         <label data-i18n="field_tablewith">同桌需求（選填）</label>
         <div class="field-row three-col">
           <input type="text" id="su-tablewith-name" data-i18n-ph="field_tablewith_name_ph" placeholder="姓名">
-          <input type="text" id="su-tablewith-ig" list="ig-list" required
+          <input type="text" id="su-tablewith-ig" autocomplete="off" required
                  data-i18n-ph="field_tablewith_ig_ph" placeholder="IG（必填）">
           <input type="text" id="su-tablewith-phone" data-i18n-ph="field_tablewith_phone_ph" placeholder="電話">
         </div>
@@ -1247,7 +1262,6 @@
 </div>
 
 <datalist id="country-list"></datalist>
-<datalist id="ig-list"></datalist>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1771,7 +1785,7 @@
       email: document.getElementById('su-email').value.trim(),
       phone: document.getElementById('su-phone').value.trim(),
       ig: document.getElementById('su-ig').value.trim(),
-      igPublic: document.getElementById('su-ig-public').checked,
+      igPublic: false,   // 「願意公開 IG」勾選已移除，欄位保留但不再使用
       guests: guests,
       notes: document.getElementById('su-notes').value.trim(),
       tableWithName: document.getElementById('su-tablewith-name').value.trim(),
@@ -1836,7 +1850,6 @@
     document.getElementById('su-email').value = g.email || '';
     document.getElementById('su-phone').value = g.phone || '';
     document.getElementById('su-ig').value = g.ig || '';
-    document.getElementById('su-ig-public').checked = !!g.igPublic;
     document.getElementById('su-notes').value = g.notes || '';
     document.getElementById('su-tablewith-name').value = g.tableWithName || '';
     document.getElementById('su-tablewith-ig').value = g.tableWithIg || '';
@@ -2227,18 +2240,20 @@
   }
 
   // ==========================================================
-  // 同桌對象的 IG：可以從清單挑，也可以自己打
+  // 同桌對象的 IG：自訂下拉清單
   //
-  // 自己打的時候會做「模糊比對」提醒：不只比對開頭，字串中間出現也算。
-  // 例如清單裡有 @xiaoming_tw，使用者打 ming 也會被提示。
-  // 比對前會把 @、大小寫、底線、點號都拉平，因為這些是 IG 帳號最常打錯的地方。
+  // 沒有用原生的 <datalist>，因為各家瀏覽器對「中間字比對」的支援不一致
+  // （有的只比對開頭），排桌要靠這個對應到人，不能讓行為隨瀏覽器而異。
   //
-  // 清單只包含報名時勾了「願意公開 IG」的人 —— 沒勾的人不同意曝光，
-  // 不應該出現在別人的選單裡。
+  // 比對規則：把 @、大小寫、底線、點號、空白都拉平之後做「包含」比對，
+  // 所以打 ming 找得到 xiaoming_tw，打 @Ming.Ming 也找得到 mingming。
+  //
+  // 清單列出所有已報名者的 IG（已取消的不列），只有帳號字串，
+  // 沒有姓名、電話或其他個資。
   // ==========================================================
   let igDirectory = [];
 
-  /** 把 IG 帳號拉平成可比對的形式 */
+  /** 把 IG 帳號拉平成可比對的形式：忽略 @、大小寫、底線、點號、空白 */
   function igKey(v){
     return String(v || '').trim().toLowerCase().replace(/^@/, '').replace(/[._\s-]/g, '');
   }
@@ -2248,67 +2263,82 @@
     const body = r.body || {};
     if(body.result !== 'success') return;
     igDirectory = body.igs || [];
-
-    const dl = document.getElementById('ig-list');
-    dl.innerHTML = '';
-    const frag = document.createDocumentFragment();
-    igDirectory.forEach(function(ig){
-      const opt = document.createElement('option');
-      opt.value = ig;
-      frag.appendChild(opt);
-    });
-    dl.appendChild(frag);
   }
 
-  /** 找出「包含關係」的相似帳號：輸入包含清單項目、或清單項目包含輸入，都算 */
-  function findSimilarIgs(input){
+  /** 找出所有「包含關係」的帳號：輸入包含在項目裡、或項目包含在輸入裡都算 */
+  function filterIgs(input){
     const k = igKey(input);
-    if(k.length < 2) return { exact:false, similar:[] };
-
-    let exact = false;
-    const similar = [];
-    igDirectory.forEach(function(ig){
+    if(!k) return igDirectory.slice(0, 80);
+    return igDirectory.filter(function(ig){
       const t = igKey(ig);
-      if(t === k){ exact = true; return; }
-      if(t.indexOf(k) >= 0 || k.indexOf(t) >= 0) similar.push(ig);
-    });
-    return { exact: exact, similar: similar.slice(0, 6) };
+      return t.indexOf(k) >= 0 || k.indexOf(t) >= 0;
+    }).slice(0, 80);
   }
 
-  (function initIgSuggest(){
+  (function initIgPicker(){
     const input = document.getElementById('su-tablewith-ig');
     const box = document.getElementById('ig-suggest');
     if(!input) return;
 
-    function update(){
-      const v = input.value.trim();
-      if(!v){ box.classList.remove('show'); box.innerHTML = ''; return; }
+    let activeIdx = -1;
+    let current = [];
 
-      const res = findSimilarIgs(v);
-      if(res.exact || res.similar.length === 0){
-        box.classList.remove('show');
-        box.innerHTML = '';
+    function close(){
+      box.classList.remove('show');
+      box.innerHTML = '';
+      activeIdx = -1;
+    }
+
+    function render(){
+      current = filterIgs(input.value);
+
+      if(igDirectory.length === 0){ close(); return; }
+
+      if(current.length === 0){
+        box.innerHTML = '<div class="ig-empty">'
+          + (currentLang === 'en'
+              ? 'No registered IG matches this — you can still type it in manually.'
+              : '目前沒有相符的已報名帳號，你仍然可以直接手動輸入。')
+          + '</div>';
+        box.classList.add('show');
+        activeIdx = -1;
         return;
       }
 
-      box.innerHTML = (currentLang === 'en'
-          ? 'Did you mean one of these? Tap to use:'
-          : '找到相似的帳號，你是不是要找這幾個？點一下就會填入：')
-        + '<br>' + res.similar.map(function(ig){
-            return '<span class="ig-pick" data-ig="' + escapeHtml(ig) + '">' + escapeHtml(ig) + '</span>';
-          }).join('');
+      box.innerHTML = current.map(function(ig, i){
+        return '<div class="ig-opt' + (i === activeIdx ? ' active' : '') + '" data-ig="'
+          + escapeHtml(ig) + '">' + escapeHtml(ig) + '</div>';
+      }).join('');
       box.classList.add('show');
     }
 
-    input.addEventListener('input', update);
-    input.addEventListener('focus', update);
+    function choose(ig){
+      input.value = ig;
+      close();
+    }
 
-    box.addEventListener('click', function(e){
-      const pick = e.target.closest('.ig-pick');
-      if(!pick) return;
-      input.value = pick.dataset.ig;
-      box.classList.remove('show');
-      box.innerHTML = '';
+    input.addEventListener('focus', render);
+    input.addEventListener('input', function(){ activeIdx = -1; render(); });
+
+    // 鍵盤上下選、Enter 確認、Esc 關閉
+    input.addEventListener('keydown', function(e){
+      if(!box.classList.contains('show') || current.length === 0) return;
+      if(e.key === 'ArrowDown'){ e.preventDefault(); activeIdx = Math.min(activeIdx + 1, current.length - 1); render(); }
+      else if(e.key === 'ArrowUp'){ e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); render(); }
+      else if(e.key === 'Enter' && activeIdx >= 0){ e.preventDefault(); choose(current[activeIdx]); }
+      else if(e.key === 'Escape'){ close(); }
+    });
+
+    box.addEventListener('mousedown', function(e){
+      // 用 mousedown 而不是 click：blur 會先觸發並把清單關掉，click 就永遠收不到
+      const opt = e.target.closest('.ig-opt');
+      if(!opt) return;
+      e.preventDefault();
+      choose(opt.dataset.ig);
+    });
+
+    document.addEventListener('click', function(e){
+      if(e.target !== input && !box.contains(e.target)) close();
     });
   })();
 
@@ -2886,7 +2916,7 @@
         + '<div class="adm-sec"><h5>' + L('成員','Members') + '</h5>' + memHtml + '</div>'
         + '<div class="adm-sec"><h5>' + L('匯款回報','Transfer reports') + '</h5>' + payHtml + '</div>'
         + '<div class="adm-sec"><h5>' + L('其他資料','Details') + '</h5><dl class="kv">'
-          + '<dt>IG</dt><dd>' + escapeHtml(g.ig || '—') + (g.igPublic ? ' <span class="mem-ig">(' + L('願意公開','public') + ')</span>' : '') + '</dd>'
+          + '<dt>IG</dt><dd>' + escapeHtml(g.ig || '—') + '</dd>'
           + '<dt>' + L('同桌需求','Table request') + '</dt><dd>' + escapeHtml(g.tableWith || '—') + '</dd>'
           + '<dt>' + L('備註','Notes') + '</dt><dd>' + escapeHtml(g.notes || '—') + '</dd>'
           + '<dt>' + L('最後修改','Last edited') + '</dt><dd>' + escapeHtml(g.lastEdited || '—') + '</dd>'
