@@ -258,18 +258,31 @@
     flex:1 1 0; min-width:0; max-width:220px;
     display:flex; align-items:center; justify-content:center; gap:6px;
     background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    padding:12px 8px; cursor:pointer; font-weight:600;
-    font-size:clamp(0.75rem, 3vw, 0.9rem); white-space:nowrap;
+    padding:13px 10px; cursor:pointer; font-weight:600;
+    font-size:clamp(0.78rem, 3vw, 0.92rem); white-space:nowrap;
     transition:border-color .2s, background .2s;
   }
-  /* 藏掉原生圓鈕：它連同間距會吃掉約 24px，正是文字擠出外框的主因。
-     選取狀態改用整顆按鈕的外框、底色與前面那個勾來表示。 */
+  /* 藏掉原生圓鈕，自己畫一顆：原生的在各家瀏覽器大小不一，
+     而且連同預設間距會吃掉約 24px，正是先前文字擠出外框的主因。
+     自己畫可以精準控制尺寸，選取狀態也比原生明顯得多。 */
   .radio-pill input{position:absolute; opacity:0; width:0; height:0; pointer-events:none;}
-  .radio-pill::before{content:'○'; font-size:0.85em; color:var(--text-muted); flex:none;}
-  .radio-pill.is-checked::before{content:'✓'; color:var(--yellow); font-weight:700;}
+  .radio-pill::before{
+    content:''; flex:none; width:17px; height:17px; border-radius:50%;
+    border:2px solid var(--text-muted); background:transparent;
+    transition:all .18s;
+  }
+  .radio-pill.is-checked::before{
+    border-color:var(--yellow); background:var(--yellow);
+    box-shadow:inset 0 0 0 3.5px var(--bg-deep);   /* 中間挖空 → 甜甜圈狀的實心點 */
+  }
+  .radio-pill.is-checked{
+    border-color:var(--yellow); background:rgba(255,209,102,0.13);
+    color:var(--yellow);
+  }
+  .radio-pill:hover{border-color:var(--yellow);}
   .radio-pill span{overflow:hidden; text-overflow:ellipsis;}
-  .radio-pill.is-checked{border-color:var(--yellow); background:rgba(255,209,102,0.10);}
   .radio-pill.is-disabled{opacity:0.4; cursor:not-allowed;}
+  .radio-pill.is-disabled:hover{border-color:var(--line);}
 
   .agree-row{
     display:flex; align-items:flex-start; gap:10px; margin:18px 0;
@@ -356,28 +369,35 @@
 
   .countdown-card{
     background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:24px; margin-bottom:26px; text-align:center;
+    padding:20px 10px; margin-bottom:26px; text-align:center;
   }
-  .countdown-label{font-family:'Baloo 2'; font-size:1rem; margin-bottom:14px; color:var(--text-muted);}
-  /* 四格永遠在同一排：不換行，改成隨視窗寬度等比縮放。
-     clamp() 讓字級與間距在小螢幕自動縮小，min-width 拿掉才不會撐破。 */
+  .countdown-label{font-family:'Baloo 2'; font-size:1rem; margin-bottom:10px; color:var(--text-muted);}
+  /* 四格永遠同一排。拿掉每格的外框與內距，把空間全留給數字。
+     漸層畫在「整排」而不是每一格：先前每個數字各自套一份 var(--rainbow)，
+     兩位數的窄元素只取樣到漸層中間一小段，所以看起來只有黃綠。
+     改成父層鋪一次漸層再用 background-clip:text 裁切，
+     四組數字就會各自落在彩虹的不同段落，整排看下來是完整的彩虹。 */
   .countdown-grid{
-    display:flex; justify-content:center; align-items:stretch;
-    gap:clamp(5px, 1.6vw, 14px); flex-wrap:nowrap;
+    display:flex; justify-content:center; align-items:flex-end;
+    gap:clamp(4px, 1.4vw, 12px); flex-wrap:nowrap;
+    background:var(--rainbow);
+    -webkit-background-clip:text; background-clip:text;
   }
   .countdown-unit{
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:12px;
-    padding:clamp(9px, 2.2vw, 14px) clamp(6px, 2.6vw, 18px);
-    flex:1 1 0; min-width:0; max-width:110px;
+    flex:1 1 0; min-width:0; max-width:150px;
+    background:none; border:none; padding:0;
   }
   .cd-num{
-    display:block; font-family:'Baloo 2'; font-size:clamp(1.05rem, 5.2vw, 1.8rem);
-    font-weight:700; line-height:1.15; white-space:nowrap;
-    background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
+    display:block; font-family:'Baloo 2';
+    font-size:clamp(1.7rem, 13vw, 3.6rem);
+    font-weight:700; line-height:1.05; white-space:nowrap;
+    -webkit-text-fill-color:transparent; color:transparent;
   }
+  /* 單位文字不要跟著透明，否則會被父層漸層一起裁掉而看不見 */
   .cd-unit{
-    display:block; font-size:clamp(0.6rem, 2.2vw, 0.75rem);
-    color:var(--text-muted); margin-top:4px; white-space:nowrap;
+    display:block; font-size:clamp(0.62rem, 2.4vw, 0.8rem);
+    -webkit-text-fill-color:var(--text-muted); color:var(--text-muted);
+    margin-top:2px; white-space:nowrap;
   }
 
   .admin-banner{
@@ -548,18 +568,16 @@
      露出來的那 2px 邊框就是彩虹。 */
   .btn-add-guest{
     display:inline-flex; align-items:center; gap:7px;
-    padding:9px 20px; border-radius:12px; cursor:pointer;
+    padding:8px 18px; border-radius:12px; cursor:pointer;
     font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
     color:var(--text-light);
     border:2px solid transparent;
     background:
       linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
       var(--rainbow) border-box;
-    transition:box-shadow .25s, transform .2s;
+    transition:transform .2s;
   }
-  .btn-add-guest:hover{
-    transform:translateY(-1px);
-  }
+  .btn-add-guest:hover{transform:translateY(-1px);}
   .btn-add-guest:disabled{
     opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none;
     background:var(--bg-surface-2); border-color:var(--line); color:var(--text-muted);
@@ -930,7 +948,7 @@
         <div class="hint" data-i18n="field_ig_hint">※務必填寫，以利匯款或對帳有誤時聯繫；此帳號會出現在其他賓客的「想同桌對象」選單中，方便大家指名同桌</div>
       </div>
       <div class="guest-section">
-        <label data-i18n="guest_label">攜伴（不含本人，最多 9 位，總人數上限 10 人）</label>
+        <label data-i18n="guest_label">攜伴（不含本人）</label>
         <div id="existing-members" style="display:none;"></div>
         <div class="hint" id="existing-members-hint" style="display:none;" data-i18n="existing_hint">※ 已報名的人不能在這裡刪除。若有人無法出席，請回到查詢結果，針對該位送出取消申請，由主辦單位確認。</div>
         <div id="guest-rows"></div>
@@ -1297,7 +1315,7 @@
     field_ig_hint:{en:'※ Required — helps us reach you if there\'s a payment or reconciliation issue'},
     field_ig_public:{en:'Make my IG handle visible to other guests'},
     field_ig_public_sub:{en:'If checked, your IG handle may be shown to other registered guests'},
-    guest_label:{en:'Plus-ones (not including yourself, up to 9, 10 people max total)'},
+    guest_label:{en:'Plus-ones (not including yourself)'},
     guest_add_btn:{en:'+ Add plus-one'},
     subtotal_label:{en:'Amount Due (Subtotal)'},
     subtotal_hint:{en:'= (plus-ones + you) × NT$1,200 / person'},
@@ -1485,7 +1503,7 @@
     r.addEventListener('change', syncPayPills);
   });
   syncPayPills();
-  const maxGuests = 9;
+  // 攜伴人數沒有上限（原本限制 9 位／總計 10 人，已取消）
   let guestCount = 0;
 
   function guestLabelText(n){
@@ -1513,7 +1531,7 @@
         ? (editingGroup ? `目前這組共 ${base} 人` : '尚未新增攜伴（總人數：1人，含本人）')
         : `新增 ${guestCount} 位（總人數：${total}人）`;
     }
-    addGuestBtn.disabled = total >= 10;
+    addGuestBtn.disabled = false;
     updatePaymethodAvailability();
     const subtotalEl = document.getElementById('subtotal-amount');
     if(subtotalEl){
@@ -1543,7 +1561,7 @@
     return kind==='name' ? '姓名' : kind==='country' ? '國籍（如 TW）' : 'IG';
   }
   function addGuestRow(){
-    if(totalHeadcount() >= 10) return;
+
     guestCount++;
     const row = document.createElement('div');
     row.className = 'guest-row';
