@@ -249,40 +249,19 @@
     background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
   }
 
-  /* 兩顆永遠並排且置中，不換行 */
-  .radio-group{
-    display:flex; justify-content:center; align-items:stretch;
-    gap:10px; flex-wrap:nowrap; margin-bottom:8px;
-  }
+  /* 大按鈕 + 空間不夠就換行（原本的做法）。
+     min-width 讓兩顆在寬螢幕並排、窄螢幕自動各佔一行，
+     文字永遠有完整空間，不會被擠出外框。 */
+  .radio-group{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;}
   .radio-pill{
-    flex:1 1 0; min-width:0; max-width:220px;
-    display:flex; align-items:center; justify-content:center; gap:6px;
+    flex:1; min-width:140px;
+    display:flex; align-items:center; gap:8px;
     background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    padding:13px 10px; cursor:pointer; font-weight:600;
-    font-size:clamp(0.78rem, 3vw, 0.92rem); white-space:nowrap;
-    transition:border-color .2s, background .2s;
+    padding:12px 14px; cursor:pointer; font-size:0.9rem; font-weight:600;
   }
-  /* 藏掉原生圓鈕，自己畫一顆：原生的在各家瀏覽器大小不一，
-     而且連同預設間距會吃掉約 24px，正是先前文字擠出外框的主因。
-     自己畫可以精準控制尺寸，選取狀態也比原生明顯得多。 */
-  .radio-pill input{position:absolute; opacity:0; width:0; height:0; pointer-events:none;}
-  .radio-pill::before{
-    content:''; flex:none; width:17px; height:17px; border-radius:50%;
-    border:2px solid var(--text-muted); background:transparent;
-    transition:all .18s;
-  }
-  .radio-pill.is-checked::before{
-    border-color:var(--yellow); background:var(--yellow);
-    box-shadow:inset 0 0 0 3.5px var(--bg-deep);   /* 中間挖空 → 甜甜圈狀的實心點 */
-  }
-  .radio-pill.is-checked{
-    border-color:var(--yellow); background:rgba(255,209,102,0.13);
-    color:var(--yellow);
-  }
-  .radio-pill:hover{border-color:var(--yellow);}
-  .radio-pill span{overflow:hidden; text-overflow:ellipsis;}
+  .radio-pill input{accent-color:var(--yellow); flex:none;}
+  .radio-pill.is-checked{border-color:var(--yellow); background:rgba(255,209,102,0.10);}
   .radio-pill.is-disabled{opacity:0.4; cursor:not-allowed;}
-  .radio-pill.is-disabled:hover{border-color:var(--line);}
 
   .agree-row{
     display:flex; align-items:flex-start; gap:10px; margin:18px 0;
@@ -373,15 +352,11 @@
   }
   .countdown-label{font-family:'Baloo 2'; font-size:1rem; margin-bottom:10px; color:var(--text-muted);}
   /* 四格永遠同一排。拿掉每格的外框與內距，把空間全留給數字。
-     漸層畫在「整排」而不是每一格：先前每個數字各自套一份 var(--rainbow)，
-     兩位數的窄元素只取樣到漸層中間一小段，所以看起來只有黃綠。
-     改成父層鋪一次漸層再用 background-clip:text 裁切，
-     四組數字就會各自落在彩虹的不同段落，整排看下來是完整的彩虹。 */
+     漸層維持在每一個數字上（各自一份完整的紅→橘→黃→綠→藍→紫），
+     字放大之後那道彩虹在每組數字裡都看得清楚。 */
   .countdown-grid{
     display:flex; justify-content:center; align-items:flex-end;
     gap:clamp(4px, 1.4vw, 12px); flex-wrap:nowrap;
-    background:var(--rainbow);
-    -webkit-background-clip:text; background-clip:text;
   }
   .countdown-unit{
     flex:1 1 0; min-width:0; max-width:150px;
@@ -391,13 +366,12 @@
     display:block; font-family:'Baloo 2';
     font-size:clamp(1.7rem, 13vw, 3.6rem);
     font-weight:700; line-height:1.05; white-space:nowrap;
-    -webkit-text-fill-color:transparent; color:transparent;
+    background:var(--rainbow);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  /* 單位文字不要跟著透明，否則會被父層漸層一起裁掉而看不見 */
   .cd-unit{
     display:block; font-size:clamp(0.62rem, 2.4vw, 0.8rem);
-    -webkit-text-fill-color:var(--text-muted); color:var(--text-muted);
-    margin-top:2px; white-space:nowrap;
+    color:var(--text-muted); margin-top:2px; white-space:nowrap;
   }
 
   .admin-banner{
