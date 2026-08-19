@@ -230,8 +230,9 @@
   .guest-row-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
   .guest-row-top label{font-size:0.85rem; color:var(--text-muted); font-weight:600;}
   .guest-row-fields{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; align-items:start;}
-  .guest-row-fields .cpick-toggle{padding:9px 11px; min-height:42px;}
-  .guest-row-fields .cpick-value, .guest-row-fields .cpick-search{font-size:0.85rem;}
+  .guest-row-fields .cpick .cpick-toggle{padding:0 11px; height:42px;}
+  .guest-row-fields .cpick .cpick-value,
+  .guest-row-fields .cpick .cpick-search{font-size:0.85rem;}
   @media(max-width:520px){.guest-row-fields{grid-template-columns:1fr;}}
   .guest-row-fields input{
     width:100%; padding:10px 12px;
@@ -597,7 +598,7 @@
   /* 顯示值與搜尋框重疊在同一個位置：收合時看到選中的國家，
      展開時變成可以打字的搜尋框，這是這類元件的標準行為 */
   .cpick-field{position:relative; flex:1 1 auto; min-width:0; height:100%;}
-  .cpick-value{
+  .cpick .cpick-value{
     position:absolute; inset:0; display:flex; align-items:center;
     font-size:0.9rem; color:var(--text-light);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -605,14 +606,21 @@
   }
   .cpick-value.is-placeholder{color:var(--text-muted);}
   .cpick.is-open .cpick-value{opacity:0;}
-  .cpick-search{
+  /* 用 .cpick 前綴把優先度提高到 (0,2,0)，蓋過全域的 .field input (0,1,1)。
+     沒有這層的話搜尋框會套到全域的底色、邊框與內距，
+     結果就是「框框裡又有一個框框」，而且不透明的底色會蓋住上面的顯示值。 */
+  .cpick .cpick-search{
     position:absolute; inset:0; width:100%; height:100%;
-    background:transparent; border:none; outline:none; padding:0; margin:0;
+    background:transparent; border:none; border-radius:0;
+    outline:none; padding:0; margin:0; box-shadow:none;
     color:var(--text-light); font-size:0.9rem; font-family:inherit;
     cursor:pointer;
   }
+  .cpick .cpick-search:focus{
+    outline:none; border:none; background:transparent;
+  }
   .cpick.is-open .cpick-search{cursor:text;}
-  .cpick-search::-webkit-search-cancel-button{display:none;}
+  .cpick .cpick-search::-webkit-search-cancel-button{display:none;}
 
   .cpick-actions{display:flex; align-items:center; gap:8px; flex:none;}
   .cpick-clear{
@@ -2191,15 +2199,8 @@
         valueEl.textContent = currentLang === 'en' ? 'Select your country…' : '請選擇國籍…';
         valueEl.classList.add('is-placeholder');
       }
-      if(hintEl){
-        if(value){
-          hintEl.className = 'country-hint ok';
-          hintEl.textContent = flagOf(value) + ' ' + value + ' · ' + countryDisplayName(value);
-        } else {
-          hintEl.className = 'country-hint idle';
-          hintEl.textContent = '';
-        }
-      }
+      // 選中的國家已經顯示在框框裡了，不再重複寫一行提示文字在下面
+      if(hintEl){ hintEl.textContent = ''; hintEl.className = 'country-hint idle'; }
     }
 
     function renderList(){
