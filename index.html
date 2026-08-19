@@ -578,10 +578,73 @@
   .ig-opt:hover, .ig-opt.active{background:var(--purple); color:#fff;}
   .ig-empty{padding:10px 13px; font-size:0.78rem; color:var(--text-muted);}
 
-  /* 國籍下拉：以選單為主，找不到再用搜尋 */
-  .country-row{display:flex; gap:8px; align-items:stretch; flex-wrap:wrap;}
-  .country-row select{flex:2 1 190px; min-width:0;}
-  .country-row .country-search{flex:1 1 140px; min-width:0;}
+  /* ── 國籍選擇器（WAI-ARIA combobox 模式）──
+     結構與現在主流的下拉搜尋元件一致：
+     一個 role="combobox" 的觸發區 + 一個浮在上方的 role="listbox"。
+     清單用 position:absolute 脫離文件流，所以展開時是浮動視窗，
+     不會把下方內容往下推。 */
+  .cpick{position:relative;}
+  .cpick-toggle{
+    display:flex; align-items:center; gap:8px;
+    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
+    padding:0 12px; cursor:pointer; height:46px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .cpick-toggle:hover{border-color:var(--purple);}
+  .cpick.is-open .cpick-toggle{
+    border-color:var(--purple); box-shadow:0 0 0 3px rgba(155,93,229,0.18);
+  }
+  /* 顯示值與搜尋框重疊在同一個位置：收合時看到選中的國家，
+     展開時變成可以打字的搜尋框，這是這類元件的標準行為 */
+  .cpick-field{position:relative; flex:1 1 auto; min-width:0; height:100%;}
+  .cpick-value{
+    position:absolute; inset:0; display:flex; align-items:center;
+    font-size:0.9rem; color:var(--text-light);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    pointer-events:none;
+  }
+  .cpick-value.is-placeholder{color:var(--text-muted);}
+  .cpick.is-open .cpick-value{opacity:0;}
+  .cpick-search{
+    position:absolute; inset:0; width:100%; height:100%;
+    background:transparent; border:none; outline:none; padding:0; margin:0;
+    color:var(--text-light); font-size:0.9rem; font-family:inherit;
+    cursor:pointer;
+  }
+  .cpick.is-open .cpick-search{cursor:text;}
+  .cpick-search::-webkit-search-cancel-button{display:none;}
+
+  .cpick-actions{display:flex; align-items:center; gap:8px; flex:none;}
+  .cpick-clear{
+    background:none; border:none; padding:0; cursor:pointer; display:none;
+    color:var(--text-muted); font-size:0.85rem; line-height:1;
+  }
+  .cpick.has-value .cpick-clear{display:block;}
+  .cpick-clear:hover{color:var(--red);}
+  .cpick-caret{
+    width:0; height:0; flex:none;
+    border-left:5px solid transparent; border-right:5px solid transparent;
+    border-top:6px solid var(--text-muted);
+    transition:transform .2s;
+  }
+  .cpick.is-open .cpick-caret{transform:rotate(180deg);}
+
+  .cpick-list{
+    position:absolute; z-index:60; left:0; right:0; top:calc(100% + 6px);
+    background:var(--bg-surface); border:1px solid var(--purple); border-radius:10px;
+    max-height:260px; overflow-y:auto; overscroll-behavior:contain;
+    box-shadow:0 10px 30px rgba(0,0,0,0.45);
+    padding:4px;
+  }
+  .cpick-list[hidden]{display:none;}
+  .cpick-opt{
+    padding:9px 11px; border-radius:7px;
+    font-size:0.86rem; cursor:pointer; color:var(--text-light);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .cpick-opt[aria-selected="true"]{font-weight:700;}
+  .cpick-opt.active{background:var(--purple); color:#fff;}
+  .cpick-empty{padding:12px; font-size:0.8rem; color:var(--text-muted); text-align:center;}
 
   .country-hint{
     font-size:0.78rem; margin-top:5px; min-height:1.2em;
@@ -2081,22 +2144,32 @@
   //
   // 值寫進一個 hidden input，表單送出、修改模式回填、驗證都是對它操作。
   // ==========================================================
+  let cpickSeq = 0;
+
   function createCountryPicker(mount, hiddenInput, hintEl){
     let value = '';
     let filtered = [];
     let activeIdx = -1;
     let open = false;
 
+    // 每個選擇器要有唯一 id，aria-controls / aria-activedescendant 才指得到
+    const uid = 'cpick' + (++cpickSeq);
+
     mount.innerHTML =
       '<div class="cpick-toggle">'
-        + '<span class="cpick-value is-placeholder"></span>'
-        + '<input type="search" class="cpick-search" autocomplete="off" aria-label="Search country">'
+        + '<div class="cpick-field">'
+          + '<span class="cpick-value is-placeholder"></span>'
+          + '<input type="text" class="cpick-search" id="' + uid + '-input"'
+            + ' role="combobox" autocomplete="off" autocorrect="off" spellcheck="false"'
+            + ' aria-expanded="false" aria-haspopup="listbox"'
+            + ' aria-controls="' + uid + '-listbox" aria-autocomplete="list">'
+        + '</div>'
         + '<span class="cpick-actions">'
-          + '<button type="button" class="cpick-clear" tabindex="-1" style="display:none;" aria-label="Clear">✕</button>'
-          + '<span class="cpick-caret">▼</span>'
+          + '<button type="button" class="cpick-clear" tabindex="-1" aria-label="Clear selection">✕</button>'
+          + '<span class="cpick-caret" aria-hidden="true"></span>'
         + '</span>'
       + '</div>'
-      + '<div class="cpick-list"></div>';
+      + '<div class="cpick-list" id="' + uid + '-listbox" role="listbox" hidden></div>';
 
     const toggle = mount.querySelector('.cpick-toggle');
     const valueEl = mount.querySelector('.cpick-value');
@@ -2114,11 +2187,9 @@
       if(value){
         valueEl.textContent = labelOf(value);
         valueEl.classList.remove('is-placeholder');
-        clearBtn.style.display = '';
       } else {
         valueEl.textContent = currentLang === 'en' ? 'Select your country…' : '請選擇國籍…';
         valueEl.classList.add('is-placeholder');
-        clearBtn.style.display = 'none';
       }
       if(hintEl){
         if(value){
@@ -2148,10 +2219,15 @@
         return;
       }
       list.innerHTML = filtered.map(function(row, i){
-        return '<div class="cpick-opt' + (i === activeIdx ? ' active' : '')
-          + (row[0] === value ? ' is-selected' : '') + '" data-code="' + row[0] + '">'
+        return '<div class="cpick-opt' + (i === activeIdx ? ' active' : '') + '"'
+          + ' role="option" id="' + uid + '-opt' + i + '"'
+          + ' aria-selected="' + (row[0] === value) + '"'
+          + ' data-code="' + row[0] + '">'
           + escapeHtml(labelOf(row[0])) + '</div>';
       }).join('');
+      // 讓輔助技術知道目前游標停在哪一個選項
+      if(activeIdx >= 0) search.setAttribute('aria-activedescendant', uid + '-opt' + activeIdx);
+      else search.removeAttribute('aria-activedescendant');
     }
 
     function scrollActiveIntoView(){
@@ -2163,12 +2239,14 @@
       if(open) return;
       open = true;
       mount.classList.add('is-open');
+      list.hidden = false;
+      search.setAttribute('aria-expanded', 'true');
       search.value = '';
       activeIdx = -1;
       renderList();
       search.focus();
       // 選中的項目捲到看得見的位置
-      const sel = list.querySelector('.cpick-opt.is-selected');
+      const sel = list.querySelector('.cpick-opt[aria-selected="true"]');
       if(sel) list.scrollTop = sel.offsetTop - 60;
     }
 
@@ -2176,17 +2254,32 @@
       if(!open) return;
       open = false;
       mount.classList.remove('is-open');
+      list.hidden = true;
+      search.setAttribute('aria-expanded', 'false');
+      search.removeAttribute('aria-activedescendant');
       search.value = '';
     }
 
     function setValue(code){
       value = code || '';
       hiddenInput.value = value;
+      mount.classList.toggle('has-value', !!value);
       renderValue();
       hiddenInput.dispatchEvent(new Event('change', { bubbles:true }));
     }
 
-    toggle.addEventListener('click', function(){ open ? closeList() : openList(); });
+    toggle.addEventListener('mousedown', function(e){
+      if(e.target.closest('.cpick-clear')) return;
+      e.preventDefault();                 // 避免點擊後焦點跑掉
+      open ? closeList() : openList();
+    });
+    // 用鍵盤 Tab 到這個欄位再按 Enter/空白/下鍵也要能展開
+    search.addEventListener('keydown', function(e){
+      if(!open && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown')){
+        e.preventDefault();
+        openList();
+      }
+    });
 
     search.addEventListener('input', function(){ activeIdx = -1; renderList(); });
 
@@ -2232,11 +2325,14 @@
 
     renderValue();
 
-    return {
+    const api = {
       get: function(){ return value; },
       set: setValue,
+      open: function(){ openList(); },
       refresh: function(){ renderValue(); if(open) renderList(); }
     };
+    mount._picker = api;   // 讓驗證流程可以直接叫它展開
+    return api;
   }
 
   // 主報名人
@@ -2261,14 +2357,14 @@
   /** 檢查所有國籍都選好了；沒選的回傳提示字串 */
   function validateAllCountries(){
     if(!document.getElementById('su-country').value.trim()){
-      document.getElementById('su-country-picker').querySelector('.cpick-toggle').click();
+      document.getElementById('su-country-picker')._picker.open();
       return currentLang === 'en' ? '(your country is not selected)' : '（尚未選擇你的國籍）';
     }
     const rows = Array.from(guestRowsContainer.querySelectorAll('.guest-row'));
     for(let i = 0; i < rows.length; i++){
       const hidden = rows[i].querySelector('.guest-country-input');
       if(!hidden.value.trim()){
-        rows[i].querySelector('.cpick-toggle').click();
+        rows[i].querySelector('.cpick')._picker.open();
         return currentLang === 'en'
           ? '(plus-one #' + (i + 1) + ' has no country selected)'
           : '（第 ' + (i + 1) + ' 位攜伴尚未選擇國籍）';
