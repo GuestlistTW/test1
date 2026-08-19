@@ -229,7 +229,9 @@
   }
   .guest-row-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
   .guest-row-top label{font-size:0.85rem; color:var(--text-muted); font-weight:600;}
-  .guest-row-fields{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+  .guest-row-fields{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; align-items:start;}
+  .guest-row-fields .cpick-toggle{padding:9px 11px; min-height:42px;}
+  .guest-row-fields .cpick-value, .guest-row-fields .cpick-search{font-size:0.85rem;}
   @media(max-width:520px){.guest-row-fields{grid-template-columns:1fr;}}
   .guest-row-fields input{
     width:100%; padding:10px 12px;
@@ -896,14 +898,8 @@
         </div>
         <div class="field">
           <label for="su-country" data-i18n="field_country">國籍 / Country</label>
-          <div class="country-row">
-            <select id="su-country-select" required></select>
-            <input type="text" id="su-country-search" class="country-search"
-                   data-i18n-ph="country_search_ph" placeholder="搜尋國家…">
-          </div>
-          <input type="hidden" id="su-country" class="country-input" list="country-list"
-                 autocomplete="off" data-i18n-ph="field_country_ph"
-                 placeholder="可直接打 TW、Taiwan 或 台灣" required>
+          <div class="cpick" id="su-country-picker"></div>
+          <input type="hidden" id="su-country" class="country-input" required>
           <div class="country-hint idle" id="su-country-hint"></div>
         </div>
       </div>
@@ -1254,7 +1250,6 @@
   </div>
 </div>
 
-<datalist id="country-list"></datalist>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1415,7 +1410,7 @@
     document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
     renumberGuests();
     updateGuestHint();
-    if(window.__rebuildCountrySelect) window.__rebuildCountrySelect();
+    refreshCountryPickers();
     if(typeof adminData !== 'undefined' && adminData.length){
       renderAdminStats();
       renderAdminList();
@@ -1549,18 +1544,24 @@
       </div>
       <div class="guest-row-fields">
         <input type="text" class="guest-name-input" placeholder="${guestFieldPh('name')}" required>
-        <input type="text" class="guest-country-input country-input" list="country-list"
-               autocomplete="off" placeholder="${guestFieldPh('country')}" required>
+        <div class="cpick guest-country-picker"></div>
+        <input type="hidden" class="guest-country-input country-input" required>
         <input type="text" class="guest-ig-input" placeholder="${guestFieldPh('ig')}" required>
         <div class="country-hint idle guest-country-hint"></div>
       </div>
     `;
     guestRowsContainer.appendChild(row);
-    bindCountryInput(
+
+    const picker = createCountryPicker(
+      row.querySelector('.guest-country-picker'),
       row.querySelector('.guest-country-input'),
       row.querySelector('.guest-country-hint')
     );
+    countryPickers.push(picker);
+
     row.querySelector('.remove-guest-btn').addEventListener('click', ()=>{
+      const i = countryPickers.indexOf(picker);
+      if(i >= 0) countryPickers.splice(i, 1);   // 移除該列時一併移除，避免累積無用的參照
       row.remove();
       guestCount--;
       renumberGuests();
@@ -1817,7 +1818,7 @@
       setTimeout(()=> msg.classList.remove('show'), 6000);
       openLineModal(body.id || '');
       signupForm.reset();
-      if(window.__setCountrySelect) window.__setCountrySelect('');
+      mainCountryPicker.set('');
       guestRowsContainer.innerHTML = '';
       guestCount = 0;
       updateGuestHint();
@@ -1839,7 +1840,7 @@
     editingGroup = g;
 
     document.getElementById('su-name').value = g.name || '';
-    if(window.__setCountrySelect) window.__setCountrySelect(g.country || '');
+    mainCountryPicker.set(g.country || '');
     document.getElementById('su-email').value = g.email || '';
     document.getElementById('su-phone').value = g.phone || '';
     document.getElementById('su-ig').value = g.ig || '';
@@ -1890,7 +1891,7 @@
 
   function exitEditMode(){
     editingGroup = null;
-    if(window.__setCountrySelect) window.__setCountrySelect('');
+    mainCountryPicker.set('');
     const phoneInput = document.getElementById('su-phone');
     phoneInput.readOnly = false;
     phoneInput.style.opacity = '';
@@ -2042,33 +2043,9 @@
     });
   });
 
-  // 填入 datalist（打字時會即時篩選，也可以直接點選）
-  (function buildCountryDatalist(){
-    const dl = document.getElementById('country-list');
-    if(!dl) return;
-    const frag = document.createDocumentFragment();
-    COUNTRIES.forEach(function(row){
-      const opt = document.createElement('option');
-      opt.value = row[0];
-      opt.label = row[1] + ' ' + row[2];
-      frag.appendChild(opt);
-    });
-    dl.appendChild(frag);
-  })();
-
-  /**
-   * 把任何寫法轉成標準代碼。
-   * 回傳 {code, ok}：ok=true 代表對應到清單裡的國家。
-   * 認不出來的寫法「不允許送出」——國籍要用來顯示國旗與統計，
-   * 放任自由輸入的話同一國會出現十幾種寫法，之後沒辦法整理。
-   */
-  function normalizeCountry(raw){
-    const s = String(raw || '').trim();
-    if(!s) return { code:'', ok:false, empty:true };
-    const code = COUNTRY_LOOKUP[countryKey(s)];
-    if(code) return { code: code, ok:true };
-    return { code: s.toUpperCase(), ok:false };
-  }
+  // COUNTRY_LOOKUP 現在只給選擇器的搜尋比對用：
+  // 使用者打 "台灣"、"Taiwan"、"TW"、"formosa" 都能篩到同一筆。
+  // 國籍已經不能自由輸入，所以不再需要「把亂打的字轉成代碼」那套邏輯。
 
   function countryDisplayName(code){
     const n = COUNTRY_NAME[code];
@@ -2095,139 +2072,207 @@
     return flagOf(c) + ' ' + c;
   }
 
-  /** 綁定一個國籍輸入框：離開欄位時自動改寫成標準代碼，並顯示對應到哪一國 */
-  function bindCountryInput(input, hintEl){
-    if(!input) return;
-    const update = function(commit){
-      const r = normalizeCountry(input.value);
-      if(r.empty){
-        hintEl.className = 'country-hint idle';
-        hintEl.textContent = '';
-        input.setCustomValidity('');
-        return;
-      }
-      if(r.ok){
-        if(commit) input.value = r.code;   // 真正改寫成代碼，確保送出的一定是標準值
-        hintEl.className = 'country-hint ok';
-        hintEl.textContent = flagOf(r.code) + ' ' + r.code + ' · ' + countryDisplayName(r.code);
-        input.setCustomValidity('');
+  // ==========================================================
+  // 國籍選擇器
+  //
+  // 收合時顯示已選的國家，點一下展開完整清單，打字即時篩選，
+  // 只能從清單挑 —— 使用者輸入的字永遠只拿來篩選，不會被當成答案。
+  // 所以「清單以外的國家」從源頭就不可能被送出，不需要在送出前補驗證。
+  //
+  // 值寫進一個 hidden input，表單送出、修改模式回填、驗證都是對它操作。
+  // ==========================================================
+  function createCountryPicker(mount, hiddenInput, hintEl){
+    let value = '';
+    let filtered = [];
+    let activeIdx = -1;
+    let open = false;
+
+    mount.innerHTML =
+      '<div class="cpick-toggle">'
+        + '<span class="cpick-value is-placeholder"></span>'
+        + '<input type="search" class="cpick-search" autocomplete="off" aria-label="Search country">'
+        + '<span class="cpick-actions">'
+          + '<button type="button" class="cpick-clear" tabindex="-1" style="display:none;" aria-label="Clear">✕</button>'
+          + '<span class="cpick-caret">▼</span>'
+        + '</span>'
+      + '</div>'
+      + '<div class="cpick-list"></div>';
+
+    const toggle = mount.querySelector('.cpick-toggle');
+    const valueEl = mount.querySelector('.cpick-value');
+    const search = mount.querySelector('.cpick-search');
+    const clearBtn = mount.querySelector('.cpick-clear');
+    const list = mount.querySelector('.cpick-list');
+
+    function labelOf(code){
+      const n = COUNTRY_NAME[code];
+      if(!n) return code;
+      return flagOf(code) + '  ' + code + ' · ' + (currentLang === 'en' ? n.en : n.zh + ' ' + n.en);
+    }
+
+    function renderValue(){
+      if(value){
+        valueEl.textContent = labelOf(value);
+        valueEl.classList.remove('is-placeholder');
+        clearBtn.style.display = '';
       } else {
-        hintEl.className = 'country-hint unknown';
-        hintEl.textContent = '⚠ ' + (currentLang === 'en'
-          ? 'Not in the list — please pick a country from the dropdown'
-          : '不在清單中，請從下拉選單挑選');
-        input.setCustomValidity(currentLang === 'en'
-          ? 'Please choose a country from the list'
-          : '請從清單中挑選國籍');
+        valueEl.textContent = currentLang === 'en' ? 'Select your country…' : '請選擇國籍…';
+        valueEl.classList.add('is-placeholder');
+        clearBtn.style.display = 'none';
       }
-    };
-    input.addEventListener('input', function(){ update(false); });
-    input.addEventListener('change', function(){ update(true); });
-    input.addEventListener('blur', function(){ update(true); });
-    input._countryUpdate = update;
-  }
-
-  /**
-   * 主報名人的國籍：下拉選單為主、搜尋框為輔。
-   *
-   * 值存在一個 hidden input（#su-country）裡，因為表單送出、修改模式回填、
-   * 送出前驗證都是對那個欄位操作，換成下拉之後不用改那些地方。
-   * 因為只能從選單挑，清單外的國家從源頭就不可能出現。
-   */
-  (function initCountrySelect(){
-    const sel = document.getElementById('su-country-select');
-    const search = document.getElementById('su-country-search');
-    const hidden = document.getElementById('su-country');
-    const hint = document.getElementById('su-country-hint');
-    if(!sel) return;
-
-    /** 依關鍵字重建選項；keyword 空字串代表列出全部 */
-    function build(keyword){
-      const kw = countryKey(keyword || '');
-      const keep = sel.value;
-      sel.innerHTML = '';
-
-      const ph = document.createElement('option');
-      ph.value = '';
-      ph.textContent = currentLang === 'en' ? 'Select your country…' : '請選擇國籍…';
-      sel.appendChild(ph);
-
-      let shown = 0;
-      COUNTRIES.forEach(function(row){
-        const code = row[0], zh = row[1], en = row[2];
-        if(kw){
-          const hay = countryKey(code + zh + en);
-          if(hay.indexOf(kw) < 0) return;
+      if(hintEl){
+        if(value){
+          hintEl.className = 'country-hint ok';
+          hintEl.textContent = flagOf(value) + ' ' + value + ' · ' + countryDisplayName(value);
+        } else {
+          hintEl.className = 'country-hint idle';
+          hintEl.textContent = '';
         }
-        const opt = document.createElement('option');
-        opt.value = code;
-        opt.textContent = flagOf(code) + '  ' + code + ' · ' + (currentLang === 'en' ? en : zh + ' ' + en);
-        sel.appendChild(opt);
-        shown++;
+      }
+    }
+
+    function renderList(){
+      const kw = countryKey(search.value || '');
+      filtered = COUNTRIES.filter(function(row){
+        if(!kw) return true;
+        // 比對整列（代碼、中文、英文，以及 USA、新西蘭 這類別名），
+        // 只比前三欄的話 u.s.a、UK、Holland 這種常見寫法會找不到
+        return countryKey(row.join('')).indexOf(kw) >= 0;
       });
 
-      // 篩選後原本選的還在就保留，避免打字時把已選的國家弄不見
-      if(keep && sel.querySelector('option[value="' + keep + '"]')) sel.value = keep;
-
-      if(kw && shown === 0){
-        hint.className = 'country-hint unknown';
-        hint.textContent = currentLang === 'en'
-          ? 'No country matches "' + keyword + '"'
-          : '找不到符合「' + keyword + '」的國家';
-      } else if(kw){
-        hint.className = 'country-hint idle';
-        hint.textContent = (currentLang === 'en' ? shown + ' matches' : '找到 ' + shown + ' 個國家');
+      if(filtered.length === 0){
+        list.innerHTML = '<div class="cpick-empty">'
+          + (currentLang === 'en' ? 'No matching country' : '找不到符合的國家')
+          + '</div>';
+        activeIdx = -1;
+        return;
       }
+      list.innerHTML = filtered.map(function(row, i){
+        return '<div class="cpick-opt' + (i === activeIdx ? ' active' : '')
+          + (row[0] === value ? ' is-selected' : '') + '" data-code="' + row[0] + '">'
+          + escapeHtml(labelOf(row[0])) + '</div>';
+      }).join('');
     }
 
-    function sync(){
-      hidden.value = sel.value;
-      if(sel.value){
-        hint.className = 'country-hint ok';
-        hint.textContent = flagOf(sel.value) + ' ' + sel.value + ' · ' + countryDisplayName(sel.value);
-      } else {
-        hint.className = 'country-hint idle';
-        hint.textContent = '';
-      }
+    function scrollActiveIntoView(){
+      const el = list.querySelector('.cpick-opt.active');
+      if(el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block:'nearest' });
     }
 
-    sel.addEventListener('change', sync);
-    search.addEventListener('input', function(){ build(search.value); });
+    function openList(){
+      if(open) return;
+      open = true;
+      mount.classList.add('is-open');
+      search.value = '';
+      activeIdx = -1;
+      renderList();
+      search.focus();
+      // 選中的項目捲到看得見的位置
+      const sel = list.querySelector('.cpick-opt.is-selected');
+      if(sel) list.scrollTop = sel.offsetTop - 60;
+    }
 
-    // 只剩一個結果時直接幫忙選起來，省一次點擊
-    search.addEventListener('change', function(){
-      const opts = sel.querySelectorAll('option[value]:not([value=""])');
-      if(opts.length === 1){ sel.value = opts[0].value; sync(); }
+    function closeList(){
+      if(!open) return;
+      open = false;
+      mount.classList.remove('is-open');
+      search.value = '';
+    }
+
+    function setValue(code){
+      value = code || '';
+      hiddenInput.value = value;
+      renderValue();
+      hiddenInput.dispatchEvent(new Event('change', { bubbles:true }));
+    }
+
+    toggle.addEventListener('click', function(){ open ? closeList() : openList(); });
+
+    search.addEventListener('input', function(){ activeIdx = -1; renderList(); });
+
+    search.addEventListener('keydown', function(e){
+      if(e.key === 'ArrowDown'){
+        e.preventDefault();
+        activeIdx = Math.min(activeIdx + 1, filtered.length - 1);
+        renderList();
+        scrollActiveIntoView();
+      } else if(e.key === 'ArrowUp'){
+        e.preventDefault();
+        activeIdx = Math.max(activeIdx - 1, 0);
+        renderList();
+        scrollActiveIntoView();
+      } else if(e.key === 'Enter'){
+        e.preventDefault();   // 不要讓 Enter 直接送出表單
+        // 只剩一個結果時，不必先按方向鍵也能直接確認
+        if(activeIdx < 0 && filtered.length === 1) activeIdx = 0;
+        if(activeIdx >= 0){ setValue(filtered[activeIdx][0]); closeList(); }
+      } else if(e.key === 'Escape'){
+        closeList();
+      }
     });
 
-    build('');
-    window.__rebuildCountrySelect = function(){ build(search.value); sync(); };
-    window.__setCountrySelect = function(code){
-      search.value = '';
-      build('');
-      sel.value = code || '';
-      sync();
-    };
-  })();
+    list.addEventListener('mousedown', function(e){
+      // 用 mousedown：blur 會先觸發並關掉清單，click 就永遠收不到
+      const opt = e.target.closest('.cpick-opt');
+      if(!opt) return;
+      e.preventDefault();
+      setValue(opt.dataset.code);
+      closeList();
+    });
 
-  /** 送出前最後再正規化一次，避免使用者打完沒離開欄位就直接按送出 */
-  function readCountry(input){
-    return normalizeCountry(input && input.value).code;
+    clearBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      setValue('');
+      closeList();
+    });
+
+    document.addEventListener('click', function(e){
+      if(!mount.contains(e.target)) closeList();
+    });
+
+    renderValue();
+
+    return {
+      get: function(){ return value; },
+      set: setValue,
+      refresh: function(){ renderValue(); if(open) renderList(); }
+    };
   }
 
-  /** 送出前檢查所有國籍欄位；有問題就回傳那個打錯的字串，沒問題回傳空字串 */
+  // 主報名人
+  const countryPickers = [];
+  const mainCountryPicker = createCountryPicker(
+    document.getElementById('su-country-picker'),
+    document.getElementById('su-country'),
+    document.getElementById('su-country-hint')
+  );
+  countryPickers.push(mainCountryPicker);
+
+  /** 語言切換時，所有選擇器的顯示文字要跟著換 */
+  function refreshCountryPickers(){
+    countryPickers.forEach(function(p){ p.refresh(); });
+  }
+
+  /** 送出前讀值：值一定來自清單，直接回傳即可 */
+  function readCountry(input){
+    return String((input && input.value) || '').trim();
+  }
+
+  /** 檢查所有國籍都選好了；沒選的回傳提示字串 */
   function validateAllCountries(){
-    const main = document.getElementById('su-country');
-    if(!main.value.trim()){
-      document.getElementById('su-country-select').focus();
-      return currentLang === 'en' ? '(not selected)' : '（未選擇）';
+    if(!document.getElementById('su-country').value.trim()){
+      document.getElementById('su-country-picker').querySelector('.cpick-toggle').click();
+      return currentLang === 'en' ? '(your country is not selected)' : '（尚未選擇你的國籍）';
     }
-    const guests = Array.from(guestRowsContainer.querySelectorAll('.guest-country-input'));
-    for(let i = 0; i < guests.length; i++){
-      const el = guests[i];
-      if(!el.value.trim()) continue;
-      const r = normalizeCountry(el.value);
-      if(!r.ok){ el.focus(); return el.value.trim(); }
+    const rows = Array.from(guestRowsContainer.querySelectorAll('.guest-row'));
+    for(let i = 0; i < rows.length; i++){
+      const hidden = rows[i].querySelector('.guest-country-input');
+      if(!hidden.value.trim()){
+        rows[i].querySelector('.cpick-toggle').click();
+        return currentLang === 'en'
+          ? '(plus-one #' + (i + 1) + ' has no country selected)'
+          : '（第 ' + (i + 1) + ' 位攜伴尚未選擇國籍）';
+      }
     }
     return '';
   }
