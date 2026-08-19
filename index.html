@@ -564,20 +564,26 @@
   }
 
   /* 同桌 IG 的相似帳號提示 */
-  /* 同桌 IG 的自訂下拉清單 */
+  /* 同桌 IG 的下拉清單：跟國籍選擇器一樣是浮動視窗，
+     緊貼著 IG 欄位下方，不會把後面的欄位往下推。
+     ig-wrap 是定位基準，所以清單一定對齊 IG 這一欄，
+     手機上三欄變直排時也不會跑到別的欄位底下。 */
+  .ig-wrap{position:relative;}
   .ig-suggest{
-    display:none; margin-top:6px; border-radius:10px;
-    background:var(--bg-surface-2); border:1px solid var(--purple);
-    max-height:220px; overflow-y:auto;
+    position:absolute; z-index:60; left:0; right:0; top:calc(100% + 6px);
+    background:#fff; border:1px solid #d9d2ea; border-radius:10px;
+    max-height:230px; overflow-y:auto; overscroll-behavior:contain;
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+    padding:4px;
   }
-  .ig-suggest.show{display:block;}
+  .ig-suggest[hidden]{display:none;}
   .ig-opt{
-    padding:9px 13px; font-size:0.84rem; cursor:pointer;
-    border-bottom:1px solid var(--line); color:var(--text-light);
+    padding:9px 11px; border-radius:7px;
+    font-size:0.86rem; cursor:pointer; color:#2A1B3D;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  .ig-opt:last-child{border-bottom:none;}
   .ig-opt:hover, .ig-opt.active{background:var(--purple); color:#fff;}
-  .ig-empty{padding:10px 13px; font-size:0.78rem; color:var(--text-muted);}
+  .ig-empty{padding:11px; font-size:0.79rem; color:#6b6280; text-align:center;}
 
   /* ── 國籍選擇器（WAI-ARIA combobox 模式）──
      結構與現在主流的下拉搜尋元件一致：
@@ -1015,11 +1021,15 @@
         <label data-i18n="field_tablewith">同桌需求（選填）</label>
         <div class="field-row three-col">
           <input type="text" id="su-tablewith-name" data-i18n-ph="field_tablewith_name_ph" placeholder="姓名">
-          <input type="text" id="su-tablewith-ig" autocomplete="off" required
-                 data-i18n-ph="field_tablewith_ig_ph" placeholder="IG（必填）">
+          <div class="ig-wrap">
+            <input type="text" id="su-tablewith-ig" autocomplete="off" required
+                   role="combobox" aria-expanded="false" aria-autocomplete="list"
+                   aria-controls="ig-suggest"
+                   data-i18n-ph="field_tablewith_ig_ph" placeholder="IG（必填）">
+            <div class="ig-suggest" id="ig-suggest" role="listbox" hidden></div>
+          </div>
           <input type="text" id="su-tablewith-phone" data-i18n-ph="field_tablewith_phone_ph" placeholder="電話">
         </div>
-        <div class="ig-suggest" id="ig-suggest"></div>
         <div class="hint" data-i18n="field_tablewith_hint">※務必填寫對方姓名、IG 帳號、電話其中至少兩項以避免同姓名/綽號；描述不清無法辨識者恕不安排</div>
       </div>
 
@@ -1092,7 +1102,7 @@
         <div class="lr-label" data-i18n="paycode_label">繳費代碼</div>
         <div class="paycode-num" id="paycode-num">—</div>
         <div class="paycode-meta" id="paycode-meta"></div>
-        <div id="paycode-qr"></div>
+        <div id="paycode-qr" style="display:none;"></div>
       </div>
     </div>
   </section>
@@ -2419,9 +2429,15 @@
     let current = [];
 
     function close(){
-      box.classList.remove('show');
+      box.hidden = true;
       box.innerHTML = '';
       activeIdx = -1;
+      input.setAttribute('aria-expanded', 'false');
+    }
+
+    function openBox(){
+      box.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
     }
 
     function render(){
@@ -2432,19 +2448,20 @@
       if(current.length === 0){
         box.innerHTML = '<div class="ig-empty">'
           + (currentLang === 'en'
-              ? 'No registered IG matches this — you can still type it in manually.'
-              : '目前沒有相符的已報名帳號，你仍然可以直接手動輸入。')
+              ? 'No registered IG matches — you can still type it in manually.'
+              : '沒有相符的已報名帳號，你仍然可以直接手動輸入')
           + '</div>';
-        box.classList.add('show');
+        openBox();
         activeIdx = -1;
         return;
       }
 
       box.innerHTML = current.map(function(ig, i){
-        return '<div class="ig-opt' + (i === activeIdx ? ' active' : '') + '" data-ig="'
-          + escapeHtml(ig) + '">' + escapeHtml(ig) + '</div>';
+        return '<div class="ig-opt' + (i === activeIdx ? ' active' : '') + '"'
+          + ' role="option" aria-selected="' + (i === activeIdx) + '"'
+          + ' data-ig="' + escapeHtml(ig) + '">' + escapeHtml(ig) + '</div>';
       }).join('');
-      box.classList.add('show');
+      openBox();
     }
 
     function choose(ig){
@@ -2457,7 +2474,7 @@
 
     // 鍵盤上下選、Enter 確認、Esc 關閉
     input.addEventListener('keydown', function(e){
-      if(!box.classList.contains('show') || current.length === 0) return;
+      if(box.hidden || current.length === 0) return;
       if(e.key === 'ArrowDown'){ e.preventDefault(); activeIdx = Math.min(activeIdx + 1, current.length - 1); render(); }
       else if(e.key === 'ArrowUp'){ e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); render(); }
       else if(e.key === 'Enter' && activeIdx >= 0){ e.preventDefault(); choose(current[activeIdx]); }
@@ -2738,7 +2755,10 @@
     if(amount) parts.push((currentLang === 'en' ? 'Amount: NT$' : '金額 NT$') + Number(amount).toLocaleString());
     if(expiry) parts.push((currentLang === 'en' ? 'Valid until ' : '繳費期限 ') + expiry);
     document.getElementById('paycode-meta').textContent = parts.join(' ・ ');
-    renderQr(code);
+    // QR Code 已停用，只顯示代碼文字。
+    // 之後串真實金流要重新開啟時，把下面這行的註解拿掉，
+    // 並移除 HTML 裡 #paycode-qr 的 display:none。
+    // renderQr(code);
   }
 
   // QR 產生器只在真的需要時才載入，不拖累一般訪客的開頁速度
