@@ -523,22 +523,6 @@
   .lr-value{text-align:right; font-weight:600;}
   .lr-note{font-size:0.85rem; color:var(--text-muted); margin-top:12px; line-height:1.6;}
 
-  .paycode-box{
-    margin-top:16px; padding:18px; border-radius:14px;
-    background:var(--bg-deep); border:1px solid var(--purple); text-align:center;
-  }
-  .paycode-sim{
-    font-size:0.76rem; color:var(--orange); font-weight:700;
-    background:rgba(255,159,64,0.12); border:1px solid rgba(255,159,64,0.35);
-    border-radius:8px; padding:8px 10px; margin-bottom:14px; line-height:1.5;
-  }
-  .paycode-num{
-    font-family:'Baloo 2'; font-size:1.5rem; font-weight:700; letter-spacing:2px;
-    margin:6px 0 4px; word-break:break-all;
-  }
-  .paycode-meta{font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;}
-  #paycode-qr{display:flex; justify-content:center; margin:0 auto 12px;}
-  #paycode-qr img, #paycode-qr canvas{border-radius:10px; background:#fff; padding:10px;}
 
   /* ===== 國籍標準化欄位 ===== */
   /* 新增攜伴：這是表單裡的主要動作之一，用彩色外框讓它跳出來 */
@@ -938,7 +922,7 @@
       <li data-i18n="notice_3">如活動當日臨時無法出席，請自行尋找替代人員頂替名額，恕不接受退款</li>
       <li data-i18n="notice_4">攜伴出席者須與同行者一同完成報名與付款，並安排於同一桌</li>
       <li data-i18n="notice_5">同行總人數（含本人）超過 2 人者，恕不接受現場付款，請改為線上匯款（可請台灣朋友協助代匯）</li>
-      <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號、電話「其中兩項」以利辨識；資訊不明確者恕無法安排同桌</li>
+      <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號以利辨識；資訊不明確者恕無法安排同桌</li>
       <li data-i18n="notice_7">請盡可能於活動開始前入場，以免現場混亂</li>
       <li data-i18n="notice_8">請尊重現場工作人員與其他賓客，主辦單位保有請不當行為者離場之權利</li>
       <li data-i18n="notice_9">活動當天可能安排拍照攝影，若不希望入鏡請於報到時告知工作人員</li>
@@ -993,9 +977,8 @@
       </div>
 
       <div class="field">
-        <label for="su-ig" data-i18n="field_ig">Instagram 帳號</label>
+        <label for="su-ig" data-i18n="field_ig">Instagram 帳號（必填）</label>
         <input type="text" id="su-ig" placeholder="@your_ig" required>
-        <div class="hint" data-i18n="field_ig_hint">※務必填寫，以利匯款或對帳有誤時聯繫；此帳號會出現在其他賓客的「想同桌對象」選單中，方便大家指名同桌</div>
       </div>
       <div class="guest-section">
         <label data-i18n="guest_label">攜伴（不含本人）</label>
@@ -1003,14 +986,14 @@
         <div class="hint" id="existing-members-hint" style="display:none;" data-i18n="existing_hint">※ 已報名的人不能在這裡刪除。若有人無法出席，請回到查詢結果，針對該位送出取消申請，由主辦單位確認。</div>
         <div id="guest-rows"></div>
         <button type="button" id="add-guest-btn" class="btn-add-guest" data-i18n="guest_add_btn">＋ 新增攜伴</button>
-        <div class="hint" id="guest-count-hint" data-i18n="guest_hint_0">尚未新增攜伴（總人數：1人，含本人）</div>
+        <div class="hint" id="guest-count-hint">尚未新增攜伴（總人數：1人，含本人）</div>
       </div>
 
       <div class="subtotal-card">
         <span data-i18n="subtotal_label">應付金額小計</span>
         <span class="subtotal-amount" id="subtotal-amount">NT$1,200</span>
       </div>
-      <div class="hint" style="margin:6px 0 18px;" data-i18n="subtotal_hint">＝（攜伴人數＋本人）× NT$1,200／人</div>
+
 
       <div class="field">
         <label for="su-notes" data-i18n="field_notes">飲食限制或其他備註（選填）</label>
@@ -1030,7 +1013,7 @@
           </div>
           <input type="text" id="su-tablewith-phone" data-i18n-ph="field_tablewith_phone_ph" placeholder="電話">
         </div>
-        <div class="hint" data-i18n="field_tablewith_hint">※務必填寫對方姓名、IG 帳號、電話其中至少兩項以避免同姓名/綽號；描述不清無法辨識者恕不安排</div>
+        <div class="hint" data-i18n="field_tablewith_hint">※務必填寫對方姓名、IG 帳號以避免同姓名/綽號；描述不清無法辨識者恕不安排</div>
       </div>
 
       <div class="field">
@@ -1039,7 +1022,7 @@
           <label class="radio-pill" id="pay-online-pill"><input type="radio" name="paymethod" value="online" checked> <span data-i18n="paymethod_online">線上付款</span></label>
           <label class="radio-pill" id="pay-onsite-pill"><input type="radio" name="paymethod" value="onsite"> <span data-i18n="paymethod_onsite">現場付款</span></label>
         </div>
-        <div class="hint warn" id="paymethod-warn" style="display:none;" data-i18n="paymethod_warn">同行總人數超過 2 人，僅開放線上付款，請改為線上匯款（可請台灣朋友協助代匯）</div>
+        <div class="hint warn" id="paymethod-warn" style="display:none;" data-i18n="paymethod_warn">台灣賓客請先完成線上匯款，報名才算完成，恕不提供現場付款</div>
       </div>
 
       <details class="notice-recap">
@@ -1050,7 +1033,7 @@
           <li data-i18n="notice_3">如活動當日臨時無法出席，請自行尋找替代人員頂替名額，恕不接受退款</li>
           <li data-i18n="notice_4">攜伴出席者須與同行者一同完成報名與付款，並安排於同一桌</li>
           <li data-i18n="notice_5">同行總人數（含本人）超過 2 人者，恕不接受現場付款，請改為線上匯款（可請台灣朋友協助代匯）</li>
-          <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號、電話「其中兩項」以利辨識；資訊不明確者恕無法安排同桌</li>
+          <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號以利辨識；資訊不明確者恕無法安排同桌</li>
           <li data-i18n="notice_7">請盡可能於活動開始前入場，以免現場混亂</li>
           <li data-i18n="notice_8">請尊重現場工作人員與其他賓客，主辦單位保有請不當行為者離場之權利</li>
           <li data-i18n="notice_9">活動當天可能安排拍照攝影，若不希望入鏡請於報到時告知工作人員</li>
@@ -1095,15 +1078,6 @@
         <button type="button" class="btn-secondary" id="lr-edit-btn" data-i18n="lr_edit_btn">✏️ 修改報名資料 / 加人</button>
       </div>
 
-      <button type="button" class="btn-primary" id="paycode-btn" style="display:none;" data-i18n="paycode_btn">🏪 產生超商繳費代碼</button>
-
-      <div class="paycode-box" id="paycode-box" style="display:none;">
-        <div class="paycode-sim" data-i18n="paycode_sim">⚠️ 目前為系統測試用的模擬代碼，尚未串接實際金流，無法真的到超商繳費。正式串接後此處會顯示可用代碼。</div>
-        <div class="lr-label" data-i18n="paycode_label">繳費代碼</div>
-        <div class="paycode-num" id="paycode-num">—</div>
-        <div class="paycode-meta" id="paycode-meta"></div>
-        <div id="paycode-qr" style="display:none;"></div>
-      </div>
     </div>
   </section>
 
@@ -1175,7 +1149,7 @@
         <div class="field">
           <label for="pay-phone" data-i18n="pay_phone_label">聯絡電話</label>
           <input type="tel" id="pay-phone" required>
-          <div class="hint critical" data-i18n="pay_phone_hint">※請務必填寫報名時所使用的聯絡電話，方便後台自動比對名單</div>
+          <div class="hint critical" data-i18n="pay_phone_hint">※請務必填寫報名時所使用的聯絡電話</div>
         </div>
       </div>
       <div class="field-row">
@@ -1352,7 +1326,7 @@
     notice_3:{en:'If you can\'t make it on the day, please find your own replacement — no refunds'},
     notice_4:{en:'Guests bringing a plus-one must register and pay together, and will be seated at the same table'},
     notice_5:{en:'Groups of more than 2 people (including yourself) cannot pay on-site — please pay online instead (a friend in Taiwan can help with the transfer)'},
-    notice_6:{en:'For table requests, please provide at least two of: name, IG handle, phone number — unclear details may not be accommodated'},
+    notice_6:{en:'For table requests, please provide the person\'s name and IG handle — unclear details may not be accommodated'},
     notice_7:{en:'Please arrive before the event starts to help keep check-in smooth'},
     notice_8:{en:'Please treat staff and other guests with respect — the organizer reserves the right to remove anyone behaving inappropriately'},
     notice_9:{en:'Photography may take place during the event — let staff know at check-in if you\'d prefer not to be photographed'},
@@ -1364,20 +1338,18 @@
     toggle_signup:{en:'Register'}, toggle_lookup:{en:'Check Status'},
     field_name:{en:'Name'}, field_country:{en:'Country'}, field_email:{en:'Email'},
     field_phone:{en:'Phone'}, field_phone_hint:{en:'※ This phone number is used to check your registration status and payment details — please make sure it\'s correct'},
-    field_ig:{en:'Instagram Handle'},
-    field_ig_hint:{en:'※ Required — helps us reach you if there\'s a payment or reconciliation issue'},
+    field_ig:{en:'Instagram Handle (required)'},
     field_ig_public:{en:'Make my IG handle visible to other guests'},
     field_ig_public_sub:{en:'If checked, your IG handle may be shown to other registered guests'},
     guest_label:{en:'Plus-ones (not including yourself)'},
     guest_add_btn:{en:'+ Add plus-one'},
     subtotal_label:{en:'Amount Due (Subtotal)'},
-    subtotal_hint:{en:'= (plus-ones + you) × NT$1,200 / person'},
     field_notes:{en:'Dietary restrictions or other notes (optional)'},
     field_tablewith:{en:'Table request (optional)'},
     field_tablewith_name_ph:{en:'Name'}, field_tablewith_ig_ph:{en:'IG'}, field_tablewith_phone_ph:{en:'Phone'},
-    field_tablewith_hint:{en:'※ Please provide at least two of the other person\'s name, IG handle, or phone number to avoid mix-ups with same names/nicknames — unclear info may not be accommodated'},
+    field_tablewith_hint:{en:'※ Please give the other person\'s name and IG handle to avoid mix-ups with same names/nicknames — unclear info may not be accommodated'},
     paymethod_label:{en:'Payment Method'}, paymethod_online:{en:'Pay Online'}, paymethod_onsite:{en:'Pay On-site'},
-    paymethod_warn:{en:'Groups of more than 2 can only pay online — please pay by transfer (a friend in Taiwan can help)'},
+    paymethod_warn:{en:'Guests based in Taiwan need to complete the bank transfer before registration is confirmed — on-site payment is not available'},
     notice_recap_summary:{en:'📋 Review the notes again'},
     agree_label:{en:'I have read and agree to the notes on the Event Info page'},
     signup_submit:{en:'Submit Registration'},
@@ -1393,7 +1365,7 @@
     bank_name_label:{en:'Bank'}, bank_branch_label:{en:'Branch'}, bank_branch_value:{en:'Head Office'},
     bank_holder_label:{en:'Account Name'}, bank_acct_label:{en:'Account No.'}, copy_btn:{en:'Copy'},
     pay_name_label:{en:'Payer Name'}, pay_phone_label:{en:'Phone'},
-    pay_phone_hint:{en:'※ Please use the exact same phone number as your registration so the system can match it automatically'},
+    pay_phone_hint:{en:'※ Please use the same phone number you registered with'},
     pay_last5_label:{en:'Last 5 Digits'}, pay_amount_label:{en:'Amount'}, pay_date_label:{en:'Transfer Date'},
     pay_regid_label:{en:'Registration Number (optional)'},
     pay_regid_hint:{en:'If you know your registration number, enter it here for more accurate matching (shown in the popup after you registered)'},
@@ -1425,9 +1397,6 @@
     filter_all:{en:'All'}, filter_unpaid:{en:'Unpaid'},
     admin_logic_6:{en:'Refund decisions are yours — the system never processes them automatically. Record what you decided in that group\'s staff note'},
     lr_regid:{en:'Registration No.'}, lr_count:{en:'Attending'}, lr_due:{en:'Amount Due'}, lr_method:{en:'Payment Method'},
-    paycode_btn:{en:'🏪 Generate convenience-store payment code'},
-    paycode_sim:{en:'⚠️ This is a simulated code for testing — real payment processing is not connected yet, so it cannot be used at a store. Once integration is complete, a usable code will appear here.'},
-    paycode_label:{en:'Payment Code'},
     field_country_ph:{en:'Type TW, Taiwan, or pick from the list'},
     country_unknown:{en:'Not in our list — will be submitted as typed'},
     lr_companions:{en:'Plus-ones'},
@@ -1591,16 +1560,31 @@
       subtotalEl.textContent = 'NT$' + (total * 1200).toLocaleString();
     }
   }
+  /**
+   * 現場付款只保留給國外賓客。
+   *
+   * 台灣賓客一律先線上匯款才算報名完成 —— 現場收現金要對帳、找零、
+   * 還得承擔當天沒出現的風險，人力成本遠高於事前匯款。
+   * 國外賓客沒有台灣帳戶、匯款不便，所以保留現場付款這條路。
+   *
+   * 判斷依據是主報名人的國籍（同一組的費用本來就由主揪統一處理）。
+   */
   function updatePaymethodAvailability(){
-    const total = totalHeadcount();
-    const overLimit = total > 2;
-    payOnsiteRadio.disabled = overLimit;
-    payOnsitePill.classList.toggle('is-disabled', overLimit);
-    paymethodWarn.style.display = overLimit ? 'block' : 'none';
-    if(overLimit && payOnsiteRadio.checked){
+    const country = (document.getElementById('su-country').value || '').trim().toUpperCase();
+    const mustPayOnline = (country === 'TW');
+
+    payOnsiteRadio.disabled = mustPayOnline;
+    payOnsitePill.classList.toggle('is-disabled', mustPayOnline);
+    paymethodWarn.style.display = mustPayOnline ? 'block' : 'none';
+
+    if(mustPayOnline && payOnsiteRadio.checked){
       payOnlineRadio.checked = true;
+      if(typeof syncPayPills === 'function') syncPayPills();
     }
   }
+
+  // 國籍一改，付款方式的可用選項要跟著更新
+  document.getElementById('su-country').addEventListener('change', updatePaymethodAvailability);
   function renumberGuests(){
     guestRowsContainer.querySelectorAll('.guest-row').forEach((row,i)=>{
       row.querySelector('.guest-row-top label').textContent = guestLabelText(i+1);
@@ -2556,8 +2540,6 @@
     const btn = document.getElementById('lookup-submit-btn');
     msg.classList.remove('show');
     lookupResult.classList.remove('show');
-    document.getElementById('paycode-box').style.display = 'none';
-    document.getElementById('paycode-btn').style.display = 'none';
 
     btn.disabled = true;
     btn.textContent = currentLang === 'en' ? I18N.lookup_submitting.en : '查詢中…';
@@ -2645,11 +2627,6 @@
 
     document.getElementById('lr-edit-btn').style.display = d.allCancelled ? 'none' : 'inline-block';
 
-    // 只有線上付款、還沒收款完成、也還沒全部取消，才提供產生繳費代碼
-    const canPay = isOnline && d.payStatus !== PS.DONE && !d.allCancelled;
-    document.getElementById('paycode-btn').style.display = canPay ? 'block' : 'none';
-    if(d.payCode && canPay) showPayCode(d.payCode, d.due, d.payCodeExpiry);
-
     lookupResult.classList.add('show');
   }
 
@@ -2726,63 +2703,6 @@
     if(!lastLookupData) return;
     enterEditMode(Object.assign({}, lastLookupData, { phone: lastLookupPhone }));
   });
-
-  // ---- 超商繳費代碼（金流串接佔位） ----
-  document.getElementById('paycode-btn').addEventListener('click', async ()=>{
-    if(!lastLookupPhone) return;
-    const btn = document.getElementById('paycode-btn');
-    btn.disabled = true;
-    btn.textContent = currentLang === 'en' ? 'Generating…' : '產生中…';
-
-    const r = await postToBackend({ type:'createPaymentCode', phone: lastLookupPhone });
-    const body = r.body || {};
-    if(body.result === 'success'){
-      showPayCode(body.code, body.amount, body.expiry);
-      showToast(currentLang === 'en' ? '✅ Code generated' : '✅ 已產生繳費代碼');
-    } else {
-      showToast(body.message || (currentLang === 'en' ? 'Could not generate a code' : '無法產生繳費代碼'));
-    }
-
-    btn.disabled = false;
-    btn.textContent = currentLang === 'en' ? I18N.paycode_btn.en : '🏪 產生超商繳費代碼';
-  });
-
-  function showPayCode(code, amount, expiry){
-    if(!code) return;
-    document.getElementById('paycode-box').style.display = 'block';
-    document.getElementById('paycode-num').textContent = code;
-    const parts = [];
-    if(amount) parts.push((currentLang === 'en' ? 'Amount: NT$' : '金額 NT$') + Number(amount).toLocaleString());
-    if(expiry) parts.push((currentLang === 'en' ? 'Valid until ' : '繳費期限 ') + expiry);
-    document.getElementById('paycode-meta').textContent = parts.join(' ・ ');
-    // QR Code 已停用，只顯示代碼文字。
-    // 之後串真實金流要重新開啟時，把下面這行的註解拿掉，
-    // 並移除 HTML 裡 #paycode-qr 的 display:none。
-    // renderQr(code);
-  }
-
-  // QR 產生器只在真的需要時才載入，不拖累一般訪客的開頁速度
-  let qrLibPromise = null;
-  function loadQrLib(){
-    if(window.QRCode) return Promise.resolve();
-    if(qrLibPromise) return qrLibPromise;
-    qrLibPromise = new Promise((resolve, reject)=>{
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-      s.onload = resolve; s.onerror = reject;
-      document.head.appendChild(s);
-    });
-    return qrLibPromise;
-  }
-  function renderQr(text){
-    const box = document.getElementById('paycode-qr');
-    box.innerHTML = '';
-    loadQrLib().then(()=>{
-      new window.QRCode(box, { text:String(text), width:160, height:160, correctLevel: window.QRCode.CorrectLevel.M });
-    }).catch(()=>{
-      box.textContent = currentLang === 'en' ? '(QR code unavailable)' : '（QR Code 載入失敗，請直接使用上方代碼）';
-    });
-  }
 
   // ==========================================================
   // 後台
