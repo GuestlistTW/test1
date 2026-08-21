@@ -176,7 +176,11 @@
 
   .prose{color:var(--text-light); font-size:0.98rem; text-align:center;}
   .prose p{margin:0 0 14px;}
+  /* inline-block：block 會撐滿整行，漸層鋪在整行寬度上，
+     但文字只佔左邊一段，等於只取樣到彩虹前段。
+     縮成 inline-block 讓元素寬度等於文字寬度，六色才會完整落在字上。 */
   .tagline{
+    display:inline-block;
     font-family:'Baloo 2'; font-weight:700; font-size:1.15rem; margin:0 0 8px;
     background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
   }
@@ -186,7 +190,6 @@
   .notice-list{background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px; margin-bottom:10px;}
   .notice-list li{margin-bottom:10px; font-size:0.92rem; color:var(--text-light);}
   .notice-list li:last-child{margin-bottom:0;}
-  .notice-editable-tag{display:block; text-align:center; margin-top:12px; font-size:0.78rem; color:var(--text-muted);}
 
   .seating-slot{
     border:2px dashed rgba(246,243,255,0.3); border-radius:var(--radius);
@@ -923,7 +926,7 @@
       <div class="info-card">
         <div class="ic-bar"></div>
         <div class="ic-label" data-i18n="time_label">時間</div>
-        <div class="ic-value">10/30（五）19:00</div>
+        <div class="ic-value" data-i18n="time_value">10/30（五）19:00</div>
       </div>
       <div class="info-card">
         <div class="ic-bar"></div>
@@ -948,7 +951,6 @@
       <li data-i18n="notice_8">請尊重現場工作人員與其他賓客，主辦單位保有請不當行為者離場之權利</li>
       <li data-i18n="notice_9">活動當天可能安排拍照攝影，若不希望入鏡請於報到時告知工作人員</li>
     </ul>
-    <span class="notice-editable-tag" data-i18n="notice_tag">＊如需再增減條款，隨時跟我說</span>
 
     <h3 class="subhead" data-i18n="seating_title">座位表</h3>
     <div class="seating-slot">
@@ -1026,13 +1028,14 @@
         <div class="field-row three-col">
           <input type="text" id="su-tablewith-name" data-i18n-ph="field_tablewith_name_ph" placeholder="姓名">
           <div class="ig-wrap">
-            <input type="text" id="su-tablewith-ig" autocomplete="off" required
+            <input type="text" id="su-tablewith-ig" autocomplete="off"
                    role="combobox" aria-expanded="false" aria-autocomplete="list"
                    aria-controls="ig-suggest"
-                   data-i18n-ph="field_tablewith_ig_ph" placeholder="IG（必填）">
+                   data-i18n-ph="field_tablewith_ig_ph" placeholder="IG">
             <div class="ig-suggest" id="ig-suggest" role="listbox" hidden></div>
           </div>
-          <input type="text" id="su-tablewith-phone" data-i18n-ph="field_tablewith_phone_ph" placeholder="電話">
+          <div class="cpick" id="su-tablewith-country-picker"></div>
+          <input type="hidden" id="su-tablewith-country">
         </div>
         <div class="hint" data-i18n="field_tablewith_hint">※務必填寫對方姓名、IG 帳號以避免同姓名/綽號；描述不清無法辨識者恕不安排</div>
       </div>
@@ -1212,14 +1215,14 @@
     </div>
 
     <div class="gallery-grid">
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 1</div>
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 2</div>
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 3</div>
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 4</div>
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 5</div>
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 6</div>
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 7</div>
-      <div class="gallery-slot" data-i18n="gallery_slot">照片位 8</div>
+      <div class="gallery-slot" data-slot="1">照片位 1</div>
+      <div class="gallery-slot" data-slot="2">照片位 2</div>
+      <div class="gallery-slot" data-slot="3">照片位 3</div>
+      <div class="gallery-slot" data-slot="4">照片位 4</div>
+      <div class="gallery-slot" data-slot="5">照片位 5</div>
+      <div class="gallery-slot" data-slot="6">照片位 6</div>
+      <div class="gallery-slot" data-slot="7">照片位 7</div>
+      <div class="gallery-slot" data-slot="8">照片位 8</div>
     </div>
   </section>
 
@@ -1330,28 +1333,27 @@
 <script>
   // ===================== i18n =====================
   const I18N = {
-    nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'}, nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'お振込み', ko:'송금 안내'},
+    nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'}, nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
     nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},    banner_loc:{en:'Peng Yuan Yi Pin Banquet', ja:'彭園壹品宴', ko:'펑위안 이핀옌'},
     info_title:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'},
-    info_tagline:{en:'TAIWAN PRIDE — Third Edition', ja:'TAIWAN PRIDE 第3回開催', ko:'TAIWAN PRIDE 세 번째 개최'},
-    info_intro:{en:'We\'re bringing together friends from around the world before the parade for an evening of food, conversation, and new connections. Whether you\'re local to Taipei or visiting from afar, there\'s a seat for you.', ja:'世界各地の仲間をお招きし、パレードの前にみんなで食卓を囲みます。一回の食事の時間で、お互いを知り、この一年の出来事を語り合いましょう。台北在住の方も、遠くから来られた旅人も、あなたの席をご用意しています。', ko:'세계 각지의 친구들을 초대해, 퍼레이드에 앞서 다 함께 식사를 나눕니다. 한 끼 식사를 나누며 서로를 알아가고 지난 일 년의 이야기를 나눠요. 타이베이에 사는 분도, 멀리서 오신 여행자도 자리를 마련해 두었습니다.'},
-    loc_label:{en:'Location', ja:'会場', ko:'장소'}, loc_value:{en:'Peng Yuan Yi Pin Banquet', ja:'彭園壹品宴', ko:'펑위안 이핀옌'},
-    loc_addr:{en:'2F, No. 63, Sec. 2, Nanjing E. Rd., Zhongshan Dist., Taipei', ja:'台北市中山区南京東路二段63号2階', ko:'타이베이시 중산구 난징둥로 2단 63호 2층'},
+    info_tagline:{en:'TAIWAN PRIDE — Third Edition', ja:'TAIWAN PRIDE 第3回開催', ko:'TAIWAN PRIDE 제3회 개최'},
+    info_intro:{en:'We\'re bringing together friends from around the world before the parade for an evening of food, conversation, and new connections. Whether you\'re local to Taipei or visiting from afar, there\'s a seat for you.', ja:'世界各地から集まる仲間たちと、パレード前に食卓を囲みます。食事を楽しみながらお互いを知り、この一年の出来事を語り合いましょう。台北在住の方も、遠方からお越しの方も、皆さまのための席をご用意しています。', ko:'세계 각지의 친구들을 초대해, 퍼레이드에 앞서 다 함께 식사를 나눕니다. 한 끼 식사를 나누며 서로를 알아가고 지난 일 년의 이야기를 나눠요. 타이베이에 사는 분도, 멀리서 오신 여행자도 자리를 마련해 두었습니다.'},
+    loc_label:{en:'Location', ja:'会場', ko:'장소'}, loc_value:{en:'Peng Yuan Yi Pin Banquet', ja:'彭園壹品宴', ko:'펑위안 이핀옌(彭園壹品宴)'},
+    loc_addr:{en:'2F, No. 63, Sec. 2, Nanjing E. Rd., Zhongshan Dist., Taipei', ja:'台北市中山区南京東路二段63号2階', ko:'타이베이시 중산구 난징둥루 2단 63호 2층'},
     loc_btn:{en:'📍 Open in Google Maps →', ja:'📍 Google マップで開く →', ko:'📍 Google 지도에서 열기 →'},
-    time_label:{en:'Time', ja:'日時', ko:'일시'}, fee_label:{en:'Fee', ja:'参加費', ko:'참가비'}, fee_value:{en:'NT$1,200 / person', ja:'NT$1,200／人', ko:'NT$1,200／인'},
+    time_label:{en:'Time', ja:'日時', ko:'일시'}, fee_label:{en:'Fee', ja:'参加費', ko:'참가비'}, fee_value:{en:'NT$1,200 / person', ja:'NT$1,200／人', ko:'1인당 NT$1,200'},
     community_label:{en:'Community', ja:'コミュニティ', ko:'커뮤니티'}, community_value:{en:'After registering, we\'ll provide a QR code to join our LINE group', ja:'お申込み完了後、LINE グループ参加用の QR コードをお送りします', ko:'신청이 완료되면 LINE 그룹 참여용 QR 코드를 보내드립니다'},
-    notice_title:{en:'Notes', ja:'ご注意事項', ko:'유의사항'},
+    notice_title:{en:'Notes', ja:'注意事項', ko:'유의사항'},
     notice_1:{en:'Seating at the restaurant is limited — please register early. If registration exceeds capacity, the organizer will process refunds', ja:'席数に限りがございますので、お早めにお申込みください。定員を超えた場合は主催者より返金のご案内をいたします', ko:'좌석이 한정되어 있으니 서둘러 신청해 주세요. 정원을 초과할 경우 주최 측에서 환불을 안내해 드립니다'},
     notice_2:{en:'Only non-alcoholic drinks will be provided on-site; you\'re welcome to bring your own alcohol', ja:'会場ではノンアルコール飲料のみご用意しております。お酒はお持ち込みいただけます', ko:'현장에서는 무알코올 음료만 제공됩니다. 주류는 각자 가져오실 수 있습니다'},
-    notice_3:{en:'If you can\'t make it on the day, please find your own replacement — no refunds', ja:'当日やむを得ずご欠席の場合は、代わりの方をご自身でお探しください。返金はいたしかねます', ko:'당일 부득이하게 참석하지 못하실 경우 대체 참가자를 직접 구해 주세요. 환불은 어렵습니다'},
-    notice_4:{en:'Guests bringing a plus-one must register and pay together, and will be seated at the same table', ja:'同伴者がいる場合は、お申込みとお支払いをまとめて行っていただき、同じテーブルにご案内します', ko:'동반자가 있는 경우 신청과 결제를 함께 진행해 주시며, 같은 테이블로 안내해 드립니다'},
+    notice_3:{en:'If you can\'t make it on the day, please find your own replacement — no refunds', ja:'当日やむを得ずご欠席の場合は、代わりの方をご自身でお探しください。返金はいたしかねます', ko:'당일 부득이하게 참석하지 못하실 경우 대체 참가자를 직접 구해 주세요. 환불은 불가합니다'},
+    notice_4:{en:'Guests bringing a plus-one must register and pay together, and will be seated at the same table', ja:'同伴者がいる場合は、お申込みとお支払いをまとめて行っていただき、同じテーブルにご案内します', ko:'동반자와 함께 한 번에 신청 및 결제를 완료해 주세요. 같은 테이블로 안내해 드립니다'},
     notice_6:{en:'For table requests, please provide the person\'s name and IG handle — unclear details may not be accommodated', ja:'同席のご希望は、お相手のお名前と Instagram アカウントをご記入ください。情報が不明確な場合はご希望に添えないことがあります', ko:'동석 희망은 상대방의 이름과 Instagram 계정을 적어 주세요. 정보가 불명확할 경우 반영이 어려울 수 있습니다'},
     notice_7:{en:'Please arrive before the event starts to help keep check-in smooth', ja:'会場の混雑を避けるため、開始時刻までにご入場ください', ko:'현장 혼잡을 피하기 위해 시작 시각 전까지 입장해 주세요'},
     notice_8:{en:'Please treat staff and other guests with respect — the organizer reserves the right to remove anyone behaving inappropriately', ja:'スタッフや他のお客様への配慮をお願いします。不適切な行為があった場合、主催者はご退場をお願いすることがあります', ko:'스태프와 다른 참가자를 존중해 주세요. 부적절한 행위가 있을 경우 주최 측이 퇴장을 요청할 수 있습니다'},
-    notice_9:{en:'Photography may take place during the event — let staff know at check-in if you\'d prefer not to be photographed', ja:'当日は写真・動画の撮影を行う場合があります。写り込みを避けたい方は受付時にスタッフへお申し出ください', ko:'당일 사진 및 영상 촬영이 있을 수 있습니다. 촬영을 원하지 않으시면 접수 시 스태프에게 말씀해 주세요'},
-    notice_tag:{en:'* These are draft terms — let us know if anything needs to change', ja:'＊条項の追加・変更が必要な場合はいつでもお知らせください', ko:'＊조항을 추가하거나 변경하고 싶으시면 언제든 알려 주세요'},
+    notice_9:{en:'Photography may take place during the event — let staff know at check-in if you\'d prefer not to be photographed', ja:'当日は写真・動画の撮影を行う場合があります。写り込みを避けたい方は受付時にスタッフへお申し出ください', ko:'당일 사진 및 영상 촬영이 있을 수 있습니다. 사진이나 영상에 나오기를 원하지 않으시면 접수 시 스태프에게 말씀해 주세요'},
     seating_title:{en:'Seating Chart', ja:'座席表', ko:'좌석 배치도'},
-    seating_1:{en:'Seating chart placeholder', ja:'座席表エリア', ko:'좌석 배치도 영역'}, seating_2:{en:'The seating chart will be posted here once table counts are confirmed', ja:'テーブル数が確定次第、こちらに座席表を掲載します', ko:'테이블 수가 확정되면 이곳에 좌석 배치도를 게시합니다'},
+    seating_1:{en:'Seating chart placeholder', ja:'座席表は準備中です', ko:'좌석 배치도를 준비 중입니다'}, seating_2:{en:'The seating chart will be posted here once table counts are confirmed', ja:'テーブル数が確定次第、こちらに座席表を掲載します', ko:'테이블 수가 확정되면 이곳에 좌석 배치도를 게시합니다'},
     register_title:{en:'Register & Lookup', ja:'お申込み・照会', ko:'신청 및 조회'},
     register_desc:{en:'Fill out the form to register, or look up your status using the phone number you registered with.', ja:'フォームにご記入いただくか、お申込み時の電話番号で現在の状況を確認できます。', ko:'양식을 작성하거나, 신청 시 입력한 전화번호로 현재 상태를 확인할 수 있습니다.'},
     toggle_signup:{en:'Register', ja:'申し込む', ko:'신청하기'}, toggle_lookup:{en:'Check Status', ja:'申込状況を確認', ko:'신청 상태 조회'},
@@ -1363,12 +1365,17 @@
     guest_label:{en:'Plus-ones (not including yourself)', ja:'同伴者（ご本人を除く）', ko:'동반자 (본인 제외)'},
     guest_add_btn:{en:'+ Add plus-one', ja:'＋ 同伴者を追加', ko:'＋ 동반자 추가'},
     subtotal_label:{en:'Amount Due (Subtotal)', ja:'お支払い金額', ko:'결제 금액'},
-    field_notes:{en:'Dietary restrictions or other notes (optional)', ja:'食事制限・その他ご要望（任意）', ko:'식사 제한 및 기타 요청 (선택)'},
+    field_notes:{en:'Dietary restrictions or other notes (optional)', ja:'食物アレルギー・食事上の制限、その他ご要望（任意）', ko:'식사 제한 및 기타 요청 (선택)'},
     field_tablewith:{en:'Table request (optional)', ja:'同席のご希望（任意）', ko:'동석 희망 (선택)'},
-    field_tablewith_name_ph:{en:'Name', ja:'お名前', ko:'이름'}, field_tablewith_ig_ph:{en:'IG', ja:'IG（必須）', ko:'IG (필수)'}, field_tablewith_phone_ph:{en:'Phone', ja:'電話番号', ko:'연락처'},
+    field_tablewith_name_ph:{en:'Name', ja:'お名前', ko:'이름'}, field_tablewith_ig_ph:{en:'IG', ja:'IG', ko:'IG'},
+    time_value:{en:'Fri, Oct 30 · 7:00 PM', ja:'2026年10月30日（金）19:00', ko:'2026년 10월 30일(금) 19:00'},
+    tablewith_country_ph:{en:'Country', ja:'国籍', ko:'국적'},
+    tablewith_ig_required:{en:'Please also fill in that person\'s IG handle so we can identify them',
+      ja:'ご本人を特定するため、お相手の Instagram アカウントもご記入ください',
+      ko:'해당 인원을 확인할 수 있도록 상대방의 Instagram 계정도 입력해 주세요'},
     field_tablewith_hint:{en:'※ Please give the other person\'s name and IG handle to avoid mix-ups with same names/nicknames — unclear info may not be accommodated', ja:'※同姓同名やニックネームの取り違えを防ぐため、お相手のお名前と Instagram アカウントを必ずご記入ください。情報が不明確な場合はご希望に添えかねます', ko:'※동명이인이나 닉네임 혼동을 막기 위해 상대방의 이름과 Instagram 계정을 반드시 적어 주세요. 정보가 불명확하면 반영이 어렵습니다'},
-    paymethod_label:{en:'Payment Method', ja:'お支払い方法', ko:'결제 방법'}, paymethod_online:{en:'Pay Online', ja:'オンライン', ko:'온라인 결제'}, paymethod_onsite:{en:'Pay On-site', ja:'当日現地払い', ko:'현장 결제'},
-    paymethod_warn:{en:'Guests based in Taiwan need to complete the bank transfer before registration is confirmed — on-site payment is not available', ja:'台湾在住の方は事前のお振込みをもってお申込み完了となります。現地払いはご利用いただけません', ko:'대만에 계신 분은 사전 송금을 완료해야 신청이 확정됩니다. 현장 결제는 이용하실 수 없습니다'},
+    paymethod_label:{en:'Payment Method', ja:'お支払い方法', ko:'결제 방법'}, paymethod_online:{en:'Pay Online', ja:'事前振込', ko:'사전 계좌이체'}, paymethod_onsite:{en:'Pay On-site', ja:'当日現地払い', ko:'현장 결제'},
+    paymethod_warn:{en:'On-site payment is not available for guests in Taiwan', ja:'台湾在住の方は現地払いをご利用いただけません', ko:'대만에 계신 분은 현장 결제를 이용하실 수 없습니다'},
     notice_recap_summary:{en:'📋 Review the notes again', ja:'📋 注意事項をもう一度確認する', ko:'📋 유의사항 다시 보기'},
     agree_label:{en:'I have read and agree to the notes on the Event Info page', ja:'「イベント情報」ページの注意事項を読み、同意します', ko:'‘행사 정보’ 페이지의 유의사항을 읽고 동의합니다'},
     signup_submit:{en:'Submit Registration', ja:'申し込む', ko:'신청하기'},
@@ -1379,16 +1386,16 @@
     lookup_submit:{en:'Check Status', ja:'状況を確認', ko:'상태 조회'},
     lookup_submitting:{en:'Checking…'},
     lookup_msg:{en:'No record found — please double check your phone number, or contact the organizer for help.', ja:'データが見つかりません。電話番号をご確認いただくか、主催者までお問い合わせください。', ko:'조회된 정보가 없습니다. 전화번호를 확인하시거나 주최 측에 문의해 주세요.'},
-    payment_title:{en:'Payment', ja:'お振込み', ko:'송금 안내'}, payment_desc:{en:'After registering, please transfer using the details below and report your transfer for verification.', ja:'お申込み後、下記の口座へお振込みのうえ、振込内容をご報告ください。照合に使用します。', ko:'신청 후 아래 계좌로 송금하시고, 송금 내용을 보고해 주세요. 확인에 사용됩니다.'},
+    payment_title:{en:'Payment', ja:'銀行振込', ko:'송금 안내'}, payment_desc:{en:'After registering, please transfer using the details below and report your transfer for verification.', ja:'お申込み後、下記の口座へお振込みのうえ、振込内容をご報告ください。照合に使用します。', ko:'신청 후 아래 계좌로 송금하시고, 송금 내용을 보고해 주세요. 확인에 사용됩니다.'},
     qr_caption:{en:'Sample payment QR code — replace with your actual receiving QR code', ja:'決済コードのサンプルです。実際の QR コードに差し替えてください', ko:'결제 코드 예시입니다. 실제 QR 코드로 교체해 주세요'},
     bank_name_label:{en:'Bank', ja:'銀行名', ko:'은행'}, bank_branch_label:{en:'Branch', ja:'支店', ko:'지점'}, bank_branch_value:{en:'Head Office', ja:'本店', ko:'본점'},
     bank_holder_label:{en:'Account Name', ja:'口座名義', ko:'예금주'}, bank_acct_label:{en:'Account No.', ja:'口座番号', ko:'계좌번호'}, copy_btn:{en:'Copy', ja:'口座番号をコピー', ko:'계좌번호 복사'},
     pay_name_label:{en:'Payer Name', ja:'振込人のお名前', ko:'송금인 이름'}, pay_phone_label:{en:'Phone', ja:'電話番号', ko:'연락처'},
     pay_phone_hint:{en:'※ Please use the same phone number you registered with', ja:'※お申込み時と同じ電話番号をご入力ください', ko:'※신청 시 사용한 전화번호를 입력해 주세요'},
-    pay_last5_label:{en:'Last 5 Digits', ja:'口座番号の下5桁', ko:'계좌번호 뒤 5자리'}, pay_amount_label:{en:'Amount', ja:'振込金額', ko:'송금 금액'}, pay_date_label:{en:'Transfer Date', ja:'振込日', ko:'송금일'},
+    pay_last5_label:{en:'Last 5 Digits', ja:'振込元口座番号の下5桁', ko:'계좌번호 뒤 5자리'}, pay_amount_label:{en:'Amount', ja:'振込金額', ko:'송금 금액'}, pay_date_label:{en:'Transfer Date', ja:'振込日', ko:'송금일'},
     pay_regid_label:{en:'Registration Number (optional)'},
     pay_regid_hint:{en:'If you know your registration number, enter it here for more accurate matching (shown in the popup after you registered)'},
-    pay_submit:{en:'Report Transfer', ja:'振込内容を報告', ko:'송금 내용 보고'},
+    pay_submit:{en:'Report Transfer', ja:'振込情報を送信', ko:'송금 정보 제출'},
     pay_submitting:{en:'Submitting…'},
     pay_msg:{en:'✅ Your transfer report has been received — we\'ll verify it and update your status soon.', ja:'✅ 振込のご報告を受け付けました。確認のうえ、お申込み状況を更新いたします。', ko:'✅ 송금 보고를 접수했습니다. 확인 후 신청 상태를 업데이트하겠습니다.'},
     gallery_title:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, gallery_desc:{en:'Event photos will be posted here after the event.', ja:'イベント終了後、写真を順次こちらに掲載します。', ko:'행사 종료 후 사진을 순차적으로 게시합니다.'},
@@ -1426,7 +1433,7 @@
     filter_cancelreq:{en:'⚠ Cancel Requests'}, filter_mismatch:{en:'Amount Mismatch'},
     filter_success:{en:'Paid'}, filter_cancelled:{en:'Cancelled'},
     stat_pending:{en:'Cancel Requests'},
-    footer_text:{en:'Taiwan Pride — Proud Together · Contact the organizer with any questions', ja:'Taiwan Pride — Proud Together ・ ご不明な点は主催者までお問い合わせください', ko:'Taiwan Pride — Proud Together ・ 문의 사항은 주최 측으로 연락해 주세요'},
+    footer_text:{en:'Taiwan Pride — Proud Together · Contact the organizer with any questions', ja:'Taiwan Pride — Proud Together ・ ご不明な点は主催者までお問い合わせください', ko:'Taiwan Pride — Proud Together ・ 문의 사항은 주최 측에 연락해 주세요'},
     line_modal_title:{en:'Welcome to Taiwan Pride!', ja:'TAIWAN PRIDE へようこそ！', ko:'TAIWAN PRIDE에 오신 것을 환영합니다!'},
     line_modal_desc:{en:'Scan the QR code below to join our LINE group and get event updates', ja:'下の QR コードから LINE コミュニティに参加して、最新情報を受け取ってください', ko:'아래 QR 코드로 LINE 커뮤니티에 참여해 최신 소식을 받아보세요'},
     line_modal_ph:{en:'LINE group QR code placeholder — replace with the real image', ja:'LINE グループの QR コードエリア（実際の画像に差し替えてください）', ko:'LINE 그룹 QR 코드 영역 (실제 이미지로 교체해 주세요)'},
@@ -1452,9 +1459,30 @@
 
   let currentLang = 'zh';
 
-  /** 非中文一律視為「用英文顯示」——目前只有靜態頁面文字有日韓翻譯，
-      動態訊息（提示、錯誤、確認視窗）先以英文呈現 */
+  /**
+   * 取得目前語言的文字。
+   *   T('key')                  → 從 I18N 取（中文用 zh 欄，沒有就退回 HTML 原文找不到時回 key）
+   *   T({zh:'…',en:'…',...})    → 直接給一組對照表
+   * 日／韓缺翻譯時退回英文，英文再缺才退中文，畫面不會出現空白。
+   */
+  function T(keyOrMap){
+    const m = (typeof keyOrMap === 'string') ? I18N[keyOrMap] : keyOrMap;
+    if(!m) return (typeof keyOrMap === 'string') ? keyOrMap : '';
+    if(currentLang === 'zh') return m.zh || m.en || '';
+    return m[currentLang] || m.en || m.zh || '';
+  }
+
+  /** 後台文字只有中英兩種，維持原本的判斷方式 */
   function isEn(){ return currentLang !== 'zh'; }
+
+  /** 多處重複使用的短語，集中一份避免同一句話在不同地方翻得不一樣 */
+  const TXT = {
+    cancelled:        { zh:'已取消', en:'Cancelled', ja:'キャンセル済み', ko:'취소됨' },
+    cancelPending:    { zh:'取消申請中', en:'Cancel requested', ja:'キャンセル申請中', ko:'취소 신청 중' },
+    cancelPendingLong:{ zh:'取消申請處理中', en:'Cancel requested', ja:'キャンセル申請を確認中', ko:'취소 신청 확인 중' },
+    requestCancel:    { zh:'申請取消', en:'Request cancel', ja:'キャンセルを申請', ko:'취소 신청' },
+    undoRequest:      { zh:'撤回申請', en:'Undo request', ja:'申請を取り消す', ko:'신청 철회' }
+  };
   const zhCache = new Map();
 
   const LANG_LABEL = { zh:'中文', en:'English', ja:'日本語', ko:'한국어' };
@@ -1490,6 +1518,11 @@
     document.getElementById('lang-toggle-btn').textContent = '🌐 ' + LANG_LABEL[lang];
     document.querySelectorAll('.lang-opt').forEach(function(b){
       b.classList.toggle('is-active', b.dataset.lang === lang);
+    });
+    // 相簿：只換前綴詞，編號 1~8 保留
+    const slotWord = T({ zh:'照片位', en:'Photo', ja:'写真', ko:'사진' });
+    document.querySelectorAll('.gallery-slot[data-slot]').forEach(function(el){
+      el.textContent = slotWord + ' ' + el.dataset.slot;
     });
     document.documentElement.lang = HTML_LANG[lang] || 'zh-Hant';
     renumberGuests();
@@ -1586,10 +1619,11 @@
   let guestCount = 0;
 
   function guestLabelText(n){
-    return isEn() ? `Plus-one ${n} name` : `攜伴 ${n} 姓名`;
+    return T({ zh:`攜伴 ${n} 姓名`, en:`Plus-one ${n} name`,
+               ja:`同伴者 ${n} のお名前`, ko:`동반자 ${n} 이름` });
   }
   function removeLabelText(){
-    return isEn() ? 'Remove' : '移除';
+    return T({ zh:'移除', en:'Remove', ja:'削除', ko:'삭제' });
   }
   /** 修改模式下，既有的有效人數要一起算進總人數與金額 */
   function baseHeadcount(){
@@ -1601,14 +1635,16 @@
   function updateGuestHint(){
     const base = baseHeadcount();
     const total = totalHeadcount();
-    if(isEn()){
-      guestCountHint.textContent = guestCount === 0
-        ? (editingGroup ? `${base} people currently registered` : 'No plus-ones added yet (total: 1 person, including you)')
-        : `${guestCount} more added (total: ${total} people)`;
+    if(guestCount === 0){
+      guestCountHint.textContent = editingGroup
+        ? T({ zh:`目前這組共 ${base} 人`, en:`${base} people currently registered`,
+              ja:`現在このグループは ${base} 名です`, ko:`현재 이 그룹은 ${base}명입니다` })
+        : T({ zh:'尚未新增攜伴（總人數：1人，含本人）', en:'No plus-ones added yet (total: 1 person, including you)',
+              ja:'同伴者はまだ追加されていません（合計 1 名／ご本人のみ）', ko:'동반자가 아직 없습니다 (총 1명, 본인 포함)' });
     } else {
-      guestCountHint.textContent = guestCount === 0
-        ? (editingGroup ? `目前這組共 ${base} 人` : '尚未新增攜伴（總人數：1人，含本人）')
-        : `新增 ${guestCount} 位（總人數：${total}人）`;
+      guestCountHint.textContent = T({
+        zh:`新增 ${guestCount} 位（總人數：${total}人）`, en:`${guestCount} more added (total: ${total} people)`,
+        ja:`${guestCount} 名を追加（合計 ${total} 名）`, ko:`${guestCount}명 추가 (총 ${total}명)` });
     }
     addGuestBtn.disabled = false;
     updatePaymethodAvailability();
@@ -1649,10 +1685,9 @@
     });
   }
   function guestFieldPh(kind){
-    if(isEn()){
-      return kind==='name' ? 'Name' : kind==='country' ? 'Country (e.g. TW)' : 'IG';
-    }
-    return kind==='name' ? '姓名' : kind==='country' ? '國籍（如 TW）' : 'IG';
+    if(kind === 'name') return T({ zh:'姓名', en:'Name', ja:'お名前', ko:'이름' });
+    if(kind === 'country') return T({ zh:'國籍', en:'Country', ja:'国籍', ko:'국적' });
+    return 'IG';
   }
   function addGuestRow(){
 
@@ -1700,10 +1735,10 @@
   copyBtn.addEventListener('click', ()=>{
     const text = acctNumber.textContent.trim();
     const done = ()=>{
-      copyBtn.textContent = isEn() ? 'Copied' : '已複製';
+      copyBtn.textContent = T({ zh:'已複製', en:'Copied', ja:'コピーしました', ko:'복사했습니다' });
       copyBtn.classList.add('copied');
       setTimeout(()=>{
-        copyBtn.textContent = isEn() ? 'Copy' : '複製帳號';
+        copyBtn.textContent = T({ zh:'複製帳號', en:'Copy', ja:'口座番号をコピー', ko:'계좌번호 복사' });
         copyBtn.classList.remove('copied');
       }, 2000);
     };
@@ -1726,7 +1761,8 @@
     const regEl = document.getElementById('line-modal-regid');
     const hintEl = document.getElementById('line-modal-regid-hint');
     if(regId){
-      const label = isEn() ? 'Your registration number: ' : '你的報名編號：';
+      const label = T({ zh:'你的報名編號：', en:'Your registration number: ',
+                        ja:'お申込番号：', ko:'신청 번호: ' });
       regEl.textContent = label + regId;
       regEl.style.display = 'inline-block';
       hintEl.style.display = 'block';
@@ -1851,18 +1887,17 @@
     };
 
     if(!form.checkValidity()){
-      showError(isEn() ? I18N.signup_error.en
-        : '請完整填寫必填欄位（姓名、國籍、Email、電話），並勾選同意注意事項後再送出');
+      showError(T('signup_error'));
       if(form.reportValidity) form.reportValidity();
       return;
     }
 
-    // 同桌 IG 必填
+    // 同桌需求整體是選填；但只要填了姓名，就必須一併填 IG。
+    // 光有姓名很容易撞名或只是綽號，沒有 IG 就無法確定是誰，排桌會排錯人。
+    const twName = document.getElementById('su-tablewith-name');
     const twIg = document.getElementById('su-tablewith-ig');
-    if(!twIg.value.trim()){
-      showError(isEn()
-        ? 'Please fill in the IG handle of the person you want to sit with.'
-        : '請填寫想同桌對象的 IG 帳號');
+    if(twName.value.trim() && !twIg.value.trim()){
+      showError(T('tablewith_ig_required'));
       twIg.focus();
       return;
     }
@@ -1870,9 +1905,11 @@
     // 國籍必須是清單裡的國家（打錯字擋在這裡，不會寫進試算表變成髒資料）
     const badCountry = validateAllCountries();
     if(badCountry){
-      showError(isEn()
-        ? 'Country "' + badCountry + '" is not in our list — please pick one from the dropdown.'
-        : '國籍「' + badCountry + '」不在清單中，請從下拉選單挑選正確的國家');
+      showError(T({
+        zh:'國籍「' + badCountry + '」不在清單中，請從下拉選單挑選正確的國家',
+        en:'Country "' + badCountry + '" is not in our list — please pick one from the dropdown.',
+        ja:'国籍「' + badCountry + '」は一覧にありません。プルダウンからお選びください。',
+        ko:'국적 「' + badCountry + '」은(는) 목록에 없습니다. 드롭다운에서 선택해 주세요.' }));
       return;
     }
     errorEl.classList.remove('show');
@@ -1881,11 +1918,11 @@
     const restoreBtn = ()=>{
       submitBtn.disabled = false;
       submitBtn.textContent = editingGroup
-        ? (isEn() ? 'Save changes' : '儲存修改')
-        : (isEn() ? I18N.signup_submit.en : '送出報名');
+        ? T({ zh:'儲存修改', en:'Save changes', ja:'変更を保存', ko:'변경 사항 저장' })
+        : T('signup_submit');
     };
     submitBtn.disabled = true;
-    submitBtn.textContent = isEn() ? I18N.signup_submitting.en : '處理中…';
+    submitBtn.textContent = T('signup_submitting');
 
     // 這裡收到的 guest-row 一律是「新增的人」；既有成員顯示在唯讀區，不會混進來
     const guests = Array.from(guestRowsContainer.querySelectorAll('.guest-row')).map(row=>({
@@ -1906,7 +1943,7 @@
       notes: document.getElementById('su-notes').value.trim(),
       tableWithName: document.getElementById('su-tablewith-name').value.trim(),
       tableWithIg: document.getElementById('su-tablewith-ig').value.trim(),
-      tableWithPhone: document.getElementById('su-tablewith-phone').value.trim(),
+      tableWithCountry: document.getElementById('su-tablewith-country').value.trim(),
       paymethod: document.querySelector('input[name="paymethod"]:checked').value
     };
 
@@ -1914,20 +1951,26 @@
     const body = r.body || {};
 
     if(!r.ok || body.result !== 'success'){
-      showError(body.message || (isEn()
-        ? 'Could not reach the server — please check your connection and try again.'
-        : '連線失敗，請確認網路後再試一次'), 10000);
+      showError(body.message || T({
+        zh:'連線失敗，請確認網路後再試一次',
+        en:'Could not reach the server — please check your connection and try again.',
+        ja:'サーバーに接続できませんでした。通信環境をご確認のうえ、もう一度お試しください。',
+        ko:'서버에 연결할 수 없습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.' }), 10000);
       restoreBtn();
       return;
     }
 
     if(body.mode === 'updated'){
       // 修改成功：留在原地顯示結果，順便把查詢結果重新拉一次
-      showToast(isEn() ? '✅ Your registration has been updated' : '✅ 報名資料已更新');
+      showToast(T({ zh:'✅ 報名資料已更新', en:'✅ Your registration has been updated',
+                    ja:'✅ お申込内容を更新しました', ko:'✅ 신청 정보가 업데이트되었습니다' }));
       if(body.topup > 0){
-        alert(isEn()
-          ? 'Added ' + guests.length + ' more people. Please transfer an additional NT$' + Number(body.topup).toLocaleString() + ' and report it on the Payment tab.'
-          : '已加入 ' + guests.length + ' 位，需補款 NT$' + Number(body.topup).toLocaleString() + '。\n請至「匯款轉帳」頁面完成補匯並回報。');
+        const topupAmt = Number(body.topup).toLocaleString();
+        alert(T({
+          zh:'已加入 ' + guests.length + ' 位，需補款 NT$' + topupAmt + '。\n請至「匯款轉帳」頁面完成補匯並回報。',
+          en:'Added ' + guests.length + ' more people. Please transfer an additional NT$' + topupAmt + ' and report it on the Payment tab.',
+          ja:guests.length + ' 名を追加しました。追加で NT$' + topupAmt + ' のお振込みが必要です。\n「銀行振込」ページよりお手続きとご報告をお願いします。',
+          ko:guests.length + '명을 추가했습니다. 추가로 NT$' + topupAmt + '을 송금해 주세요.\n‘송금 안내’ 페이지에서 송금 후 보고해 주세요.' }));
       }
       exitEditMode();
       const phone = payload.phone;
@@ -1969,7 +2012,7 @@
     document.getElementById('su-notes').value = g.notes || '';
     document.getElementById('su-tablewith-name').value = g.tableWithName || '';
     document.getElementById('su-tablewith-ig').value = g.tableWithIg || '';
-    document.getElementById('su-tablewith-phone').value = g.tableWithPhone || '';
+    tableWithCountryPicker.set(g.tableWithCountry || '');
     document.getElementById('su-agree').checked = true;
     const onsite = g.paymethod === '現場付款';
     (onsite ? payOnsiteRadio : payOnlineRadio).checked = true;
@@ -1983,9 +2026,9 @@
     const box = document.getElementById('existing-members');
     box.innerHTML = (g.members || []).map(m=>{
       const tags = m.cancelled
-        ? '<span class="st-badge st-void">' + (isEn()?'Cancelled':'已取消') + '</span>'
+        ? '<span class="st-badge st-void">' + T(TXT.cancelled) + '</span>'
         : (m.cancelPending
-            ? '<span class="st-badge st-topup">' + (isEn()?'Cancel requested':'取消申請中') + '</span>'
+            ? '<span class="st-badge st-topup">' + T(TXT.cancelPending) + '</span>'
             : '');
       return '<div class="existing-mem' + (m.cancelled ? ' is-cancelled' : '') + '">'
         + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
@@ -2003,7 +2046,7 @@
     document.getElementById('edit-banner-id').textContent = g.regId;
     document.getElementById('edit-banner').classList.add('show');
     document.getElementById('signup-submit-btn').textContent =
-      isEn() ? 'Save changes' : '儲存修改';
+      T({ zh:'儲存修改', en:'Save changes', ja:'変更を保存', ko:'변경 사항 저장' });
 
     formToggleBtns.forEach(b=> b.classList.toggle('active', b.dataset.form === 'signup'));
     signupForm.style.display = 'block';
@@ -2021,8 +2064,7 @@
     document.getElementById('existing-members').innerHTML = '';
     document.getElementById('existing-members-hint').style.display = 'none';
     document.getElementById('edit-banner').classList.remove('show');
-    document.getElementById('signup-submit-btn').textContent =
-      isEn() ? I18N.signup_submit.en : '送出報名';
+    document.getElementById('signup-submit-btn').textContent = T('signup_submit');
     signupForm.reset();
     guestRowsContainer.innerHTML = '';
     guestCount = 0;
@@ -2039,7 +2081,7 @@
     e.preventDefault();
     const submitBtn = document.getElementById('payment-submit-btn');
     submitBtn.disabled = true;
-    submitBtn.textContent = isEn() ? I18N.pay_submitting.en : '處理中…';
+    submitBtn.textContent = T('pay_submitting');
 
     const payload = {
       type: 'payment',
@@ -2058,7 +2100,7 @@
     document.getElementById('payment-form').reset();
 
     submitBtn.disabled = false;
-    submitBtn.textContent = isEn() ? I18N.pay_submit.en : '回報轉帳資訊';
+    submitBtn.textContent = T('pay_submit');
   });
 
 
@@ -2172,7 +2214,7 @@
   function countryDisplayName(code){
     const n = COUNTRY_NAME[code];
     if(!n) return '';
-    return isEn() ? n.en : (n.zh + ' ' + n.en);
+    return isEn() ? n.en : (n.zh + ' ' + n.en);   // 國名只有中英兩種寫法
   }
 
   /**
@@ -2205,7 +2247,7 @@
   // ==========================================================
   let cpickSeq = 0;
 
-  function createCountryPicker(mount, hiddenInput, hintEl){
+  function createCountryPicker(mount, hiddenInput, hintEl, placeholderText){
     let value = '';
     let filtered = [];
     let activeIdx = -1;
@@ -2247,7 +2289,10 @@
         valueEl.textContent = labelOf(value);
         valueEl.classList.remove('is-placeholder');
       } else {
-        valueEl.textContent = isEn() ? 'Select your country…' : '請選擇國籍…';
+        valueEl.textContent = placeholderText
+          ? placeholderText()
+          : T({ zh:'請選擇國籍…', en:'Select your country…',
+                ja:'国籍を選択してください…', ko:'국적을 선택해 주세요…' });
         valueEl.classList.add('is-placeholder');
       }
       // 選中的國家已經顯示在框框裡了，不再重複寫一行提示文字在下面
@@ -2265,7 +2310,8 @@
 
       if(filtered.length === 0){
         list.innerHTML = '<div class="cpick-empty">'
-          + (isEn() ? 'No matching country' : '找不到符合的國家')
+          + T({ zh:'找不到符合的國家', en:'No matching country',
+                ja:'該当する国が見つかりません', ko:'해당하는 국가가 없습니다' })
           + '</div>';
         activeIdx = -1;
         return;
@@ -2387,14 +2433,24 @@
     return api;
   }
 
-  // 主報名人
   const countryPickers = [];
+  // 主報名人
   const mainCountryPicker = createCountryPicker(
     document.getElementById('su-country-picker'),
     document.getElementById('su-country'),
     document.getElementById('su-country-hint')
   );
   countryPickers.push(mainCountryPicker);
+
+  // 同桌對象的國籍（選填，可留空）
+  const tableWithCountryPicker = createCountryPicker(
+    document.getElementById('su-tablewith-country-picker'),
+    document.getElementById('su-tablewith-country'),
+    null,
+    function(){ return T({ zh:'國籍（選填）', en:'Country (optional)',
+                           ja:'国籍（任意）', ko:'국적 (선택)' }); }
+  );
+  countryPickers.push(tableWithCountryPicker);
 
   /** 語言切換時，所有選擇器的顯示文字要跟著換 */
   function refreshCountryPickers(){
@@ -2410,16 +2466,19 @@
   function validateAllCountries(){
     if(!document.getElementById('su-country').value.trim()){
       document.getElementById('su-country-picker')._picker.open();
-      return isEn() ? '(your country is not selected)' : '（尚未選擇你的國籍）';
+      return T({ zh:'（尚未選擇你的國籍）', en:'(your country is not selected)',
+                 ja:'（国籍が選択されていません）', ko:'(국적이 선택되지 않았습니다)' });
     }
     const rows = Array.from(guestRowsContainer.querySelectorAll('.guest-row'));
     for(let i = 0; i < rows.length; i++){
       const hidden = rows[i].querySelector('.guest-country-input');
       if(!hidden.value.trim()){
         rows[i].querySelector('.cpick')._picker.open();
-        return isEn()
-          ? '(plus-one #' + (i + 1) + ' has no country selected)'
-          : '（第 ' + (i + 1) + ' 位攜伴尚未選擇國籍）';
+        return T({
+          zh:'（第 ' + (i + 1) + ' 位攜伴尚未選擇國籍）',
+          en:'(plus-one #' + (i + 1) + ' has no country selected)',
+          ja:'（同伴者 ' + (i + 1) + ' 名目の国籍が未選択です）',
+          ko:'(동반자 ' + (i + 1) + '번째의 국적이 선택되지 않았습니다)' });
       }
     }
     return '';
@@ -2488,9 +2547,10 @@
 
       if(current.length === 0){
         box.innerHTML = '<div class="ig-empty">'
-          + (isEn()
-              ? 'No registered IG matches — you can still type it in manually.'
-              : '沒有相符的已報名帳號，你仍然可以直接手動輸入')
+          + T({ zh:'沒有相符的已報名帳號，你仍然可以直接手動輸入',
+                en:'No registered IG matches — you can still type it in manually.',
+                ja:'一致する登録済みアカウントがありません。手入力も可能です',
+                ko:'일치하는 등록 계정이 없습니다. 직접 입력하셔도 됩니다' })
           + '</div>';
         openBox();
         activeIdx = -1;
@@ -2562,15 +2622,15 @@
   // ==========================================================
   const PS = { NONE:'未收款', CHECKING:'帳款確認中', TOPUP:'待補款', DONE:'已收款' };
   const PS_META = {
-    [PS.NONE]:     { cls:'st-none',     zh:'未收款',     en:'Unpaid' },
-    [PS.CHECKING]: { cls:'st-checking', zh:'帳款確認中', en:'Verifying' },
-    [PS.TOPUP]:    { cls:'st-topup',    zh:'待補款',     en:'Top-up due' },
-    [PS.DONE]:     { cls:'st-paid',     zh:'已收款',     en:'Paid' }
+    [PS.NONE]:     { cls:'st-none',     zh:'未收款',     en:'Unpaid',     ja:'未入金',       ko:'미입금' },
+    [PS.CHECKING]: { cls:'st-checking', zh:'帳款確認中', en:'Verifying',  ja:'入金確認中',   ko:'입금 확인 중' },
+    [PS.TOPUP]:    { cls:'st-topup',    zh:'待補款',     en:'Top-up due', ja:'追加入金待ち', ko:'추가 입금 대기' },
+    [PS.DONE]:     { cls:'st-paid',     zh:'已收款',     en:'Paid',       ja:'入金済み',     ko:'입금 완료' }
   };
-  const CANCELLED_META = { cls:'st-void', zh:'已取消', en:'Cancelled' };
+  const CANCELLED_META = { cls:'st-void', zh:'已取消', en:'Cancelled', ja:'キャンセル済み', ko:'취소됨' };
   // 後端在試算表缺少「款項狀態」欄時會回 N/A。刻意不假裝成「未收款」——
   // 那會讓你以為錢真的沒收到，比直接說「讀不到」危險得多。
-  const NA_META = { cls:'st-na', zh:'N/A', en:'N/A' };
+  const NA_META = { cls:'st-na', zh:'N/A', en:'N/A', ja:'N/A', ko:'N/A' };
 
   function psMeta(g){
     if(g && g.allCancelled) return CANCELLED_META;
@@ -2579,7 +2639,7 @@
   }
   function psText(g){
     const m = psMeta(g);
-    return isEn() ? m.en : m.zh;
+    return T(m);
   }
 
   // ---- 查詢 ----
@@ -2599,12 +2659,10 @@
     lookupResult.classList.remove('show');
 
     btn.disabled = true;
-    btn.textContent = isEn() ? I18N.lookup_submitting.en : '查詢中…';
+    btn.textContent = T('lookup_submitting');
 
     const notFound = (text)=>{
-      msg.textContent = text || (isEn()
-        ? 'No record found — please double check your phone number, or contact the organizer for help.'
-        : '查無資料，請確認電話輸入是否正確，或聯繫主辦單位協助查詢。');
+      msg.textContent = text || T('lookup_msg');
       msg.classList.add('show');
       setTimeout(()=> msg.classList.remove('show'), 8000);
     };
@@ -2613,9 +2671,10 @@
     const data = r.body || {};
 
     if(!r.ok){
-      notFound(isEn()
-        ? 'Could not reach the server — please check your connection and try again.'
-        : '連線失敗，請確認網路後再試一次。');
+      notFound(T({ zh:'連線失敗，請確認網路後再試一次。',
+                   en:'Could not reach the server — please check your connection and try again.',
+                   ja:'サーバーに接続できませんでした。通信環境をご確認ください。',
+                   ko:'서버에 연결할 수 없습니다. 네트워크를 확인해 주세요.' }));
     } else if(data.found){
       lastLookupPhone = phone;
       lastLookupData = data;
@@ -2625,7 +2684,7 @@
     }
 
     btn.disabled = false;
-    btn.textContent = isEn() ? I18N.lookup_submit.en : '查詢狀態';
+    btn.textContent = T('lookup_submit');
   }
 
   function renderLookup(d){
@@ -2637,44 +2696,68 @@
     badge.textContent = psText(d);
 
     document.getElementById('lr-regid').textContent = d.regId || '—';
-    document.getElementById('lr-count').textContent = isEn()
-      ? d.activeCount + ' people' : d.activeCount + ' 人';
+    document.getElementById('lr-count').textContent = T({
+      zh: d.activeCount + ' 人', en: d.activeCount + ' people',
+      ja: d.activeCount + ' 名', ko: d.activeCount + '명' });
     document.getElementById('lr-due').textContent = 'NT$' + Number(d.due || 0).toLocaleString();
-    document.getElementById('lr-method').textContent = isOnline
-      ? (isEn() ? 'Online' : '線上付款')
-      : (isEn() ? 'On-site' : '現場付款');
+    document.getElementById('lr-method').textContent =
+      isOnline ? T('paymethod_online') : T('paymethod_onsite');
 
     // 說明文字完全對應款項狀態，不另外推算
     const NOTE = {
-      [PS.DONE]:     {zh:'已確認收到您的付款，我們活動現場見！', en:'Payment confirmed — see you at the event!'},
-      [PS.CHECKING]: {zh:'已收到你的匯款回報，主辦單位正在核對中，確認後這裡會變成「已收款」。', en:'We have received your transfer report and are verifying it.'},
-      [PS.TOPUP]:    {zh:'報名後有新增人數，請補匯差額並至「匯款轉帳」頁面回報。', en:'People were added after payment — please transfer the difference and report it on the Payment tab.'},
-      [PS.NONE]:     {zh:'尚未收到您的匯款回報，請至「匯款轉帳」頁面完成轉帳並回報。', en:'We have not received your transfer report yet — please complete it on the Payment tab.'}
+      [PS.DONE]: {
+        zh:'已確認收到您的付款，我們活動現場見！',
+        en:'Payment confirmed — see you at the event!',
+        ja:'ご入金を確認しました。当日会場でお会いしましょう！',
+        ko:'입금이 확인되었습니다. 행사 당일에 뵙겠습니다!' },
+      [PS.CHECKING]: {
+        zh:'已收到你的匯款回報，主辦單位正在核對中，確認後這裡會變成「已收款」。',
+        en:'We have received your transfer report and are verifying it.',
+        ja:'お振込みのご報告を受け取りました。確認が取れ次第「入金済み」に変わります。',
+        ko:'송금 보고를 접수했습니다. 확인이 완료되면 ‘입금 완료’로 변경됩니다.' },
+      [PS.TOPUP]: {
+        zh:'報名後有新增人數，請補匯差額並至「匯款轉帳」頁面回報。',
+        en:'People were added after payment — please transfer the difference and report it on the Payment tab.',
+        ja:'お申込み後に人数が追加されました。差額をお振込みのうえ「銀行振込」ページよりご報告ください。',
+        ko:'신청 후 인원이 추가되었습니다. 차액을 송금하신 뒤 ‘송금 안내’ 페이지에서 보고해 주세요.' },
+      [PS.NONE]: {
+        zh:'尚未收到您的匯款回報，請至「匯款轉帳」頁面完成轉帳並回報。',
+        en:'We have not received your transfer report yet — please complete it on the Payment tab.',
+        ja:'お振込みのご報告がまだ届いていません。「銀行振込」ページよりお手続きとご報告をお願いします。',
+        ko:'아직 송금 보고가 접수되지 않았습니다. ‘송금 안내’ 페이지에서 송금 후 보고해 주세요.' }
     };
-    const onsiteNote = {zh:'請於活動當天現場付款，工作人員會協助收款。', en:'Please pay on-site on the day; staff will assist you.'};
-    const cancelledNote = {zh:'這組報名的成員都已取消。', en:'Everyone in this registration has been cancelled.'};
+    const onsiteNote = {
+      zh:'請於活動當天現場付款，工作人員會協助收款。',
+      en:'Please pay on-site on the day; staff will assist you.',
+      ja:'当日会場にてお支払いください。スタッフがご案内いたします。',
+      ko:'행사 당일 현장에서 결제해 주세요. 스태프가 안내해 드립니다.' };
+    const cancelledNote = {
+      zh:'這組報名的成員都已取消。',
+      en:'Everyone in this registration has been cancelled.',
+      ja:'このお申込みの参加者は全員キャンセル済みです。',
+      ko:'이 신청의 참가자가 모두 취소되었습니다.' };
 
     let note;
     if(d.allCancelled) note = cancelledNote;
     else if(!isOnline && d.payStatus === PS.NONE) note = onsiteNote;
     else note = NOTE[d.payStatus] || NOTE[PS.NONE];
-    document.getElementById('lr-note').textContent = isEn() ? note.en : note.zh;
+    document.getElementById('lr-note').textContent = T(note);
 
     // 成員清單：每個人各自一列，各自可以申請取消
     const box = document.getElementById('lr-members');
     box.innerHTML = (d.members || []).map(m=>{
       let right = '';
       if(m.cancelled){
-        right = '<span class="st-badge st-void">' + (isEn()?'Cancelled':'已取消') + '</span>';
+        right = '<span class="st-badge st-void">' + T(TXT.cancelled) + '</span>';
       } else if(m.cancelPending){
         // 申請中還能反悔：最常見的情況就是「本來不能來，後來又可以了」，
         // 沒有這顆按鈕的話使用者只能回頭麻煩主辦
-        right = '<span class="st-badge st-topup">' + (isEn()?'Cancel requested':'取消申請處理中') + '</span>'
+        right = '<span class="st-badge st-topup">' + T(TXT.cancelPendingLong) + '</span>'
               + '<button type="button" class="mini-btn" data-withdraw-member="' + m.index + '">'
-              + (isEn()?'Undo request':'撤回申請') + '</button>';
+              + T(TXT.undoRequest) + '</button>';
       } else {
         right = '<button type="button" class="mini-btn danger" data-cancel-member="' + m.index + '">'
-              + (isEn()?'Request cancel':'申請取消') + '</button>';
+              + T(TXT.requestCancel) + '</button>';
       }
       return '<div class="lr-mem' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
         + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
@@ -2698,15 +2781,18 @@
     const member = (lastLookupData.members || []).filter(m=> String(m.index) === String(idx))[0];
     const who = member ? member.name : '';
 
-    const ok = confirm(isEn()
-      ? 'Submit a cancellation request for "' + who + '"?\nThe organizer will confirm it. Refunds follow the policy on the Event Info page.'
-      : '確定要為「' + who + '」送出取消申請嗎？\n送出後由主辦單位確認。退費依「活動訊息」頁面的注意事項辦理。');
+    const ok = confirm(T({
+      zh:'確定要為「' + who + '」送出取消申請嗎？\n送出後由主辦單位確認。退費依「活動訊息」頁面的注意事項辦理。',
+      en:'Submit a cancellation request for "' + who + '"?\nThe organizer will confirm it. Refunds follow the policy on the Event Info page.',
+      ja:'「' + who + '」さんのキャンセルを申請しますか？\n主催者が確認いたします。返金は「イベント情報」ページの注意事項に従います。',
+      ko:'「' + who + '」님의 취소를 신청하시겠습니까?\n주최 측에서 확인합니다. 환불은 ‘행사 정보’ 페이지의 유의사항에 따릅니다.' }));
     if(!ok) return;
 
-    const reason = prompt(isEn() ? 'Reason (optional)' : '取消原因（選填）', '') || '';
+    const reason = prompt(T({ zh:'取消原因（選填）', en:'Reason (optional)',
+                              ja:'キャンセル理由（任意）', ko:'취소 사유 (선택)' }), '') || '';
 
     btn.disabled = true;
-    btn.textContent = isEn() ? 'Submitting…' : '送出中…';
+    btn.textContent = T({ zh:'送出中…', en:'Submitting…', ja:'送信中…', ko:'전송 중…' });
 
     const r = await postToBackend({
       type:'cancelRequest', phone: lastLookupPhone, memberIndex: idx, reason: reason
@@ -2714,12 +2800,14 @@
     const body = r.body || {};
 
     if(body.result === 'success'){
-      showToast(isEn() ? '✅ Cancellation request submitted' : '✅ 已送出取消申請');
+      showToast(T({ zh:'✅ 已送出取消申請', en:'✅ Cancellation request submitted',
+                    ja:'✅ キャンセル申請を送信しました', ko:'✅ 취소 신청을 접수했습니다' }));
       await doLookup(lastLookupPhone);
     } else {
-      showToast(body.message || (isEn() ? '⚠️ Request failed' : '⚠️ 申請失敗，請稍後再試'));
+      showToast(body.message || T({ zh:'⚠️ 申請失敗，請稍後再試', en:'⚠️ Request failed',
+                                    ja:'⚠️ 申請に失敗しました。時間をおいてお試しください', ko:'⚠️ 신청에 실패했습니다. 잠시 후 다시 시도해 주세요' }));
       btn.disabled = false;
-      btn.textContent = isEn() ? 'Request cancel' : '申請取消';
+      btn.textContent = T(TXT.requestCancel);
     }
   });
 
@@ -2732,13 +2820,15 @@
     const member = (lastLookupData.members || []).filter(m=> String(m.index) === String(idx))[0];
     const who = member ? member.name : '';
 
-    const ok = confirm(isEn()
-      ? 'Undo the cancellation request for "' + who + '"? They will stay registered.'
-      : '確定要撤回「' + who + '」的取消申請嗎？\n撤回後這位維持出席，費用照原本計算。');
+    const ok = confirm(T({
+      zh:'確定要撤回「' + who + '」的取消申請嗎？\n撤回後這位維持出席，費用照原本計算。',
+      en:'Undo the cancellation request for "' + who + '"? They will stay registered.',
+      ja:'「' + who + '」さんのキャンセル申請を取り消しますか？\n取り消すとご参加のままとなり、料金も元のままです。',
+      ko:'「' + who + '」님의 취소 신청을 철회하시겠습니까?\n철회하면 참석이 유지되며 금액도 그대로입니다.' }));
     if(!ok) return;
 
     btn.disabled = true;
-    btn.textContent = isEn() ? 'Undoing…' : '處理中…';
+    btn.textContent = T({ zh:'處理中…', en:'Undoing…', ja:'処理中…', ko:'처리 중…' });
 
     const r = await postToBackend({
       type:'withdrawCancel', phone: lastLookupPhone, memberIndex: idx
@@ -2746,12 +2836,14 @@
     const body = r.body || {};
 
     if(body.result === 'success'){
-      showToast(isEn() ? '✅ Request withdrawn' : '✅ 已撤回取消申請');
+      showToast(T({ zh:'✅ 已撤回取消申請', en:'✅ Request withdrawn',
+                    ja:'✅ キャンセル申請を取り消しました', ko:'✅ 취소 신청을 철회했습니다' }));
       await doLookup(lastLookupPhone);
     } else {
-      showToast(body.message || (isEn() ? '⚠️ Failed' : '⚠️ 撤回失敗，請稍後再試'));
+      showToast(body.message || T({ zh:'⚠️ 撤回失敗，請稍後再試', en:'⚠️ Failed',
+                                    ja:'⚠️ 取り消しに失敗しました。時間をおいてお試しください', ko:'⚠️ 철회에 실패했습니다. 잠시 후 다시 시도해 주세요' }));
       btn.disabled = false;
-      btn.textContent = isEn() ? 'Undo request' : '撤回申請';
+      btn.textContent = T(TXT.undoRequest);
     }
   });
 
@@ -3046,7 +3138,7 @@
       + '<div class="adm-edit-grid">'
       + f(L('同桌姓名','With (name)'), 'tableWithName', g.tableWithName)
       + f(L('同桌IG','With (IG)'), 'tableWithIg', g.tableWithIg)
-      + f(L('同桌電話','With (phone)'), 'tableWithPhone', g.tableWithPhone)
+      + f(L('同桌國籍','With (country)'), 'tableWithCountry', g.tableWithCountry)
       + '</div>'
       + '<div><label>' + L('後台備註（退款決定等，只有工作人員看得到）','Staff note') + '</label>'
       + '<input data-edit="staffNote" value="' + escapeHtml(g.staffNote || '') + '"></div>'
