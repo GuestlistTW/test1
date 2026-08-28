@@ -176,9 +176,6 @@
 
   .prose{color:var(--text-light); font-size:0.98rem; text-align:center;}
   .prose p{margin:0 0 14px;}
-  /* inline-block：block 會撐滿整行，漸層鋪在整行寬度上，
-     但文字只佔左邊一段，等於只取樣到彩虹前段。
-     縮成 inline-block 讓元素寬度等於文字寬度，六色才會完整落在字上。 */
   .tagline{
     display:inline-block;
     font-family:'Baloo 2'; font-weight:700; font-size:1.15rem; margin:0 0 8px;
@@ -269,9 +266,6 @@
     background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
   }
 
-  /* 大按鈕 + 空間不夠就換行（原本的做法）。
-     min-width 讓兩顆在寬螢幕並排、窄螢幕自動各佔一行，
-     文字永遠有完整空間，不會被擠出外框。 */
   .radio-group{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;}
   .radio-pill{
     flex:1; min-width:140px;
@@ -366,8 +360,6 @@
     margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:1.6rem;
   }
 
-  /* 四格共用外面那一個框，中間只用細線分隔 —— 省下四層邊框與內距，
-     空間全部讓給數字。永遠同一排不換行，字級隨視窗縮放。 */
   .countdown-card{
     background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
     padding:18px 14px; margin-bottom:26px; text-align:center;
@@ -381,11 +373,7 @@
     flex:1 1 0; min-width:0;
     background:none; border:none; padding:0 clamp(2px, 1.4vw, 10px);
   }
-  /* 分隔線取代原本的四個外框 */
   .countdown-unit + .countdown-unit{border-left:1px solid var(--line);}
-  /* inline-block 而不是 block：block 會撐滿整格，漸層鋪在整格寬度上，
-     但數字只佔中間一小段，等於只取樣到彩虹中間的黃綠。
-     縮成 inline-block 之後元素寬度就等於數字寬度，整條彩虹精準鋪在字上。 */
   .cd-num{
     display:inline-block; font-family:'Baloo 2';
     font-size:clamp(1.6rem, 11vw, 2.6rem);
@@ -434,7 +422,7 @@
 
   .modal-overlay{
     position:fixed; inset:0; z-index:100;
-    background:rgba(15,11,32,0.75); backdrop-filter:blur(4px);
+    background:rgba(155,93,229,0.08); backdrop-filter:blur(4px);
     display:flex; align-items:center; justify-content:center;
     padding:20px;
   }
@@ -472,7 +460,6 @@
     font-size:0.78rem; color:var(--text-muted); margin:0 0 16px !important;
   }
 
-  /* ===== 後台儀表板 ===== */
   .admin-stats{
     display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
     gap:12px; margin-bottom:18px;
@@ -493,7 +480,6 @@
   }
   .filter-btn:hover{color:var(--text-light); border-color:#54467f;}
   .filter-btn.active{background:var(--purple); border-color:var(--purple); color:#fff;}
-  .filter-btn .cnt{opacity:0.7; font-weight:500;}
 
   .st-badge{
     display:inline-block; padding:4px 9px; border-radius:999px;
@@ -516,7 +502,6 @@
   .mini-btn.ok{border-color:var(--green); color:var(--green);}
   .mini-btn.danger{border-color:var(--red); color:var(--red);}
   .mini-btn:disabled{opacity:0.4; cursor:not-allowed;}
-  .warn-dot{color:var(--orange); cursor:help;}
 
   .toast{
     position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px);
@@ -526,7 +511,6 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
-  /* ===== 查詢結果卡片 ===== */
   .lookup-result{
     display:none; background:var(--bg-surface); border:1px solid var(--line);
     border-radius:var(--radius); padding:22px; margin-top:18px;
@@ -540,13 +524,6 @@
   .lr-value{text-align:right; font-weight:600;}
   .lr-note{font-size:0.85rem; color:var(--text-muted); margin-top:12px; line-height:1.6;}
 
-
-  /* ===== 國籍標準化欄位 ===== */
-  /* 新增攜伴：這是表單裡的主要動作之一，用彩色外框讓它跳出來 */
-  /* 彩虹框線 + 彩虹光暈：底色維持透明，只有邊框是漸層。
-     漸層不能直接用在 border-color，所以用兩層背景疊：
-     底層鋪漸層（border-box）、上層用卡片底色蓋回內部（padding-box），
-     露出來的那 2px 邊框就是彩虹。 */
   .btn-add-guest{
     display:inline-flex; align-items:center; gap:7px;
     padding:8px 18px; border-radius:12px; cursor:pointer;
@@ -564,11 +541,6 @@
     background:var(--bg-surface-2); border-color:var(--line); color:var(--text-muted);
   }
 
-  /* 同桌 IG 的相似帳號提示 */
-  /* 同桌 IG 的下拉清單：跟國籍選擇器一樣是浮動視窗，
-     緊貼著 IG 欄位下方，不會把後面的欄位往下推。
-     ig-wrap 是定位基準，所以清單一定對齊 IG 這一欄，
-     手機上三欄變直排時也不會跑到別的欄位底下。 */
   .ig-wrap{position:relative;}
   .ig-suggest{
     position:absolute; z-index:60; left:0; right:0; top:calc(100% + 6px);
@@ -586,11 +558,6 @@
   .ig-opt:hover, .ig-opt.active{background:var(--purple); color:#fff;}
   .ig-empty{padding:11px; font-size:0.79rem; color:#6b6280; text-align:center;}
 
-  /* ── 國籍選擇器（WAI-ARIA combobox 模式）──
-     結構與現在主流的下拉搜尋元件一致：
-     一個 role="combobox" 的觸發區 + 一個浮在上方的 role="listbox"。
-     清單用 position:absolute 脫離文件流，所以展開時是浮動視窗，
-     不會把下方內容往下推。 */
   .cpick{position:relative;}
   .cpick-toggle{
     display:flex; align-items:center; gap:8px;
@@ -602,8 +569,6 @@
   .cpick.is-open .cpick-toggle{
     border-color:var(--purple); box-shadow:0 0 0 3px rgba(155,93,229,0.18);
   }
-  /* 顯示值與搜尋框重疊在同一個位置：收合時看到選中的國家，
-     展開時變成可以打字的搜尋框，這是這類元件的標準行為 */
   .cpick-field{position:relative; flex:1 1 auto; min-width:0; height:100%;}
   .cpick .cpick-value{
     position:absolute; inset:0; display:flex; align-items:center;
@@ -613,9 +578,6 @@
   }
   .cpick-value.is-placeholder{color:var(--text-muted);}
   .cpick.is-open .cpick-value{opacity:0;}
-  /* 用 .cpick 前綴把優先度提高到 (0,2,0)，蓋過全域的 .field input (0,1,1)。
-     沒有這層的話搜尋框會套到全域的底色、邊框與內距，
-     結果就是「框框裡又有一個框框」，而且不透明的底色會蓋住上面的顯示值。 */
   .cpick .cpick-search{
     position:absolute; inset:0; width:100%; height:100%;
     background:transparent; border:none; border-radius:0;
@@ -672,24 +634,13 @@
   input.country-input{text-transform:uppercase;}
   input.country-input::placeholder{text-transform:none;}
 
-  /* ===== 展示模式提示 ===== */
-  /* ===== 取消申請 ===== */
-  .lr-companions{
-    display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end;
+  .existing-mem{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:9px 12px; border-radius:10px; background:var(--bg-surface-2);
+    border:1px dashed var(--line); margin-bottom:6px; font-size:0.85rem;
   }
-  .lr-chip{
-    background:var(--bg-surface-2); border:1px solid var(--line); border-radius:999px;
-    padding:3px 10px; font-size:0.8rem; font-weight:600;
-  }
-  .btn-danger{
-    width:100%; padding:12px; border-radius:12px; margin-top:10px;
-    background:transparent; border:1px solid var(--red); color:var(--red);
-    font-family:'Inter'; font-weight:700; font-size:0.9rem; cursor:pointer;
-  }
-  .btn-danger:hover{background:rgba(255,75,92,0.1);}
-  .btn-danger:disabled{opacity:0.5; cursor:not-allowed;}
+  .existing-mem.is-cancelled{opacity:0.45;}
 
-  /* ===== 後台：卡片式名單 ===== */
   .adm-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
   .adm-viewtabs{display:flex; gap:6px; margin-bottom:16px;}
   .adm-viewtab{
@@ -786,7 +737,6 @@
   .log-sum{color:var(--text-light); line-height:1.5; word-break:break-word;}
   .adm-empty{text-align:center; color:var(--text-muted); padding:40px 20px; font-size:0.88rem;}
 
-  /* ===== 前台查詢結果：成員清單 ===== */
   .lr-members{margin:14px 0 4px;}
   .lr-mem{
     display:flex; align-items:center; gap:8px; flex-wrap:wrap;
@@ -803,17 +753,6 @@
     border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:0.86rem;
   }
   .edit-banner.show{display:flex;}
-  .existing-mem{
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    padding:9px 12px; border-radius:10px; background:var(--bg-surface-2);
-    border:1px dashed var(--line); margin-bottom:6px; font-size:0.85rem;
-  }
-  .existing-mem.is-cancelled{opacity:0.45;}
-  .topup-note{
-    margin-top:10px; padding:11px 14px; border-radius:10px;
-    background:rgba(255,159,64,0.14); border:1px solid var(--orange);
-    color:var(--orange); font-size:0.84rem; font-weight:600;
-  }
   .warn-banner{
     background:rgba(255,159,64,0.14); border:1px solid var(--orange);
     border-radius:12px; padding:14px 16px; margin-bottom:16px;
@@ -823,12 +762,6 @@
   .warn-banner ul{margin:0; padding-left:18px;}
   .st-na{background:rgba(183,174,218,0.12); color:var(--text-muted); border:1px dashed var(--line);}
 
-  /* 款項狀態四色：一眼分辨，不用讀字 */
-  .st-none{background:rgba(255,107,107,0.16); color:var(--red); border:1px solid rgba(255,107,107,0.45);}
-
-  /* 狀態切換鈕：只有「目前的狀態」那一顆會亮起對應顏色，其餘一律中性。
-     這樣按鈕的顏色代表「現在是什麼狀態」，而不是「按下去會變什麼顏色」——
-     否則四顆都上色時，已收款那顆永遠是綠的，看起來像已經收到錢了。 */
   .mini-btn.is-current{font-weight:700; cursor:default;}
   .mini-btn.is-current.cur-none{border-color:var(--red); color:var(--red); background:rgba(255,107,107,0.14);}
   .mini-btn.is-current.cur-checking{border-color:var(--blue); color:var(--blue); background:rgba(77,150,255,0.14);}
@@ -861,7 +794,7 @@
   <div class="banner-overlay">
     <div class="banner-meta">
       <span>📅 10/30 · 19:00</span>
-      <span>📍 <span data-i18n="banner_loc">彭園壹品宴</span></span>
+      <span>📍 <span data-i18n="banner_loc">鉅星匯國際宴會廳</span></span>
     </div>
   </div>
 </div>
@@ -914,12 +847,12 @@
     <div class="location-card">
       <div class="ic-bar"></div>
       <div class="ic-label" data-i18n="loc_label">地點</div>
-      <div class="ic-value" data-i18n="loc_value">彭園壹品宴</div>
-      <div class="location-addr" data-i18n="loc_addr">台北市中山區南京東路二段63號2樓</div>
+      <div class="ic-value" data-i18n="loc_value">鉅星匯國際宴會廳</div>
+      <div class="location-addr" data-i18n="loc_addr">台北市中山區新生北路二段28號2樓</div>
       <div class="map-embed">
-        <iframe src="https://www.google.com/maps?q=彭園壹品宴 台北市中山區南京東路二段63號2樓&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe src="https://www.google.com/maps?q=鉅星匯國際宴會廳+台北市中山區新生北路二段28號2樓&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
-      <a class="map-btn" href="https://maps.app.goo.gl/rT5NpJxUYpTiZMN77?g_st=il" target="_blank" rel="noopener" data-i18n="loc_btn">📍 在 Google 地圖開啟 →</a>
+      <a class="map-btn" href="https://share.google/za3cx4h5xVsgRdsh3" target="_blank" rel="noopener" data-i18n="loc_btn">📍 在 Google 地圖開啟 →</a>
     </div>
 
     <div class="card-grid">
@@ -1017,7 +950,6 @@
         <span class="subtotal-amount" id="subtotal-amount">NT$1,200</span>
       </div>
 
-
       <div class="field">
         <label for="su-notes" data-i18n="field_notes">飲食限制或其他備註（選填）</label>
         <textarea id="su-notes" rows="2"></textarea>
@@ -1056,7 +988,7 @@
           <li data-i18n="notice_2">現場僅提供無酒精飲品，酒水可自行攜帶</li>
           <li data-i18n="notice_3">如活動當日臨時無法出席，請自行尋找替代人員頂替名額，恕不接受退款</li>
           <li data-i18n="notice_4">攜伴出席者須與同行者一同完成報名與付款，並安排於同一桌</li>
-              <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號以利辨識；資訊不明確者恕無法安排同桌</li>
+          <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號以利辨識；資訊不明確者恕無法安排同桌</li>
           <li data-i18n="notice_7">請盡可能於活動開始前入場，以免現場混亂</li>
           <li data-i18n="notice_8">請尊重現場工作人員與其他賓客，主辦單位保有請不當行為者離場之權利</li>
           <li data-i18n="notice_9">活動當天可能安排拍照攝影，若不希望入鏡請於報到時告知工作人員</li>
@@ -1083,7 +1015,6 @@
       <div class="form-msg" id="lookup-msg" data-i18n="lookup_msg">查無資料，請確認電話輸入是否正確，或聯繫主辦單位協助查詢。</div>
     </form>
 
-    <!-- 查詢結果：列出整組成員，可個別申請取消，也可直接修改／加人 -->
     <div class="lookup-result" id="lookup-result">
       <div class="lr-head">
         <span class="lr-title" id="lr-name">—</span>
@@ -1100,7 +1031,6 @@
       <div class="lr-editbar">
         <button type="button" class="btn-secondary" id="lr-edit-btn" data-i18n="lr_edit_btn">✏️ 修改報名資料 / 加人</button>
       </div>
-
     </div>
   </section>
 
@@ -1334,12 +1264,14 @@
   // ===================== i18n =====================
   const I18N = {
     nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'}, nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
-    nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},    banner_loc:{en:'Peng Yuan Yi Pin Banquet', ja:'彭園壹品宴', ko:'펑위안 이핀옌'},
+    nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},
+    banner_loc:{en:'G House Taipei', ja:'鉅星匯國際宴會廳', ko:'G House 타이베이'},
     info_title:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'},
     info_tagline:{en:'TAIWAN PRIDE — Third Edition', ja:'TAIWAN PRIDE 第3回開催', ko:'TAIWAN PRIDE 제3회 개최'},
     info_intro:{en:'We\'re bringing together friends from around the world before the parade for an evening of food, conversation, and new connections. Whether you\'re local to Taipei or visiting from afar, there\'s a seat for you.', ja:'世界各地から集まる仲間たちと、パレード前に食卓を囲みます。食事を楽しみながらお互いを知り、この一年の出来事を語り合いましょう。台北在住の方も、遠方からお越しの方も、皆さまのための席をご用意しています。', ko:'세계 각지의 친구들을 초대해, 퍼레이드에 앞서 다 함께 식사를 나눕니다. 한 끼 식사를 나누며 서로를 알아가고 지난 일 년의 이야기를 나눠요. 타이베이에 사는 분도, 멀리서 오신 여행자도 자리를 마련해 두었습니다.'},
-    loc_label:{en:'Location', ja:'会場', ko:'장소'}, loc_value:{en:'Peng Yuan Yi Pin Banquet', ja:'彭園壹品宴', ko:'펑위안 이핀옌(彭園壹品宴)'},
-    loc_addr:{en:'2F, No. 63, Sec. 2, Nanjing E. Rd., Zhongshan Dist., Taipei', ja:'台北市中山区南京東路二段63号2階', ko:'타이베이시 중산구 난징둥루 2단 63호 2층'},
+    loc_label:{en:'Location', ja:'会場', ko:'장소'},
+    loc_value:{en:'G House Taipei (Banquet Hall)', ja:'鉅星匯國際宴會廳', ko:'G House 타이베이 (鉅星匯)'},
+    loc_addr:{en:'2F, No. 28, Sec. 2, Xinsheng N. Rd., Zhongshan Dist., Taipei', ja:'台北市中山区新生北路二段28号2階', ko:'타이베이시 중산구 신성베이루 2단 28호 2층'},
     loc_btn:{en:'📍 Open in Google Maps →', ja:'📍 Google マップで開く →', ko:'📍 Google 지도에서 열기 →'},
     time_label:{en:'Time', ja:'日時', ko:'일시'}, fee_label:{en:'Fee', ja:'参加費', ko:'참가비'}, fee_value:{en:'NT$1,200 / person', ja:'NT$1,200／人', ko:'1인당 NT$1,200'},
     community_label:{en:'Community', ja:'コミュニティ', ko:'커뮤니티'}, community_value:{en:'After registering, we\'ll provide a QR code to join our LINE group', ja:'お申込み完了後、LINE グループ参加用の QR コードをお送りします', ko:'신청이 완료되면 LINE 그룹 참여용 QR 코드를 보내드립니다'},
@@ -1360,8 +1292,6 @@
     field_name:{en:'Name', ja:'お名前 / Name', ko:'이름 / Name'}, field_country:{en:'Country', ja:'国籍 / Country', ko:'국적 / Country'}, field_email:{en:'Email', ja:'メールアドレス', ko:'이메일'},
     field_phone:{en:'Phone', ja:'電話番号', ko:'연락처'}, field_phone_hint:{en:'※ This phone number is used to check your registration status and payment details — please make sure it\'s correct', ja:'※申込状況やお支払いの確認に使用しますので、お間違いのないようご確認ください', ko:'※신청 상태와 결제 확인에 사용되므로 정확히 입력해 주세요'},
     field_ig:{en:'Instagram Handle (required)', ja:'Instagram アカウント（必須）', ko:'Instagram 계정 (필수)'},
-    field_ig_public:{en:'Make my IG handle visible to other guests'},
-    field_ig_public_sub:{en:'If checked, your IG handle may be shown to other registered guests'},
     guest_label:{en:'Plus-ones (not including yourself)', ja:'同伴者（ご本人を除く）', ko:'동반자 (본인 제외)'},
     guest_add_btn:{en:'+ Add plus-one', ja:'＋ 同伴者を追加', ko:'＋ 동반자 추가'},
     subtotal_label:{en:'Amount Due (Subtotal)', ja:'お支払い金額', ko:'결제 금액'},
@@ -1393,23 +1323,19 @@
     pay_name_label:{en:'Payer Name', ja:'振込人のお名前', ko:'송금인 이름'}, pay_phone_label:{en:'Phone', ja:'電話番号', ko:'연락처'},
     pay_phone_hint:{en:'※ Please use the same phone number you registered with', ja:'※お申込み時と同じ電話番号をご入力ください', ko:'※신청 시 사용한 전화번호를 입력해 주세요'},
     pay_last5_label:{en:'Last 5 Digits', ja:'振込元口座番号の下5桁', ko:'계좌번호 뒤 5자리'}, pay_amount_label:{en:'Amount', ja:'振込金額', ko:'송금 금액'}, pay_date_label:{en:'Transfer Date', ja:'振込日', ko:'송금일'},
-    pay_regid_label:{en:'Registration Number (optional)'},
-    pay_regid_hint:{en:'If you know your registration number, enter it here for more accurate matching (shown in the popup after you registered)'},
     pay_submit:{en:'Report Transfer', ja:'振込情報を送信', ko:'송금 정보 제출'},
     pay_submitting:{en:'Submitting…'},
     pay_msg:{en:'✅ Your transfer report has been received — we\'ll verify it and update your status soon.', ja:'✅ 振込のご報告を受け付けました。確認のうえ、お申込み状況を更新いたします。', ko:'✅ 송금 보고를 접수했습니다. 확인 후 신청 상태를 업데이트하겠습니다.'},
     gallery_title:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, gallery_desc:{en:'Event photos will be posted here after the event.', ja:'イベント終了後、写真を順次こちらに掲載します。', ko:'행사 종료 후 사진을 순차적으로 게시합니다.'},
     gallery_empty:{en:'The event hasn\'t happened yet — photo slots are reserved here for later', ja:'イベントはまだ開催前です。写真はこちらに掲載予定です', ko:'행사는 아직 시작 전입니다. 사진은 이곳에 게시될 예정입니다'},
-    gallery_slot:{en:'Photo slot', ja:'写真 1', ko:'사진 1'},
     countdown_label:{en:'Countdown to Taiwan Pride', ja:'TAIWAN PRIDE まであと', ko:'TAIWAN PRIDE까지'},
     countdown_days:{en:'Days', ja:'日', ko:'일'}, countdown_hours:{en:'Hours', ja:'時間', ko:'시간'}, countdown_mins:{en:'Minutes', ja:'分', ko:'분'}, countdown_secs:{en:'Seconds', ja:'秒', ko:'초'},
     admin_title:{en:'Admin'}, admin_desc:{en:'Staff only — view and manage registrations, payments and change history.'},
     admin_gate_title:{en:'Staff Login'}, admin_gate_desc:{en:'Enter the password to view backend data'},
     admin_gate_ph:{en:'Enter password', ja:'パスワードを入力', ko:'비밀번호 입력'}, admin_gate_btn:{en:'Log In'},
-    admin_refresh_btn:{en:'🔄 Refresh'},
     admin_gate_error:{en:'Incorrect password — please try again'},
     admin_refresh_btn:{en:'🔄 Refresh Data'},
-    admin_loading:{en:'Loading…'}, admin_no_data:{en:'No registrations yet'},
+    admin_loading:{en:'Loading…'},
     admin_banner_text:{en:'The payment status column is the single source of truth — the system never compares amounts. A transfer report automatically moves a group to \"Verifying\"; once you see the money in the bank, press \"Paid\". Every change is recorded in the 異動紀錄 tab with the operator name. One phone number always maps to exactly one registration.'},
     admin_logic_title:{en:'Reconciliation & Actions'},
     admin_logic_1:{en:'Four payment statuses: Unpaid → Verifying (set automatically when the guest reports a transfer) → Paid, plus Top-up due (people added after payment)'},
@@ -1417,22 +1343,16 @@
     admin_logic_3:{en:'Attendance (registered / cancelled) is per person — the main registrant and each plus-one can be cancelled individually, and headcount and amount due are recalculated automatically'},
     admin_logic_4:{en:'If the main registrant cancels, the group stays under their original phone number — everyone else still looks it up with the same number'},
     admin_logic_5:{en:'If a paid group adds people later, the status automatically becomes Top-up due; the amount owed is (new people) × NT$1,200'},
-    admin_empty:{en:'No registrations yet'},
-    stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Paid Groups'},
-    stat_outstanding:{en:'Outstanding'}, stat_revenue:{en:'Expected Revenue'},
-    filter_all:{en:'All'}, filter_unpaid:{en:'Unpaid'},
     admin_logic_6:{en:'Refund decisions are yours — the system never processes them automatically. Record what you decided in that group\'s staff note'},
-    lr_regid:{en:'Registration No.', ja:'申込番号', ko:'신청 번호'}, lr_count:{en:'Attending', ja:'参加人数', ko:'참석 인원'}, lr_due:{en:'Amount Due', ja:'お支払い金額', ko:'결제 금액'}, lr_method:{en:'Payment Method', ja:'お支払い方法', ko:'결제 방법'},
-    field_country_ph:{en:'Type TW, Taiwan, or pick from the list'},
-    country_unknown:{en:'Not in our list — will be submitted as typed'},
-    lr_companions:{en:'Plus-ones'},
-    cancel_reason_label:{en:'If you can no longer attend, you can request cancellation here (subject to organizer confirmation)'},
-    cancel_reason_ph:{en:'Reason (optional)'},
-    cancel_btn:{en:'Request Cancellation'},
-    cancel_pending_note:{en:'⏳ Your cancellation request has been submitted. The organizer will confirm and mark this registration as cancelled. If this was a mistake, please contact the organizer directly.'},
-    filter_cancelreq:{en:'⚠ Cancel Requests'}, filter_mismatch:{en:'Amount Mismatch'},
-    filter_success:{en:'Paid'}, filter_cancelled:{en:'Cancelled'},
-    stat_pending:{en:'Cancel Requests'},
+    admin_logic_7:{en:'Full phone numbers are not shown in the admin panel. Check the spreadsheet directly when you need to contact someone'},
+    stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Paid Groups'},
+    stat_outstanding:{en:'Outstanding'}, stat_topup:{en:'Top-up Due'}, stat_pending:{en:'Cancel Requests'},
+    filter_all:{en:'All'}, filter_cancelreq:{en:'⚠ Cancel Requests'}, filter_unpaid:{en:'Unpaid'},
+    filter_checking:{en:'Verifying'}, filter_topup:{en:'Top-up Due'}, filter_success:{en:'Paid'}, filter_cancelled:{en:'Cancelled'},
+    lr_regid:{en:'Registration No.', ja:'申込番号', ko:'신청 번호'}, lr_count:{en:'Attending', ja:'参加人数', ko:'참석 인원'}, lr_due:{en:'Amount Due', ja:'お支払い金額', ko:'결제 금액'}, lr_method:{en:'Payment Method', ja:'お支払い方法', ko:'결제 方法'},
+    lr_edit_btn:{en:'✏️ Edit registration / add people', ja:'✏️ 申込内容の変更 / 同伴者の追加', ko:'✏️ 신청 내용 수정 / 인원 추가'},
+    edit_cancel_btn:{en:'Discard changes', ja:'編集をやめる', ko:'수정 취소'},
+    existing_hint:{en:'※ People already registered cannot be removed here. If someone can no longer attend, go back to your lookup result and submit a cancellation request for that person.', ja:'※ すでにお申込み済みの方はここでは削除できません。ご欠席の場合は照会画面に戻り、その方のキャンセル申請を送信してください。主催者が確認いたします。', ko:'※ 이미 신청된 분은 여기서 삭제할 수 없습니다. 참석이 어려우시면 조회 화면으로 돌아가 해당 인원의 취소를 신청해 주세요. 주최 측에서 확인합니다.'},
     footer_text:{en:'Taiwan Pride — Proud Together · Contact the organizer with any questions', ja:'Taiwan Pride — Proud Together ・ ご不明な点は主催者までお問い合わせください', ko:'Taiwan Pride — Proud Together ・ 문의 사항은 주최 측에 연락해 주세요'},
     line_modal_title:{en:'Welcome to Taiwan Pride!', ja:'TAIWAN PRIDE へようこそ！', ko:'TAIWAN PRIDE에 오신 것을 환영합니다!'},
     line_modal_desc:{en:'Scan the QR code below to join our LINE group and get event updates', ja:'下の QR コードから LINE コミュニティに参加して、最新情報を受け取ってください', ko:'아래 QR 코드로 LINE 커뮤니티에 참여해 최신 소식을 받아보세요'},
@@ -1442,29 +1362,13 @@
     admin_view_list:{en:'📋 Registrations'}, admin_view_log:{en:'🕓 Change Log'},
     admin_log_refresh:{en:'🔄 Reload log'},
     admin_log_hint:{en:'Showing the latest 300 changes. Full details (including before/after JSON) are kept in the 異動紀錄 tab of the spreadsheet.'},
-    stat_topup:{en:'Top-up Due'},
-    filter_checking:{en:'Verifying'}, filter_topup:{en:'Top-up Due'},
-    lr_edit_btn:{en:'✏️ Edit registration / add people', ja:'✏️ 申込内容の変更 / 同伴者の追加', ko:'✏️ 신청 내용 수정 / 인원 추가'},
-    edit_cancel_btn:{en:'Discard changes', ja:'編集をやめる', ko:'수정 취소'},
-    existing_hint:{en:'※ People already registered cannot be removed here. If someone can no longer attend, go back to your lookup result and submit a cancellation request for that person.', ja:'※ すでにお申込み済みの方はここでは削除できません。ご欠席の場合は照会画面に戻り、その方のキャンセル申請を送信してください。主催者が確認いたします。', ko:'※ 이미 신청된 분은 여기서 삭제할 수 없습니다. 참석이 어려우시면 조회 화면으로 돌아가 해당 인원의 취소를 신청해 주세요. 주최 측에서 확인합니다.'},
-    admin_logic_7:{en:'Full phone numbers are not shown in the admin panel. Check the spreadsheet directly when you need to contact someone'},
-    country_search_ph:{en:'Search country…'},
     line_modal_close_btn:{en:'Got it', ja:'閉じる', ko:'확인'}
   };
 
-  // ===================== Backend (Google Apps Script) =====================
-  // 部署 Google Apps Script 後，把拿到的網址填在這裡即可自動啟用真實後端。
-  // 留空時，表單會維持目前的前端展示模式（不會報錯，只是不會真的存資料）。
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbwSiXOtHJEtzvmmgqTRoNXPLfwNFa_MZ1mnFjZzRf0XwphOG86BSwTj3QcaHhB__VR0Og/exec';
 
   let currentLang = 'zh';
 
-  /**
-   * 取得目前語言的文字。
-   *   T('key')                  → 從 I18N 取（中文用 zh 欄，沒有就退回 HTML 原文找不到時回 key）
-   *   T({zh:'…',en:'…',...})    → 直接給一組對照表
-   * 日／韓缺翻譯時退回英文，英文再缺才退中文，畫面不會出現空白。
-   */
   function T(keyOrMap){
     const m = (typeof keyOrMap === 'string') ? I18N[keyOrMap] : keyOrMap;
     if(!m) return (typeof keyOrMap === 'string') ? keyOrMap : '';
@@ -1472,10 +1376,8 @@
     return m[currentLang] || m.en || m.zh || '';
   }
 
-  /** 後台文字只有中英兩種，維持原本的判斷方式 */
   function isEn(){ return currentLang !== 'zh'; }
 
-  /** 多處重複使用的短語，集中一份避免同一句話在不同地方翻得不一樣 */
   const TXT = {
     cancelled:        { zh:'已取消', en:'Cancelled', ja:'キャンセル済み', ko:'취소됨' },
     cancelPending:    { zh:'取消申請中', en:'Cancel requested', ja:'キャンセル申請中', ko:'취소 신청 중' },
@@ -1488,16 +1390,11 @@
   const LANG_LABEL = { zh:'中文', en:'English', ja:'日本語', ko:'한국어' };
   const HTML_LANG = { zh:'zh-Hant', en:'en', ja:'ja', ko:'ko' };
 
-  /**
-   * 取某個 key 在目前語言的文字。
-   * 找不到該語言時往下退：日/韓 → 英文 → 中文（原始 HTML 內容）。
-   * 這樣即使某句話還沒翻譯，畫面也不會出現空白或 key 名稱。
-   */
   function pickLang(entry, lang){
     if(!entry) return null;
-    if(lang === 'zh') return null;                 // 中文用 HTML 原文
+    if(lang === 'zh') return null;
     if(entry[lang]) return entry[lang];
-    if(lang !== 'en' && entry.en) return entry.en; // 日韓缺翻譯時退回英文
+    if(lang !== 'en' && entry.en) return entry.en;
     return null;
   }
 
@@ -1519,7 +1416,6 @@
     document.querySelectorAll('.lang-opt').forEach(function(b){
       b.classList.toggle('is-active', b.dataset.lang === lang);
     });
-    // 相簿：只換前綴詞，編號 1~8 保留
     const slotWord = T({ zh:'照片位', en:'Photo', ja:'写真', ko:'사진' });
     document.querySelectorAll('.gallery-slot[data-slot]').forEach(function(el){
       el.textContent = slotWord + ' ' + el.dataset.slot;
@@ -1536,6 +1432,7 @@
       if(inp._countryUpdate) inp._countryUpdate(false);
     });
   }
+
   (function initLangPicker(){
     const btn = document.getElementById('lang-toggle-btn');
     const menu = document.getElementById('lang-menu');
@@ -1590,10 +1487,6 @@
     });
   });
 
-  // ---- dynamic guest rows ----
-  // 進入修改模式時，這裡放的是查詢到的那一組資料；一般報名時為 null。
-  // 刻意用 var 並提前宣告：底下的人數／金額計算會用到它，
-  // 而那些函式在頁面初始化時就會先跑一次。
   var editingGroup = null;
 
   const guestRowsContainer = document.getElementById('guest-rows');
@@ -1605,7 +1498,6 @@
   const payOnlineRadio = payOnlinePill.querySelector('input');
   const paymethodWarn = document.getElementById('paymethod-warn');
 
-  // 選中的那顆加高亮外框（純視覺，不影響邏輯）
   function syncPayPills(){
     document.querySelectorAll('input[name="paymethod"]').forEach(function(r){
       r.closest('.radio-pill').classList.toggle('is-checked', r.checked);
@@ -1615,7 +1507,7 @@
     r.addEventListener('change', syncPayPills);
   });
   syncPayPills();
-  // 攜伴人數沒有上限（原本限制 9 位／總計 10 人，已取消）
+
   let guestCount = 0;
 
   function guestLabelText(n){
@@ -1625,7 +1517,6 @@
   function removeLabelText(){
     return T({ zh:'移除', en:'Remove', ja:'削除', ko:'삭제' });
   }
-  /** 修改模式下，既有的有效人數要一起算進總人數與金額 */
   function baseHeadcount(){
     return editingGroup ? (Number(editingGroup.activeCount) || 1) : 1;
   }
@@ -1653,15 +1544,7 @@
       subtotalEl.textContent = 'NT$' + (total * 1200).toLocaleString();
     }
   }
-  /**
-   * 現場付款只保留給國外賓客。
-   *
-   * 台灣賓客一律先線上匯款才算報名完成 —— 現場收現金要對帳、找零、
-   * 還得承擔當天沒出現的風險，人力成本遠高於事前匯款。
-   * 國外賓客沒有台灣帳戶、匯款不便，所以保留現場付款這條路。
-   *
-   * 判斷依據是主報名人的國籍（同一組的費用本來就由主揪統一處理）。
-   */
+
   function updatePaymethodAvailability(){
     const country = (document.getElementById('su-country').value || '').trim().toUpperCase();
     const mustPayOnline = (country === 'TW');
@@ -1676,8 +1559,8 @@
     }
   }
 
-  // 國籍一改，付款方式的可用選項要跟著更新
   document.getElementById('su-country').addEventListener('change', updatePaymethodAvailability);
+
   function renumberGuests(){
     guestRowsContainer.querySelectorAll('.guest-row').forEach((row,i)=>{
       row.querySelector('.guest-row-top label').textContent = guestLabelText(i+1);
@@ -1690,7 +1573,6 @@
     return 'IG';
   }
   function addGuestRow(){
-
     guestCount++;
     const row = document.createElement('div');
     row.className = 'guest-row';
@@ -1718,7 +1600,7 @@
 
     row.querySelector('.remove-guest-btn').addEventListener('click', ()=>{
       const i = countryPickers.indexOf(picker);
-      if(i >= 0) countryPickers.splice(i, 1);   // 移除該列時一併移除，避免累積無用的參照
+      if(i >= 0) countryPickers.splice(i, 1);
       row.remove();
       guestCount--;
       renumberGuests();
@@ -1776,28 +1658,17 @@
   document.getElementById('line-modal-close').addEventListener('click', closeLineModal);
   document.getElementById('line-modal-ok').addEventListener('click', closeLineModal);
 
-  // ==========================================================
-  // 後端連線層
-  //
-  // LINE、Instagram 等 App 的內建瀏覽器常常擋掉對 Apps Script 的 fetch POST
-  // （/exec 會 302 轉址到 script.googleusercontent.com，那些 WebView 對這種
-  //  跨網域轉址的處理很不穩），所以這裡做成兩段式：
-  //    1. 先照正常方式送 POST
-  //    2. 失敗或超過 12 秒沒回應，就自動改用 JSONP（塞一個 <script> 標籤打 doGet）
-  // JSONP 完全不受 CORS 限制，在 LINE 裡也一定通。後端兩條路走同一個 route()，
-  // 所以不管走哪一條，行為與回傳格式都一模一樣。
-  // ==========================================================
+  // ---- Backend Communication ----
   const REQUEST_TIMEOUT = 12000;
 
   function withTimeout(promise, ms){
     return new Promise((resolve, reject)=>{
       const timer = setTimeout(()=> reject(new Error('timeout')), ms);
       promise.then(v=>{ clearTimeout(timer); resolve(v); },
-                   e=>{ clearTimeout(timer); reject(e); });
+                    e=>{ clearTimeout(timer); reject(e); });
     });
   }
 
-  /** 走 <script> 標籤，繞過 CORS。同一包 payload 直接塞進網址的 p 參數。 */
   let jsonpSeq = 0;
   function jsonpRequest(payload){
     return new Promise((resolve, reject)=>{
@@ -1829,7 +1700,6 @@
                 + '&p=' + encodeURIComponent(JSON.stringify(payload))
                 + '&_=' + Date.now();
 
-      // 網址有長度上限（約 8000 字元），太長就不要嘗試，直接讓上層報錯
       if(url.length > 7500){ clearTimeout(timer); cleanup(); reject(new Error('payload-too-large')); return; }
 
       script.src = url;
@@ -1837,19 +1707,13 @@
     });
   }
 
-  /**
-   * 統一的後端呼叫。回傳 { ok, body, via }：
-   *   ok=false 代表兩條路都不通（真的沒網路 / 網址錯 / 部署權限沒開）
-   *   via 是實際走通的路（post 或 jsonp），只拿來 debug 用
-   */
   async function postToBackend(payload){
     if(!GAS_URL) return { ok:false, reason:'no-url' };
 
-    // ── 第一段：正常的 POST ──
     try{
       const res = await withTimeout(fetch(GAS_URL, {
         method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // 純文字才不會觸發 CORS 預檢
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       }), REQUEST_TIMEOUT);
       const raw = await res.text();
@@ -1859,7 +1723,6 @@
       console.warn('POST 失敗，改走 JSONP：', err);
     }
 
-    // ── 第二段：JSONP ──
     try{
       const body = await jsonpRequest(payload);
       return { ok:true, via:'jsonp', body:body };
@@ -1869,13 +1732,7 @@
     }
   }
 
-  // ==========================================================
-  // 報名送出
-  // 同一支電話送第二次不會變成第二筆，而是修改原本那一組（後端依電話判斷）。
-  // editingGroup 有值時 = 使用者是從查詢結果按「修改」進來的，
-  // 此時電話鎖住不給改（改了就等於換一組，會對不上匯款紀錄），
-  // 且既有成員只能看不能刪 —— 要減人一律走取消申請。
-  // ==========================================================
+  // ---- Form Submission ----
   document.getElementById('signup-form').addEventListener('submit', async (e)=>{
     e.preventDefault();
     const form = e.target;
@@ -1892,8 +1749,6 @@
       return;
     }
 
-    // 同桌需求整體是選填；但只要填了姓名，就必須一併填 IG。
-    // 光有姓名很容易撞名或只是綽號，沒有 IG 就無法確定是誰，排桌會排錯人。
     const twName = document.getElementById('su-tablewith-name');
     const twIg = document.getElementById('su-tablewith-ig');
     if(twName.value.trim() && !twIg.value.trim()){
@@ -1902,7 +1757,6 @@
       return;
     }
 
-    // 國籍必須是清單裡的國家（打錯字擋在這裡，不會寫進試算表變成髒資料）
     const badCountry = validateAllCountries();
     if(badCountry){
       showError(T({
@@ -1924,7 +1778,6 @@
     submitBtn.disabled = true;
     submitBtn.textContent = T('signup_submitting');
 
-    // 這裡收到的 guest-row 一律是「新增的人」；既有成員顯示在唯讀區，不會混進來
     const guests = Array.from(guestRowsContainer.querySelectorAll('.guest-row')).map(row=>({
       name: row.querySelector('.guest-name-input').value.trim(),
       country: readCountry(row.querySelector('.guest-country-input')),
@@ -1938,7 +1791,7 @@
       email: document.getElementById('su-email').value.trim(),
       phone: document.getElementById('su-phone').value.trim(),
       ig: document.getElementById('su-ig').value.trim(),
-      igPublic: false,   // 「願意公開 IG」勾選已移除，欄位保留但不再使用
+      igPublic: false,
       guests: guests,
       notes: document.getElementById('su-notes').value.trim(),
       tableWithName: document.getElementById('su-tablewith-name').value.trim(),
@@ -1961,7 +1814,6 @@
     }
 
     if(body.mode === 'updated'){
-      // 修改成功：留在原地顯示結果，順便把查詢結果重新拉一次
       showToast(T({ zh:'✅ 報名資料已更新', en:'✅ Your registration has been updated',
                     ja:'✅ お申込内容を更新しました', ko:'✅ 신청 정보가 업데이트되었습니다' }));
       if(body.topup > 0){
@@ -1992,7 +1844,6 @@
     restoreBtn();
   });
 
-  /** 切到「查詢報名狀態」那一頁（修改完成後把使用者帶回結果畫面） */
   function switchToLookupTab(){
     formToggleBtns.forEach(b=> b.classList.toggle('active', b.dataset.form === 'lookup'));
     signupForm.style.display = 'none';
@@ -2000,7 +1851,6 @@
     document.getElementById('lookup-result').scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
-  // ---- 進入 / 離開修改模式 ----
   function enterEditMode(g){
     editingGroup = g;
 
@@ -2017,12 +1867,10 @@
     const onsite = g.paymethod === '現場付款';
     (onsite ? payOnsiteRadio : payOnlineRadio).checked = true;
 
-    // 電話是這組的鑰匙，修改時不給動
     const phoneInput = document.getElementById('su-phone');
     phoneInput.readOnly = true;
     phoneInput.style.opacity = '0.6';
 
-    // 既有成員唯讀列出（含已取消的，讓使用者知道系統上的實際狀態）
     const box = document.getElementById('existing-members');
     box.innerHTML = (g.members || []).map(m=>{
       const tags = m.cancelled
@@ -2103,16 +1951,7 @@
     submitBtn.textContent = T('pay_submit');
   });
 
-
-  // ==========================================================
-  // 國籍標準化
-  // 目的：不管使用者打「TW」「tw」「Taiwan」「台灣」「中華民國」，
-  //       最後存進試算表的都固定是同一個代碼「TW」，避免同一國有十幾種寫法。
-  // 使用者可以用打的（會即時對應）或從下拉選單挑，兩種都會得到一樣的結果。
-  // 認不出來的寫法不會擋著不讓送出，而是原文照送並在後台看得出來，
-  // 避免因為清單沒收錄某個國家就害人家報名不了。
-  // ==========================================================
-  // 每筆格式：[代碼, 中文名, 英文名, 其他可辨識的寫法...]
+  // ===================== Country Pickers Data =====================
   const COUNTRIES = [
     ['TW','台灣','Taiwan','TWN','ROC','中華民國','台湾','臺灣','CHINESE TAIPEI','FORMOSA'],
     ['HK','香港','Hong Kong','HKG','HONGKONG','香港特別行政區'],
@@ -2191,11 +2030,9 @@
     ['NZ','紐西蘭','New Zealand','NZL','新西蘭','AOTEAROA']
   ];
 
-  // 建立查詢索引：把所有寫法都正規化成同一種形式當 key
   const COUNTRY_LOOKUP = {};
   const COUNTRY_NAME = {};
   function countryKey(s){
-    // 去掉空白、標點、大小寫差異，讓 "u.s.a"、"USA"、"u s a" 都對應到同一個 key
     return String(s || '').toUpperCase().replace(/[\s.\-_,()（）·'"]/g, '');
   }
   COUNTRIES.forEach(function(row){
@@ -2207,20 +2044,6 @@
     });
   });
 
-  // COUNTRY_LOOKUP 現在只給選擇器的搜尋比對用：
-  // 使用者打 "台灣"、"Taiwan"、"TW"、"formosa" 都能篩到同一筆。
-  // 國籍已經不能自由輸入，所以不再需要「把亂打的字轉成代碼」那套邏輯。
-
-  function countryDisplayName(code){
-    const n = COUNTRY_NAME[code];
-    if(!n) return '';
-    return isEn() ? n.en : (n.zh + ' ' + n.en);   // 國名只有中英兩種寫法
-  }
-
-  /**
-   * 國碼轉國旗 emoji：把兩個英文字母換成對應的 Regional Indicator 符號。
-   * UK 在 emoji 標準裡是 GB，要另外對應，不然會變成空白方框。
-   */
   const FLAG_FIX = { UK:'GB' };
   function flagOf(code){
     const c = String(code || '').trim().toUpperCase();
@@ -2229,22 +2052,12 @@
     return String.fromCodePoint(cc.charCodeAt(0) + 127397, cc.charCodeAt(1) + 127397);
   }
 
-  /** 後台與查詢結果統一用「國旗 + 代碼」顯示 */
   function countryTag(code){
     const c = String(code || '').trim().toUpperCase();
     if(!c) return '';
     return flagOf(c) + ' ' + c;
   }
 
-  // ==========================================================
-  // 國籍選擇器
-  //
-  // 收合時顯示已選的國家，點一下展開完整清單，打字即時篩選，
-  // 只能從清單挑 —— 使用者輸入的字永遠只拿來篩選，不會被當成答案。
-  // 所以「清單以外的國家」從源頭就不可能被送出，不需要在送出前補驗證。
-  //
-  // 值寫進一個 hidden input，表單送出、修改模式回填、驗證都是對它操作。
-  // ==========================================================
   let cpickSeq = 0;
 
   function createCountryPicker(mount, hiddenInput, hintEl, placeholderText){
@@ -2253,7 +2066,6 @@
     let activeIdx = -1;
     let open = false;
 
-    // 每個選擇器要有唯一 id，aria-controls / aria-activedescendant 才指得到
     const uid = 'cpick' + (++cpickSeq);
 
     mount.innerHTML =
@@ -2295,7 +2107,6 @@
                 ja:'国籍を選択してください…', ko:'국적을 선택해 주세요…' });
         valueEl.classList.add('is-placeholder');
       }
-      // 選中的國家已經顯示在框框裡了，不再重複寫一行提示文字在下面
       if(hintEl){ hintEl.textContent = ''; hintEl.className = 'country-hint idle'; }
     }
 
@@ -2303,8 +2114,6 @@
       const kw = countryKey(search.value || '');
       filtered = COUNTRIES.filter(function(row){
         if(!kw) return true;
-        // 比對整列（代碼、中文、英文，以及 USA、新西蘭 這類別名），
-        // 只比前三欄的話 u.s.a、UK、Holland 這種常見寫法會找不到
         return countryKey(row.join('')).indexOf(kw) >= 0;
       });
 
@@ -2323,7 +2132,6 @@
           + ' data-code="' + row[0] + '">'
           + escapeHtml(labelOf(row[0])) + '</div>';
       }).join('');
-      // 讓輔助技術知道目前游標停在哪一個選項
       if(activeIdx >= 0) search.setAttribute('aria-activedescendant', uid + '-opt' + activeIdx);
       else search.removeAttribute('aria-activedescendant');
     }
@@ -2343,7 +2151,6 @@
       activeIdx = -1;
       renderList();
       search.focus();
-      // 選中的項目捲到看得見的位置
       const sel = list.querySelector('.cpick-opt[aria-selected="true"]');
       if(sel) list.scrollTop = sel.offsetTop - 60;
     }
@@ -2368,10 +2175,10 @@
 
     toggle.addEventListener('mousedown', function(e){
       if(e.target.closest('.cpick-clear')) return;
-      e.preventDefault();                 // 避免點擊後焦點跑掉
+      e.preventDefault();
       open ? closeList() : openList();
     });
-    // 用鍵盤 Tab 到這個欄位再按 Enter/空白/下鍵也要能展開
+
     search.addEventListener('keydown', function(e){
       if(!open && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown')){
         e.preventDefault();
@@ -2393,8 +2200,7 @@
         renderList();
         scrollActiveIntoView();
       } else if(e.key === 'Enter'){
-        e.preventDefault();   // 不要讓 Enter 直接送出表單
-        // 只剩一個結果時，不必先按方向鍵也能直接確認
+        e.preventDefault();
         if(activeIdx < 0 && filtered.length === 1) activeIdx = 0;
         if(activeIdx >= 0){ setValue(filtered[activeIdx][0]); closeList(); }
       } else if(e.key === 'Escape'){
@@ -2403,7 +2209,6 @@
     });
 
     list.addEventListener('mousedown', function(e){
-      // 用 mousedown：blur 會先觸發並關掉清單，click 就永遠收不到
       const opt = e.target.closest('.cpick-opt');
       if(!opt) return;
       e.preventDefault();
@@ -2429,12 +2234,11 @@
       open: function(){ openList(); },
       refresh: function(){ renderValue(); if(open) renderList(); }
     };
-    mount._picker = api;   // 讓驗證流程可以直接叫它展開
+    mount._picker = api;
     return api;
   }
 
   const countryPickers = [];
-  // 主報名人
   const mainCountryPicker = createCountryPicker(
     document.getElementById('su-country-picker'),
     document.getElementById('su-country'),
@@ -2442,7 +2246,6 @@
   );
   countryPickers.push(mainCountryPicker);
 
-  // 同桌對象的國籍（選填，可留空）
   const tableWithCountryPicker = createCountryPicker(
     document.getElementById('su-tablewith-country-picker'),
     document.getElementById('su-tablewith-country'),
@@ -2452,17 +2255,14 @@
   );
   countryPickers.push(tableWithCountryPicker);
 
-  /** 語言切換時，所有選擇器的顯示文字要跟著換 */
   function refreshCountryPickers(){
     countryPickers.forEach(function(p){ p.refresh(); });
   }
 
-  /** 送出前讀值：值一定來自清單，直接回傳即可 */
   function readCountry(input){
     return String((input && input.value) || '').trim();
   }
 
-  /** 檢查所有國籍都選好了；沒選的回傳提示字串 */
   function validateAllCountries(){
     if(!document.getElementById('su-country').value.trim()){
       document.getElementById('su-country-picker')._picker.open();
@@ -2484,21 +2284,9 @@
     return '';
   }
 
-  // ==========================================================
-  // 同桌對象的 IG：自訂下拉清單
-  //
-  // 沒有用原生的 <datalist>，因為各家瀏覽器對「中間字比對」的支援不一致
-  // （有的只比對開頭），排桌要靠這個對應到人，不能讓行為隨瀏覽器而異。
-  //
-  // 比對規則：把 @、大小寫、底線、點號、空白都拉平之後做「包含」比對，
-  // 所以打 ming 找得到 xiaoming_tw，打 @Ming.Ming 也找得到 mingming。
-  //
-  // 清單列出所有已報名者的 IG（已取消的不列），只有帳號字串，
-  // 沒有姓名、電話或其他個資。
-  // ==========================================================
+  // ---- Instagram Suggestion List ----
   let igDirectory = [];
 
-  /** 把 IG 帳號拉平成可比對的形式：忽略 @、大小寫、底線、點號、空白 */
   function igKey(v){
     return String(v || '').trim().toLowerCase().replace(/^@/, '').replace(/[._\s-]/g, '');
   }
@@ -2510,7 +2298,6 @@
     igDirectory = body.igs || [];
   }
 
-  /** 找出所有「包含關係」的帳號：輸入包含在項目裡、或項目包含在輸入裡都算 */
   function filterIgs(input){
     const k = igKey(input);
     if(!k) return igDirectory.slice(0, 80);
@@ -2573,7 +2360,6 @@
     input.addEventListener('focus', render);
     input.addEventListener('input', function(){ activeIdx = -1; render(); });
 
-    // 鍵盤上下選、Enter 確認、Esc 關閉
     input.addEventListener('keydown', function(e){
       if(box.hidden || current.length === 0) return;
       if(e.key === 'ArrowDown'){ e.preventDefault(); activeIdx = Math.min(activeIdx + 1, current.length - 1); render(); }
@@ -2583,7 +2369,6 @@
     });
 
     box.addEventListener('mousedown', function(e){
-      // 用 mousedown 而不是 click：blur 會先觸發並把清單關掉，click 就永遠收不到
       const opt = e.target.closest('.ig-opt');
       if(!opt) return;
       e.preventDefault();
@@ -2595,7 +2380,7 @@
     });
   })();
 
-  // ---- toast ----
+  // ---- Toast ----
   let toastTimer = null;
   function showToast(text){
     const el = document.getElementById('toast');
@@ -2611,15 +2396,7 @@
     return div.innerHTML;
   }
 
-  // ==========================================================
-  // 狀態
-  //
-  // 款項狀態（整組一個）：試算表第 25 欄長什麼樣，這裡就顯示什麼，
-  // 前端不做任何金額比對、不推算。要改狀態只有兩條路：
-  // 使用者回報匯款（後端自動 → 帳款確認中）、或工作人員在後台按按鈕。
-  //
-  // 出席狀態（每個人各自一個）：已報名／已取消。
-  // ==========================================================
+  // ---- Status Definitions ----
   const PS = { NONE:'未收款', CHECKING:'帳款確認中', TOPUP:'待補款', DONE:'已收款' };
   const PS_META = {
     [PS.NONE]:     { cls:'st-none',     zh:'未收款',     en:'Unpaid',     ja:'未入金',       ko:'미입금' },
@@ -2628,8 +2405,6 @@
     [PS.DONE]:     { cls:'st-paid',     zh:'已收款',     en:'Paid',       ja:'入金済み',     ko:'입금 완료' }
   };
   const CANCELLED_META = { cls:'st-void', zh:'已取消', en:'Cancelled', ja:'キャンセル済み', ko:'취소됨' };
-  // 後端在試算表缺少「款項狀態」欄時會回 N/A。刻意不假裝成「未收款」——
-  // 那會讓你以為錢真的沒收到，比直接說「讀不到」危險得多。
   const NA_META = { cls:'st-na', zh:'N/A', en:'N/A', ja:'N/A', ko:'N/A' };
 
   function psMeta(g){
@@ -2642,7 +2417,7 @@
     return T(m);
   }
 
-  // ---- 查詢 ----
+  // ---- Lookup Logic ----
   const lookupResult = document.getElementById('lookup-result');
   let lastLookupPhone = '';
   let lastLookupData = null;
@@ -2703,7 +2478,6 @@
     document.getElementById('lr-method').textContent =
       isOnline ? T('paymethod_online') : T('paymethod_onsite');
 
-    // 說明文字完全對應款項狀態，不另外推算
     const NOTE = {
       [PS.DONE]: {
         zh:'已確認收到您的付款，我們活動現場見！',
@@ -2743,15 +2517,12 @@
     else note = NOTE[d.payStatus] || NOTE[PS.NONE];
     document.getElementById('lr-note').textContent = T(note);
 
-    // 成員清單：每個人各自一列，各自可以申請取消
     const box = document.getElementById('lr-members');
     box.innerHTML = (d.members || []).map(m=>{
       let right = '';
       if(m.cancelled){
         right = '<span class="st-badge st-void">' + T(TXT.cancelled) + '</span>';
       } else if(m.cancelPending){
-        // 申請中還能反悔：最常見的情況就是「本來不能來，後來又可以了」，
-        // 沒有這顆按鈕的話使用者只能回頭麻煩主辦
         right = '<span class="st-badge st-topup">' + T(TXT.cancelPendingLong) + '</span>'
               + '<button type="button" class="mini-btn" data-withdraw-member="' + m.index + '">'
               + T(TXT.undoRequest) + '</button>';
@@ -2766,13 +2537,10 @@
     }).join('');
 
     document.getElementById('lr-edit-btn').style.display = d.allCancelled ? 'none' : 'inline-block';
-
     lookupResult.classList.add('show');
   }
 
-  // ---- 個別申請取消 ----
-  // 一樣是「申請」而不是直接取消：只靠電話沒辦法確認送出的人是誰，
-  // 做成一鍵直接取消的話，任何知道這支電話的人都能把別人踢掉，而且無法復原。
+  // ---- Cancellation Requests ----
   document.getElementById('lr-members').addEventListener('click', async (e)=>{
     const btn = e.target.closest('[data-cancel-member]');
     if(!btn || !lastLookupPhone) return;
@@ -2811,7 +2579,7 @@
     }
   });
 
-  // ---- 撤回取消申請 ----
+  // ---- Withdraw Cancellation ----
   document.getElementById('lr-members').addEventListener('click', async (e)=>{
     const btn = e.target.closest('[data-withdraw-member]');
     if(!btn || !lastLookupPhone) return;
@@ -2847,36 +2615,12 @@
     }
   });
 
-  // ---- 修改報名資料 / 加人 ----
   document.getElementById('lr-edit-btn').addEventListener('click', ()=>{
     if(!lastLookupData) return;
     enterEditMode(Object.assign({}, lastLookupData, { phone: lastLookupPhone }));
   });
 
-  // ==========================================================
-  // 後台
-  //
-  // 【登入】密碼比對在前端完成，所以按下去是「秒進」，
-  // 進去之後才非同步撈資料 —— 不會像以前那樣卡在登入按鈕等後端撈完整張表。
-  //
-  // 【之後要換掉】密碼寫在這裡只是暫時的，任何人看網頁原始碼都找得到。
-  // 要換成 Firebase Auth 或雲端密碼表時，只要改寫 verifyAdminLocal() 這一個
-  // 函式（把它變成 async、去打驗證服務），底下所有程式都不用動。
-  // 後端 GS 那邊也有一個對應的 verifyAdmin()，兩邊各改一個函式就完成。
-  //
-  // 【操作者】每組密碼對應一個名字，所有後台動作都會把名字寫進「異動紀錄」，
-  // 之後查得到某一筆是誰按的。
-  // ==========================================================
-  // 密碼不在這裡，也不在任何前端程式碼裡。
-  // 它存在 Apps Script 的「指令碼屬性」中（等同伺服器端環境變數），
-  // 由後端的 verifyAdmin() 驗證。要新增或修改密碼，
-  // 請在 Apps Script 編輯器執行 setupAdminUsers()。
-  //
-  // 登入流程：送出密碼 → 後端只驗密碼、不讀試算表（所以很快）→
-  // 通過就立刻開畫面，名單在背景載入。
-  //
-  // 密碼在登入後留在記憶體裡（adminPassword），每個後台動作都會一起送出，
-  // 後端每次都重新驗證，不使用任何長期憑證。重新整理頁面就得再登入一次。
+  // ---- Admin Panel ----
   let adminPassword = '';
   let adminOperator = '';
   let adminData = [];
@@ -2900,7 +2644,6 @@
     btn.textContent = isEn() ? 'Signing in…' : '登入中…';
     errEl.style.display = 'none';
 
-    // 只驗密碼，後端不讀任何試算表，所以這一趟很快
     const r = await postToBackend({ type:'adminLogin', password: pw });
     const body = r.body || {};
 
@@ -2916,7 +2659,6 @@
     }
 
     if(body.result !== 'success'){
-      // 分辨「密碼錯」與「後台根本還沒設定」，後者要顯示後端給的說明
       errEl.textContent = body.reason === 'not-configured'
         ? (body.message || '後台密碼尚未設定')
         : (isEn() ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次');
@@ -2996,11 +2738,6 @@
     });
   });
 
-  /**
-   * 後端每個回應都可能帶 warnings（缺欄位、標題重複、某次寫入被略過…）。
-   * 一定要顯示出來：降級處理最怕的就是安靜地發生，
-   * 你以為按下去存好了，其實那一格根本沒有寫進去。
-   */
   function showWarnings(body){
     const box = document.getElementById('warn-banner');
     const list = (body && body.warnings) || [];
@@ -3072,7 +2809,6 @@
     const extra = members.filter(m=> m.role !== '本人' && !m.cancelled).length;
     const req = Number(g.cancelPendingCount) || 0;
 
-    // ── 成員清單 ──
     const memHtml = members.map(m=>{
       let right = '';
       if(m.cancelPending){
@@ -3095,16 +2831,12 @@
         + '</div>';
     }).join('');
 
-    // ── 匯款回報明細 ──
     const payHtml = (g.payments || []).length
       ? g.payments.map(p=> '<div class="pay-line"><b>' + escapeHtml(p.date || '—') + '</b>'
           + '<span>NT$' + Number(p.amount||0).toLocaleString() + '</span>'
           + '<span>' + L('後五碼','Last 5') + ' ' + escapeHtml(p.last5 || '—') + '</span></div>').join('')
       : '<div class="adm-sub" style="padding:0;">' + L('尚無匯款回報','No transfer reported yet') + '</div>';
 
-    // ── 款項狀態切換 ──
-    // 只有「目前的狀態」那一顆亮起對應顏色，其他一律中性。
-    // 四顆都上色的話，已收款那顆永遠是綠的，看起來像錢已經收到了。
     const CUR_CLS = {
       [PS.NONE]:'cur-none', [PS.CHECKING]:'cur-checking',
       [PS.TOPUP]:'cur-topup', [PS.DONE]:'cur-done'
@@ -3116,7 +2848,6 @@
         + (on ? '● ' : '') + (isEn() ? PS_META[st].en : st) + '</button>';
     }).join('');
 
-    // ── 編輯表單 ──
     const f = (label, key, val)=>
       '<div><label>' + label + '</label><input data-edit="' + key + '" value="' + escapeHtml(val || '') + '"></div>';
     const memEdit = members.map(m=>
@@ -3201,13 +2932,11 @@
       + '</div>').join('');
   }
 
-  // ---- 卡片互動（事件委派：重繪時不用重新綁定每顆按鈕） ----
   document.getElementById('admin-list').addEventListener('click', async (e)=>{
     const card = e.target.closest('.adm-card');
     if(!card) return;
     const regId = card.dataset.id;
 
-    // 點標題列 = 展開／收合
     if(e.target.closest('.adm-head')){
       card.classList.toggle('is-open');
       return;
@@ -3269,17 +2998,16 @@
       applyAdminData(body.results || []);
       showToast(isEn() ? '✅ Updated' : '✅ 已更新');
       if(adminView === 'log') loadAdminLog();
-      else adminLogs = [];   // 讓下次切到紀錄分頁時重新抓
+      else adminLogs = [];
     } else {
       showToast(body.message || (isEn() ? '⚠️ Update failed' : '⚠️ 更新失敗'));
       card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = false);
     }
   });
 
-  // 頁面載入後在背景抓可選的 IG 清單，抓不到也不影響報名（只是少了建議）
   loadIgDirectory().catch(function(){});
 
-  // ---- countdown to the event ----
+  // ---- Countdown ----
   const EVENT_TIME = new Date('2026-10-30T19:00:00+08:00').getTime();
   function updateCountdown(){
     const cdDays = document.getElementById('cd-days');
