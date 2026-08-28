@@ -1,3309 +1,553 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taiwan Pride — Proud Together</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg-deep:#1B1533;
-    --bg-surface:#251E45;
-    --bg-surface-2:#2E2555;
-    --text-light:#F6F3FF;
-    --text-muted:#B7AEDA;
-    --line:#3B325F;
-    --red:#FF4B5C;
-    --orange:#FF9F40;
-    --yellow:#FFD93D;
-    --green:#4ECB86;
-    --blue:#4D96FF;
-    --purple:#9B5DE5;
-    --rainbow:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--green),var(--blue),var(--purple));
-    --radius:18px;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--bg-deep);
-    color:var(--text-light);
-    font-family:'Inter',sans-serif;
-    line-height:1.6;
-    -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3,.display{
-    font-family:'Baloo 2',sans-serif;
-    font-weight:700;
-    letter-spacing:0.2px;
-  }
-  a{color:inherit;}
-  img{max-width:100%;display:block;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 商品數量視覺辨識系統 (矩陣高精準清點版)</title>
+    <style>
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --bg: #f8fafc; --card-bg: #ffffff; --border: #e2e8f0;
+            --text-main: #0f172a; --text-muted: #64748b;
+            --success: #16a34a; --danger: #dc2626;
+        }
 
-  .topnav{
-    position:sticky; top:0; z-index:50;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 24px; gap:10px;
-    background:rgba(27,21,51,0.85);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--line);
-  }
-  .brand{display:flex; align-items:center; gap:10px; font-family:'Baloo 2'; font-weight:800; font-size:1.05rem; flex:0 0 auto;}
-  .brand-dot{width:14px;height:14px;border-radius:50%;background:var(--rainbow);}
-  .topnav-links{display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
-  .topnav-links .tab-btn{display:none;}
-  .topnav-links .admin-tab{display:inline-block;}
-  @media(min-width:820px){
-    .topnav-links .tab-btn{display:inline-block;}
-  }
-  .lang-btn{
-    flex:0 0 auto;
-    padding:11px 20px; border-radius:999px; border:1px solid var(--line);
-    background:var(--bg-surface); color:var(--text-light);
-    font-family:'Inter'; font-weight:800; font-size:0.95rem; cursor:pointer;
-  }
-  .lang-btn:hover{border-color:var(--purple);}
-  .lang-picker{position:relative;}
-  .lang-menu{
-    position:absolute; z-index:80; right:0; top:calc(100% + 6px);
-    background:var(--bg-surface); border:1px solid var(--purple); border-radius:10px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.45); padding:4px; min-width:130px;
-  }
-  .lang-menu[hidden]{display:none;}
-  .lang-opt{
-    display:block; width:100%; text-align:left;
-    background:none; border:none; border-radius:7px; cursor:pointer;
-    padding:9px 12px; font-size:0.86rem; color:var(--text-light); font-family:inherit;
-  }
-  .lang-opt:hover{background:var(--purple); color:#fff;}
-  .lang-opt.is-active{font-weight:700; color:var(--yellow);}
-  .small-admin{
-    padding:6px 12px !important; font-size:0.76rem !important;
-  }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 24px 16px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 24px; }
+        header h1 { font-size: 24px; margin-bottom: 8px; }
+        header p { color: var(--text-muted); font-size: 14px; }
 
-  .banner{
-    position:relative;
-    margin:20px 20px 0;
-    border-radius:24px;
-    overflow:hidden;
-    min-height:340px;
-    display:flex; align-items:flex-end;
-    background:var(--bg-surface);
-  }
-  .banner img.banner-img{
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  }
-  .banner-overlay{
-    position:relative; z-index:2;
-    width:100%;
-    padding:18px 24px 20px;
-    background:linear-gradient(0deg, rgba(15,11,32,0.8) 0%, rgba(15,11,32,0) 60%);
-  }
-  .banner-meta{
-    display:flex; flex-wrap:wrap; gap:18px;
-    justify-content:center; text-align:center;
-    font-size:0.9rem; color:var(--text-light);
-  }
-  .banner-meta span{display:flex; align-items:center; gap:6px;}
+        /* API 設定與診斷列 */
+        .api-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .api-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .api-input-wrap { flex: 1; min-width: 260px; display: flex; gap: 8px; }
+        .api-input { flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; outline: none; font-size: 14px; }
+        
+        .diag-box {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            line-height: 1.5;
+        }
 
-  .link-divider{ margin:36px auto; max-width:900px; padding:0 20px; }
-  .link-divider svg{width:100%; height:auto; display:block;}
+        /* 控制面板 */
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
 
-  .tabbar{
-    position:sticky; top:57px; z-index:40;
-    display:flex; gap:8px; overflow-x:auto;
-    justify-content:center;
-    padding:14px 20px; margin:0 0 8px;
-    background:var(--bg-deep);
-    border-bottom:1px solid var(--line);
-  }
-  .tabbar::-webkit-scrollbar{display:none;}
-  .tab-btn{
-    flex:0 0 auto;
-    padding:10px 18px;
-    border-radius:999px;
-    border:1px solid var(--line);
-    background:var(--bg-surface);
-    color:var(--text-muted);
-    font-family:'Inter'; font-weight:600; font-size:0.92rem;
-    cursor:pointer;
-    transition:all 0.2s ease;
-    white-space:nowrap;
-  }
-  .tab-btn:hover{color:var(--text-light); border-color:#54467f;}
-  .tab-btn.active{
-    color:var(--bg-deep);
-    background:var(--yellow);
-    border-color:var(--yellow);
-  }
-  .tab-btn.admin-tab{border-style:dashed;}
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { padding: 9px 16px; border-radius: 8px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--primary); color: #fff; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
+        .btn-primary:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        .btn-secondary { background-color: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-secondary:hover { background-color: #e2e8f0; }
 
-  main{max-width:920px; margin:0 auto; padding:10px 20px 80px;}
-  .panel{display:none; animation:fade .35s ease;}
-  .panel.active{display:block;}
-  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+        /* 九宮格區域 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
 
-  .section-title{font-size:1.6rem; margin:6px 0 4px; text-align:center;}
-  .section-desc{color:var(--text-muted); margin:0 0 24px; font-size:0.96rem; text-align:center;}
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
 
-  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px;}
-  .info-card{
-    background:var(--bg-surface);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:18px;
-  }
-  .info-card .ic-label{font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;}
-  .info-card .ic-value{font-family:'Baloo 2'; font-size:1.1rem; font-weight:600;}
-  .info-card .ic-bar{width:30px;height:4px;border-radius:2px;background:var(--rainbow); margin-bottom:12px;}
+        .card-header { display: flex; align-items: center; gap: 8px; }
+        .item-name-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-weight: 600; outline: none; }
+        .btn-delete { background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; padding: 2px 6px; }
+        .btn-delete:hover { color: var(--danger); }
 
-  .location-card{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:20px; margin-bottom:20px;
-  }
-  .location-card .ic-bar{width:30px;height:4px;border-radius:2px;background:var(--rainbow); margin-bottom:12px;}
-  .location-card .ic-label{font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;}
-  .location-card .ic-value{font-family:'Baloo 2'; font-size:1.15rem; font-weight:600;}
-  .location-addr{color:var(--text-muted); font-size:0.88rem; margin:4px 0 14px;}
-  .map-embed{border-radius:14px; overflow:hidden; border:1px solid var(--line); margin-bottom:12px;}
-  .map-embed iframe{width:100%; height:220px; border:0; display:block;}
-  .map-btn{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:10px 16px; border-radius:10px;
-    background:var(--bg-surface-2); border:1px solid var(--purple);
-    font-size:0.85rem; font-weight:600; text-decoration:none;
-  }
+        .drop-zone {
+            height: 190px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+        .drop-zone.dragover { border-color: var(--primary); background-color: #eff6ff; }
+        .drop-prompt { color: var(--text-muted); font-size: 13px; text-align: center; line-height: 1.6; pointer-events: none; }
+        .preview-img { width: 100%; height: 100%; object-fit: contain; display: none; }
+        .file-input { display: none; }
 
-  .prose{color:var(--text-light); font-size:0.98rem; text-align:center;}
-  .prose p{margin:0 0 14px;}
-  /* inline-block：block 會撐滿整行，漸層鋪在整行寬度上，
-     但文字只佔左邊一段，等於只取樣到彩虹前段。
-     縮成 inline-block 讓元素寬度等於文字寬度，六色才會完整落在字上。 */
-  .tagline{
-    display:inline-block;
-    font-family:'Baloo 2'; font-weight:700; font-size:1.15rem; margin:0 0 8px;
-    background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
+        .card-footer { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; border-top: 1px solid #f1f5f9; }
+        .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .count-badge { background: #f1f5f9; color: var(--text-muted); padding: 3px 10px; border-radius: 9999px; font-weight: bold; font-size: 13px; }
+        .count-badge.success { background: #dcfce7; color: var(--success); }
+        .count-badge.error { background: #fee2e2; color: var(--danger); }
+        .card-notes { font-size: 12px; color: var(--text-muted); min-height: 16px; line-height: 1.4; word-break: break-all; }
 
-  .subhead{font-family:'Baloo 2'; font-size:1.15rem; margin:30px 0 12px; text-align:center;}
-
-  .notice-list{background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px; margin-bottom:10px;}
-  .notice-list li{margin-bottom:10px; font-size:0.92rem; color:var(--text-light);}
-  .notice-list li:last-child{margin-bottom:0;}
-
-  .seating-slot{
-    border:2px dashed rgba(246,243,255,0.3); border-radius:var(--radius);
-    padding:40px 20px; text-align:center; color:var(--text-muted);
-    background:var(--bg-surface); margin-bottom:10px;
-  }
-  .seating-slot .small{font-size:0.8rem; display:block; margin-top:6px;}
-
-  .form-toggle{display:flex; gap:8px; margin-bottom:22px;}
-  .form-toggle button{
-    flex:1; padding:12px; border-radius:12px; border:1px solid var(--line);
-    background:var(--bg-surface); color:var(--text-muted); font-weight:600; cursor:pointer;
-  }
-  .form-toggle button.active{background:var(--bg-surface-2); color:var(--text-light); border-color:var(--purple);}
-
-  form{background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius); padding:24px;}
-  .field{margin-bottom:16px;}
-  .field label{display:block; font-size:0.85rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;}
-  .field input, .field select, .field textarea{
-    width:100%; padding:11px 13px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    color:var(--text-light); font-family:'Inter'; font-size:0.95rem;
-  }
-  .field input:focus, .field select:focus, .field textarea:focus{
-    outline:2px solid var(--purple); outline-offset:1px; border-color:var(--purple);
-  }
-  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
-  @media(max-width:520px){.field-row{grid-template-columns:1fr;}}
-  .field-row.three-col{grid-template-columns:1fr 1fr 1fr;}
-  @media(max-width:560px){.field-row.three-col{grid-template-columns:1fr;}}
-  .hint{font-size:0.78rem; color:var(--text-muted); margin-top:5px;}
-  .hint.warn{color:var(--orange);}
-  .hint.critical{
-    font-size:0.85rem; font-weight:700; color:var(--red); margin-top:6px;
-  }
-
-  .toggle-row{
-    display:flex; align-items:center; gap:10px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    padding:12px 14px; margin-bottom:16px;
-  }
-  .toggle-row input[type="checkbox"]{width:18px; height:18px; accent-color:var(--purple); flex:0 0 auto;}
-  .toggle-row label{font-size:0.9rem; font-weight:600; margin:0; cursor:pointer;}
-  .toggle-row .sub{font-size:0.78rem; color:var(--text-muted); font-weight:400; display:block; margin-top:2px;}
-
-  .guest-section{
-    border-left:3px solid var(--purple); padding:14px 16px; margin-bottom:16px;
-    background:rgba(155,93,229,0.08); border-radius:0 10px 10px 0;
-  }
-  .guest-section > label{font-size:0.9rem; font-weight:600; display:block; margin-bottom:10px;}
-  .guest-row{
-    border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px;
-    background:rgba(255,255,255,0.03);
-  }
-  .guest-row-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
-  .guest-row-top label{font-size:0.85rem; color:var(--text-muted); font-weight:600;}
-  .guest-row-fields{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; align-items:start;}
-  .guest-row-fields .cpick .cpick-toggle{padding:0 11px; height:42px;}
-  .guest-row-fields .cpick .cpick-value,
-  .guest-row-fields .cpick .cpick-search{font-size:0.85rem;}
-  @media(max-width:520px){.guest-row-fields{grid-template-columns:1fr;}}
-  .guest-row-fields input{
-    width:100%; padding:10px 12px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:8px;
-    color:var(--text-light); font-family:'Inter'; font-size:0.9rem;
-  }
-  .guest-row-fields input:focus{ outline:2px solid var(--purple); outline-offset:1px; border-color:var(--purple); }
-
-  .subtotal-card{
-    display:flex; justify-content:space-between; align-items:center;
-    background:var(--bg-surface-2); border:1px solid var(--purple); border-radius:12px;
-    padding:20px 22px; margin-bottom:10px;
-    font-family:'Baloo 2'; font-weight:600; font-size:1rem;
-  }
-  .subtotal-amount{
-    font-size:1.3rem;
-    background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-
-  /* 大按鈕 + 空間不夠就換行（原本的做法）。
-     min-width 讓兩顆在寬螢幕並排、窄螢幕自動各佔一行，
-     文字永遠有完整空間，不會被擠出外框。 */
-  .radio-group{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;}
-  .radio-pill{
-    flex:1; min-width:140px;
-    display:flex; align-items:center; gap:8px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    padding:12px 14px; cursor:pointer; font-size:0.9rem; font-weight:600;
-  }
-  .radio-pill input{accent-color:var(--yellow); flex:none;}
-  .radio-pill.is-checked{border-color:var(--yellow); background:rgba(255,209,102,0.10);}
-  .radio-pill.is-disabled{opacity:0.4; cursor:not-allowed;}
-
-  .agree-row{
-    display:flex; align-items:flex-start; gap:10px; margin:18px 0;
-    font-size:0.85rem; color:var(--text-muted);
-  }
-  .agree-row input{margin-top:3px; width:16px; height:16px; accent-color:var(--yellow); flex:0 0 auto;}
-
-  .notice-recap{
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:12px;
-    padding:14px 16px; margin-bottom:6px;
-  }
-  .notice-recap summary{
-    cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--text-light);
-    list-style:none;
-  }
-  .notice-recap summary::-webkit-details-marker{display:none;}
-  .notice-recap summary::before{content:'▸ '; color:var(--purple);}
-  .notice-recap[open] summary::before{content:'▾ ';}
-  .notice-recap .notice-list{padding:16px 18px; margin-bottom:0;}
-
-  .btn-primary{
-    width:100%; padding:14px; border:none; border-radius:12px;
-    background:var(--yellow); color:var(--bg-deep);
-    font-family:'Baloo 2'; font-weight:700; font-size:1rem;
-    cursor:pointer; margin-top:6px;
-    transition:transform .15s ease;
-  }
-  .btn-primary:hover{transform:translateY(-1px);}
-  .btn-primary:disabled{opacity:0.65; cursor:not-allowed; transform:none;}
-  .btn-secondary{
-    padding:9px 14px; border-radius:10px;
-    background:transparent; color:var(--text-light); border:1px solid var(--line);
-    font-family:'Inter'; font-weight:600; cursor:pointer; font-size:0.85rem;
-  }
-  .btn-secondary:disabled{opacity:0.4; cursor:not-allowed;}
-
-  .form-msg{
-    display:none; margin-top:14px; padding:12px 14px; border-radius:10px;
-    background:rgba(78,203,134,0.15); border:1px solid var(--green); color:var(--green); font-size:0.9rem;
-  }
-  .form-msg.show{display:block;}
-
-  .pay-grid{display:grid; grid-template-columns:220px 1fr; gap:20px; margin-bottom:26px;}
-  @media(max-width:640px){.pay-grid{grid-template-columns:1fr;}}
-  .qr-card{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:18px; text-align:center;
-  }
-  .qr-box{
-    width:100%; aspect-ratio:1; border-radius:12px; overflow:hidden; margin-bottom:10px;
-    border:1px solid var(--line);
-  }
-  .qr-caption{font-size:0.78rem; color:var(--text-muted);}
-  .bank-card{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:22px;
-  }
-  .bank-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); font-size:0.95rem; gap:10px;}
-  .bank-row:last-child{border-bottom:none;}
-  .bank-row .bl{color:var(--text-muted); flex:0 0 auto;}
-  .bank-row .bv{font-family:'Baloo 2'; font-weight:600; text-align:right;}
-  .copy-btn{
-    border:1px solid var(--purple); background:rgba(155,93,229,0.15); color:var(--text-light);
-    border-radius:8px; padding:6px 12px; font-size:0.78rem; font-weight:600; cursor:pointer; flex:0 0 auto;
-  }
-  .copy-btn.copied{background:var(--green); border-color:var(--green); color:var(--bg-deep);}
-  .acct-wrap{display:flex; align-items:center; gap:8px;}
-
-  .gallery-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
-  .gallery-slot{
-    aspect-ratio:1; border-radius:14px;
-    border:2px dashed rgba(246,243,255,0.25);
-    background:var(--bg-surface);
-    display:flex; align-items:center; justify-content:center;
-    color:var(--text-muted); font-size:0.78rem; text-align:center; padding:10px;
-  }
-  .empty-state{
-    text-align:center; padding:60px 20px; color:var(--text-muted);
-  }
-  .empty-state .es-icon{
-    width:60px;height:60px;border-radius:16px;background:var(--rainbow);
-    margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:1.6rem;
-  }
-
-  /* 四格共用外面那一個框，中間只用細線分隔 —— 省下四層邊框與內距，
-     空間全部讓給數字。永遠同一排不換行，字級隨視窗縮放。 */
-  .countdown-card{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:18px 14px; margin-bottom:26px; text-align:center;
-  }
-  .countdown-label{font-family:'Baloo 2'; font-size:1rem; margin-bottom:12px; color:var(--text-muted);}
-  .countdown-grid{
-    display:flex; justify-content:center; align-items:center;
-    flex-wrap:nowrap; gap:0;
-  }
-  .countdown-unit{
-    flex:1 1 0; min-width:0;
-    background:none; border:none; padding:0 clamp(2px, 1.4vw, 10px);
-  }
-  /* 分隔線取代原本的四個外框 */
-  .countdown-unit + .countdown-unit{border-left:1px solid var(--line);}
-  /* inline-block 而不是 block：block 會撐滿整格，漸層鋪在整格寬度上，
-     但數字只佔中間一小段，等於只取樣到彩虹中間的黃綠。
-     縮成 inline-block 之後元素寬度就等於數字寬度，整條彩虹精準鋪在字上。 */
-  .cd-num{
-    display:inline-block; font-family:'Baloo 2';
-    font-size:clamp(1.6rem, 11vw, 2.6rem);
-    font-weight:700; line-height:1.1; white-space:nowrap;
-    background:var(--rainbow); -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .cd-unit{
-    display:block; font-size:clamp(0.62rem, 2.3vw, 0.78rem);
-    color:var(--text-muted); margin-top:3px; white-space:nowrap;
-  }
-
-  .admin-banner{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:18px 20px; margin-bottom:20px; font-size:0.88rem; color:var(--text-muted);
-    display:flex; gap:12px; align-items:flex-start;
-  }
-  .admin-banner .ic{font-size:1.3rem;}
-
-  .admin-gate{
-    max-width:340px; margin:20px auto; text-align:center;
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:36px 26px;
-  }
-  .admin-gate-icon{font-size:2rem; margin-bottom:10px;}
-  .admin-gate h3{margin:0 0 6px; font-size:1.1rem;}
-  .admin-gate p{color:var(--text-muted); font-size:0.85rem; margin:0 0 18px;}
-  .admin-gate input{
-    width:100%; padding:12px 14px; margin-bottom:12px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    color:var(--text-light); font-family:'Inter'; font-size:1rem; text-align:center;
-    letter-spacing:2px;
-  }
-  .admin-gate input:focus{ outline:2px solid var(--purple); outline-offset:1px; border-color:var(--purple); }
-  .admin-logic{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:18px 20px; margin-bottom:20px; font-size:0.88rem;
-  }
-  .admin-logic h4{margin:0 0 10px; font-family:'Baloo 2'; font-size:1rem;}
-  .admin-logic ol{margin:0; padding-left:18px;}
-  .admin-logic li{margin-bottom:6px; color:var(--text-light);}
-
-  footer{
-    border-top:1px solid var(--line); margin-top:40px; padding:30px 20px;
-    text-align:center; color:var(--text-muted); font-size:0.85rem;
-  }
-
-  .modal-overlay{
-    position:fixed; inset:0; z-index:100;
-    background:rgba(15,11,32,0.75); backdrop-filter:blur(4px);
-    display:flex; align-items:center; justify-content:center;
-    padding:20px;
-  }
-  .modal-card{
-    position:relative;
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    max-width:360px; width:100%; padding:32px 24px 26px;
-    text-align:center;
-  }
-  .modal-close{
-    position:absolute; top:14px; right:14px;
-    background:transparent; border:none; color:var(--text-muted);
-    font-size:1.1rem; cursor:pointer; line-height:1;
-  }
-  .modal-icon{font-size:2rem; margin-bottom:6px;}
-  .modal-card h3{font-size:1.2rem; margin:0 0 8px;}
-  .modal-card p{color:var(--text-muted); font-size:0.9rem; margin:0 0 18px;}
-  .line-qr-box{
-    width:180px; aspect-ratio:1; margin:0 auto 20px;
-    border:2px dashed rgba(246,243,255,0.3); border-radius:14px;
-    background:var(--bg-surface-2);
-    display:flex; align-items:center; justify-content:center;
-    color:var(--text-muted); font-size:0.75rem; padding:14px; text-align:center;
-  }
-  .line-modal-note{
-    font-size:0.85rem; font-weight:600; color:var(--yellow);
-    margin:0 0 20px !important; line-height:1.5;
-  }
-  .line-regid{
-    display:inline-block; margin:0 auto 10px; padding:8px 16px;
-    background:var(--bg-surface-2); border:1px solid var(--purple); border-radius:10px;
-    font-family:'Baloo 2'; font-weight:700; font-size:1rem; color:var(--text-light);
-  }
-  .line-regid-hint{
-    font-size:0.78rem; color:var(--text-muted); margin:0 0 16px !important;
-  }
-
-  /* ===== 後台儀表板 ===== */
-  .admin-stats{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:12px; margin-bottom:18px;
-  }
-  .stat-box{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:16px 18px; text-align:center;
-  }
-  .stat-num{font-family:'Baloo 2'; font-size:1.6rem; font-weight:700; line-height:1.2;}
-  .stat-label{font-size:0.75rem; color:var(--text-muted); margin-top:4px; letter-spacing:0.5px;}
-
-  .admin-filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
-  .filter-btn{
-    padding:8px 14px; border-radius:999px; border:1px solid var(--line);
-    background:var(--bg-surface); color:var(--text-muted);
-    font-family:'Inter'; font-weight:600; font-size:0.82rem; cursor:pointer;
-    transition:all .2s ease; white-space:nowrap;
-  }
-  .filter-btn:hover{color:var(--text-light); border-color:#54467f;}
-  .filter-btn.active{background:var(--purple); border-color:var(--purple); color:#fff;}
-  .filter-btn .cnt{opacity:0.7; font-weight:500;}
-
-  .st-badge{
-    display:inline-block; padding:4px 9px; border-radius:999px;
-    font-size:0.72rem; font-weight:700; white-space:nowrap;
-  }
-  .st-paid{background:rgba(78,203,134,0.16); color:var(--green); border:1px solid rgba(78,203,134,0.4);}
-  .st-reported{background:rgba(77,150,255,0.16); color:var(--blue); border:1px solid rgba(77,150,255,0.4);}
-  .st-onsite{background:rgba(255,159,64,0.16); color:var(--orange); border:1px solid rgba(255,159,64,0.4);}
-  .st-none{background:rgba(183,174,218,0.14); color:var(--text-muted); border:1px solid var(--line);}
-  .st-review{background:rgba(255,75,92,0.16); color:var(--red); border:1px solid rgba(255,75,92,0.4);}
-  .st-void{background:rgba(120,120,140,0.18); color:#8b86a3; border:1px solid #4a4368;}
-
-  .mini-btn{
-    padding:5px 10px; border-radius:8px; cursor:pointer;
-    font-family:'Inter'; font-weight:600; font-size:0.72rem;
-    border:1px solid var(--line); background:var(--bg-surface-2); color:var(--text-light);
-    white-space:nowrap; margin-right:5px;
-  }
-  .mini-btn:hover{border-color:var(--purple);}
-  .mini-btn.ok{border-color:var(--green); color:var(--green);}
-  .mini-btn.danger{border-color:var(--red); color:var(--red);}
-  .mini-btn:disabled{opacity:0.4; cursor:not-allowed;}
-  .warn-dot{color:var(--orange); cursor:help;}
-
-  .toast{
-    position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px);
-    background:var(--bg-surface-2); border:1px solid var(--purple); color:var(--text-light);
-    padding:12px 22px; border-radius:999px; font-size:0.88rem; font-weight:600;
-    opacity:0; pointer-events:none; transition:all .3s ease; z-index:200; max-width:90vw; text-align:center;
-  }
-  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
-
-  /* ===== 查詢結果卡片 ===== */
-  .lookup-result{
-    display:none; background:var(--bg-surface); border:1px solid var(--line);
-    border-radius:var(--radius); padding:22px; margin-top:18px;
-  }
-  .lookup-result.show{display:block;}
-  .lr-head{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;}
-  .lr-title{font-family:'Baloo 2'; font-size:1.15rem; font-weight:700;}
-  .lr-row{display:flex; justify-content:space-between; gap:14px; padding:10px 0; border-bottom:1px solid var(--line); font-size:0.92rem;}
-  .lr-row:last-of-type{border-bottom:none;}
-  .lr-label{color:var(--text-muted); flex:0 0 auto;}
-  .lr-value{text-align:right; font-weight:600;}
-  .lr-note{font-size:0.85rem; color:var(--text-muted); margin-top:12px; line-height:1.6;}
-
-
-  /* ===== 國籍標準化欄位 ===== */
-  /* 新增攜伴：這是表單裡的主要動作之一，用彩色外框讓它跳出來 */
-  /* 彩虹框線 + 彩虹光暈：底色維持透明，只有邊框是漸層。
-     漸層不能直接用在 border-color，所以用兩層背景疊：
-     底層鋪漸層（border-box）、上層用卡片底色蓋回內部（padding-box），
-     露出來的那 2px 邊框就是彩虹。 */
-  .btn-add-guest{
-    display:inline-flex; align-items:center; gap:7px;
-    padding:8px 18px; border-radius:12px; cursor:pointer;
-    font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
-    color:var(--text-light);
-    border:2px solid transparent;
-    background:
-      linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
-      var(--rainbow) border-box;
-    transition:transform .2s;
-  }
-  .btn-add-guest:hover{transform:translateY(-1px);}
-  .btn-add-guest:disabled{
-    opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none;
-    background:var(--bg-surface-2); border-color:var(--line); color:var(--text-muted);
-  }
-
-  /* 同桌 IG 的相似帳號提示 */
-  /* 同桌 IG 的下拉清單：跟國籍選擇器一樣是浮動視窗，
-     緊貼著 IG 欄位下方，不會把後面的欄位往下推。
-     ig-wrap 是定位基準，所以清單一定對齊 IG 這一欄，
-     手機上三欄變直排時也不會跑到別的欄位底下。 */
-  .ig-wrap{position:relative;}
-  .ig-suggest{
-    position:absolute; z-index:60; left:0; right:0; top:calc(100% + 6px);
-    background:#fff; border:1px solid #d9d2ea; border-radius:10px;
-    max-height:230px; overflow-y:auto; overscroll-behavior:contain;
-    box-shadow:0 10px 30px rgba(0,0,0,0.35);
-    padding:4px;
-  }
-  .ig-suggest[hidden]{display:none;}
-  .ig-opt{
-    padding:9px 11px; border-radius:7px;
-    font-size:0.86rem; cursor:pointer; color:#2A1B3D;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .ig-opt:hover, .ig-opt.active{background:var(--purple); color:#fff;}
-  .ig-empty{padding:11px; font-size:0.79rem; color:#6b6280; text-align:center;}
-
-  /* ── 國籍選擇器（WAI-ARIA combobox 模式）──
-     結構與現在主流的下拉搜尋元件一致：
-     一個 role="combobox" 的觸發區 + 一個浮在上方的 role="listbox"。
-     清單用 position:absolute 脫離文件流，所以展開時是浮動視窗，
-     不會把下方內容往下推。 */
-  .cpick{position:relative;}
-  .cpick-toggle{
-    display:flex; align-items:center; gap:8px;
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
-    padding:0 12px; cursor:pointer; height:46px;
-    transition:border-color .15s, box-shadow .15s;
-  }
-  .cpick-toggle:hover{border-color:var(--purple);}
-  .cpick.is-open .cpick-toggle{
-    border-color:var(--purple); box-shadow:0 0 0 3px rgba(155,93,229,0.18);
-  }
-  /* 顯示值與搜尋框重疊在同一個位置：收合時看到選中的國家，
-     展開時變成可以打字的搜尋框，這是這類元件的標準行為 */
-  .cpick-field{position:relative; flex:1 1 auto; min-width:0; height:100%;}
-  .cpick .cpick-value{
-    position:absolute; inset:0; display:flex; align-items:center;
-    font-size:0.9rem; color:var(--text-light);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    pointer-events:none;
-  }
-  .cpick-value.is-placeholder{color:var(--text-muted);}
-  .cpick.is-open .cpick-value{opacity:0;}
-  /* 用 .cpick 前綴把優先度提高到 (0,2,0)，蓋過全域的 .field input (0,1,1)。
-     沒有這層的話搜尋框會套到全域的底色、邊框與內距，
-     結果就是「框框裡又有一個框框」，而且不透明的底色會蓋住上面的顯示值。 */
-  .cpick .cpick-search{
-    position:absolute; inset:0; width:100%; height:100%;
-    background:transparent; border:none; border-radius:0;
-    outline:none; padding:0; margin:0; box-shadow:none;
-    color:var(--text-light); font-size:0.9rem; font-family:inherit;
-    cursor:pointer;
-  }
-  .cpick .cpick-search:focus{
-    outline:none; border:none; background:transparent;
-  }
-  .cpick.is-open .cpick-search{cursor:text;}
-  .cpick .cpick-search::-webkit-search-cancel-button{display:none;}
-
-  .cpick-actions{display:flex; align-items:center; gap:8px; flex:none;}
-  .cpick-clear{
-    background:none; border:none; padding:0; cursor:pointer; display:none;
-    color:var(--text-muted); font-size:0.85rem; line-height:1;
-  }
-  .cpick.has-value .cpick-clear{display:block;}
-  .cpick-clear:hover{color:var(--red);}
-  .cpick-caret{
-    width:0; height:0; flex:none;
-    border-left:5px solid transparent; border-right:5px solid transparent;
-    border-top:6px solid var(--text-muted);
-    transition:transform .2s;
-  }
-  .cpick.is-open .cpick-caret{transform:rotate(180deg);}
-
-  .cpick-list{
-    position:absolute; z-index:60; left:0; right:0; top:calc(100% + 6px);
-    background:var(--bg-surface); border:1px solid var(--purple); border-radius:10px;
-    max-height:260px; overflow-y:auto; overscroll-behavior:contain;
-    box-shadow:0 10px 30px rgba(0,0,0,0.45);
-    padding:4px;
-  }
-  .cpick-list[hidden]{display:none;}
-  .cpick-opt{
-    padding:9px 11px; border-radius:7px;
-    font-size:0.86rem; cursor:pointer; color:var(--text-light);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .cpick-opt[aria-selected="true"]{font-weight:700;}
-  .cpick-opt.active{background:var(--purple); color:#fff;}
-  .cpick-empty{padding:12px; font-size:0.8rem; color:var(--text-muted); text-align:center;}
-
-  .country-hint{
-    font-size:0.78rem; margin-top:5px; min-height:1.2em;
-    display:flex; align-items:center; gap:5px;
-  }
-  .country-hint.ok{color:var(--green);}
-  .country-hint.unknown{color:var(--orange);}
-  .country-hint.idle{color:var(--text-muted);}
-  .guest-country-hint{grid-column:1 / -1; margin-top:-2px;}
-  input.country-input{text-transform:uppercase;}
-  input.country-input::placeholder{text-transform:none;}
-
-  /* ===== 展示模式提示 ===== */
-  /* ===== 取消申請 ===== */
-  .lr-companions{
-    display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end;
-  }
-  .lr-chip{
-    background:var(--bg-surface-2); border:1px solid var(--line); border-radius:999px;
-    padding:3px 10px; font-size:0.8rem; font-weight:600;
-  }
-  .btn-danger{
-    width:100%; padding:12px; border-radius:12px; margin-top:10px;
-    background:transparent; border:1px solid var(--red); color:var(--red);
-    font-family:'Inter'; font-weight:700; font-size:0.9rem; cursor:pointer;
-  }
-  .btn-danger:hover{background:rgba(255,75,92,0.1);}
-  .btn-danger:disabled{opacity:0.5; cursor:not-allowed;}
-
-  /* ===== 後台：卡片式名單 ===== */
-  .adm-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
-  .adm-viewtabs{display:flex; gap:6px; margin-bottom:16px;}
-  .adm-viewtab{
-    padding:9px 18px; border-radius:10px; border:1px solid var(--line);
-    background:var(--bg-surface); color:var(--text-muted);
-    font-family:'Inter'; font-weight:600; font-size:0.85rem; cursor:pointer; transition:all .2s;
-  }
-  .adm-viewtab.active{background:var(--purple); border-color:var(--purple); color:#fff;}
-
-  .adm-list{display:flex; flex-direction:column; gap:10px;}
-  .adm-card{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:14px;
-    overflow:hidden; transition:border-color .2s;
-  }
-  .adm-card.is-open{border-color:var(--purple);}
-  .adm-card.is-void{opacity:0.5;}
-  .adm-card.has-req{border-color:rgba(255,159,64,0.6);}
-  .adm-head{
-    display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer;
-    flex-wrap:wrap;
-  }
-  .adm-head:hover{background:var(--bg-surface-2);}
-  .adm-id{
-    font-family:'Baloo 2'; font-weight:700; font-size:0.82rem; color:var(--text-muted);
-    background:var(--bg-deep); border:1px solid var(--line); border-radius:7px; padding:2px 8px;
-  }
-  .adm-name{font-weight:700; font-size:0.98rem;}
-  .adm-plus{
-    font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px;
-    background:var(--bg-surface-2); border:1px solid var(--purple); color:var(--text-light);
-  }
-  .adm-spacer{flex:1 1 auto;}
-  .adm-caret{color:var(--text-muted); font-size:0.8rem; transition:transform .2s;}
-  .adm-card.is-open .adm-caret{transform:rotate(90deg);}
-  .adm-sub{
-    padding:0 16px 12px; display:flex; gap:10px; flex-wrap:wrap;
-    font-size:0.78rem; color:var(--text-muted);
-  }
-  .adm-sub b{color:var(--text-light); font-weight:600;}
-  .adm-req{color:var(--orange); font-weight:700;}
-
-  .adm-detail{display:none; border-top:1px solid var(--line); padding:16px; background:var(--bg-deep);}
-  .adm-card.is-open .adm-detail{display:block;}
-  .adm-sec{margin-bottom:16px;}
-  .adm-sec:last-child{margin-bottom:0;}
-  .adm-sec h5{
-    margin:0 0 8px; font-family:'Inter'; font-size:0.7rem; font-weight:700;
-    letter-spacing:1px; text-transform:uppercase; color:var(--text-muted);
-  }
-  .mem-row{
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    padding:9px 12px; border-radius:10px; background:var(--bg-surface);
-    border:1px solid var(--line); margin-bottom:6px;
-  }
-  .mem-row.is-cancelled{opacity:0.5;}
-  .mem-row.is-pending{border-color:var(--orange);}
-  .mem-role{
-    font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:6px;
-    background:var(--bg-surface-2); color:var(--text-muted); border:1px solid var(--line);
-  }
-  .mem-name{font-weight:600; font-size:0.88rem;}
-  .mem-ig{font-size:0.76rem; color:var(--text-muted);}
-  .kv{display:grid; grid-template-columns:auto 1fr; gap:5px 14px; font-size:0.82rem;}
-  .kv dt{color:var(--text-muted); white-space:nowrap;}
-  .kv dd{margin:0; color:var(--text-light); word-break:break-word;}
-  .pay-line{
-    display:flex; gap:10px; flex-wrap:wrap; font-size:0.8rem;
-    padding:7px 12px; border-radius:8px; background:var(--bg-surface);
-    border:1px solid var(--line); margin-bottom:5px;
-  }
-  .adm-actions{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;}
-  .adm-editor{display:none; margin-top:10px;}
-  .adm-editor.is-open{display:block;}
-  .adm-editor input, .adm-editor textarea{
-    width:100%; padding:8px 10px; margin-bottom:6px;
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:8px;
-    color:var(--text-light); font-family:'Inter'; font-size:0.84rem;
-  }
-  .adm-editor label{display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom:3px;}
-  .adm-edit-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0 12px;}
-
-  .log-list{display:flex; flex-direction:column; gap:8px;}
-  .log-item{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:12px;
-    padding:12px 14px; font-size:0.82rem;
-  }
-  .log-top{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:5px;}
-  .log-time{font-size:0.74rem; color:var(--text-muted);}
-  .log-act{
-    font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px;
-    background:var(--bg-surface-2); border:1px solid var(--purple);
-  }
-  .log-src{font-size:0.72rem; color:var(--text-muted);}
-  .log-sum{color:var(--text-light); line-height:1.5; word-break:break-word;}
-  .adm-empty{text-align:center; color:var(--text-muted); padding:40px 20px; font-size:0.88rem;}
-
-  /* ===== 前台查詢結果：成員清單 ===== */
-  .lr-members{margin:14px 0 4px;}
-  .lr-mem{
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    padding:10px 12px; border-radius:10px;
-    background:var(--bg-surface-2); border:1px solid var(--line); margin-bottom:7px;
-  }
-  .lr-mem.is-cancelled{opacity:0.5;}
-  .lr-mem.is-pending{border-color:var(--orange);}
-  .lr-mem .mem-name{flex:1 1 auto;}
-  .lr-editbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
-  .edit-banner{
-    display:none; align-items:center; gap:10px; flex-wrap:wrap;
-    background:rgba(155,93,229,0.14); border:1px solid var(--purple);
-    border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:0.86rem;
-  }
-  .edit-banner.show{display:flex;}
-  .existing-mem{
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    padding:9px 12px; border-radius:10px; background:var(--bg-surface-2);
-    border:1px dashed var(--line); margin-bottom:6px; font-size:0.85rem;
-  }
-  .existing-mem.is-cancelled{opacity:0.45;}
-  .topup-note{
-    margin-top:10px; padding:11px 14px; border-radius:10px;
-    background:rgba(255,159,64,0.14); border:1px solid var(--orange);
-    color:var(--orange); font-size:0.84rem; font-weight:600;
-  }
-  .warn-banner{
-    background:rgba(255,159,64,0.14); border:1px solid var(--orange);
-    border-radius:12px; padding:14px 16px; margin-bottom:16px;
-    font-size:0.85rem; color:var(--orange); line-height:1.6;
-  }
-  .warn-banner b{display:block; margin-bottom:6px; font-size:0.9rem;}
-  .warn-banner ul{margin:0; padding-left:18px;}
-  .st-na{background:rgba(183,174,218,0.12); color:var(--text-muted); border:1px dashed var(--line);}
-
-  /* 款項狀態四色：一眼分辨，不用讀字 */
-  .st-none{background:rgba(255,107,107,0.16); color:var(--red); border:1px solid rgba(255,107,107,0.45);}
-
-  /* 狀態切換鈕：只有「目前的狀態」那一顆會亮起對應顏色，其餘一律中性。
-     這樣按鈕的顏色代表「現在是什麼狀態」，而不是「按下去會變什麼顏色」——
-     否則四顆都上色時，已收款那顆永遠是綠的，看起來像已經收到錢了。 */
-  .mini-btn.is-current{font-weight:700; cursor:default;}
-  .mini-btn.is-current.cur-none{border-color:var(--red); color:var(--red); background:rgba(255,107,107,0.14);}
-  .mini-btn.is-current.cur-checking{border-color:var(--blue); color:var(--blue); background:rgba(77,150,255,0.14);}
-  .mini-btn.is-current.cur-topup{border-color:var(--orange); color:var(--orange); background:rgba(255,159,64,0.14);}
-  .mini-btn.is-current.cur-done{border-color:var(--green); color:var(--green); background:rgba(6,214,160,0.14);}
-  .st-topup{background:rgba(255,159,64,0.16); color:var(--orange); border:1px solid rgba(255,159,64,0.45);}
-  .st-checking{background:rgba(77,150,255,0.16); color:var(--blue); border:1px solid rgba(77,150,255,0.45);}
-</style>
+        /* 結果清單面板 */
+        .summary-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+        .summary-table th, .summary-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .summary-table th { background: #f8fafc; color: var(--text-muted); }
+    </style>
 </head>
 <body>
 
-<nav class="topnav">
-  <div class="brand"><span class="brand-dot"></span> Taiwan Pride</div>
-  <div class="topnav-links">
-    <div class="lang-picker">
-      <button class="lang-btn" id="lang-toggle-btn" aria-haspopup="listbox" aria-expanded="false">🌐 中文</button>
-      <div class="lang-menu" id="lang-menu" role="listbox" hidden>
-        <button type="button" class="lang-opt" data-lang="zh" role="option">中文</button>
-        <button type="button" class="lang-opt" data-lang="en" role="option">English</button>
-        <button type="button" class="lang-opt" data-lang="ja" role="option">日本語</button>
-        <button type="button" class="lang-opt" data-lang="ko" role="option">한국어</button>
-      </div>
-    </div>
-    <button class="tab-btn admin-tab small-admin" data-tab="admin" data-i18n="nav_admin">後台</button>
-  </div>
-</nav>
+<div class="container">
+    <header>
+        <h1>AI 商品數量視覺辨識系統 (高精準矩陣清點版)</h1>
+        <p>搭載逐排行列分析演算法，精準辨識密集排列與邊角缺漏商品</p>
+    </header>
 
-<div class="banner">
-  <img class="banner-img" src="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/dinnerB.jpg" alt="Taiwan Pride" loading="eager" decoding="async">
-  <div class="banner-overlay">
-    <div class="banner-meta">
-      <span>📅 10/30 · 19:00</span>
-      <span>📍 <span data-i18n="banner_loc">彭園壹品宴</span></span>
+    <div class="api-bar">
+        <div class="api-input-row">
+            <label for="api-key" style="font-weight: 600; font-size: 14px;">Gemini API Key：</label>
+            <div class="api-input-wrap">
+                <input type="password" id="api-key" class="api-input" placeholder="貼上 AIzaSy 開頭的金鑰" autocomplete="off">
+                <button class="btn-secondary" id="btn-toggle-key" type="button">顯示</button>
+                <button class="btn-secondary" id="btn-test-key" type="button" style="background: #e0f2fe; color: #0284c7; border-color: #bae6fd;">🧪 測試連線</button>
+            </div>
+        </div>
+        <div id="diag-box" class="diag-box"></div>
     </div>
-  </div>
+
+    <div class="control-panel">
+        <div id="overall-status" style="font-size: 14px; color: var(--text-muted); font-weight: 500;">⚪ 準備就緒</div>
+        <div class="btn-group">
+            <button class="btn-secondary" id="btn-add-card" type="button">+ 新增區域</button>
+            <button class="btn-secondary" id="btn-clear-images" type="button">清空照片</button>
+            <button class="btn-primary" id="btn-run-all" type="button">🚀 開始辨識</button>
+        </div>
+    </div>
+
+    <div class="grid-container" id="grid-container"></div>
+
+    <div class="summary-panel">
+        <div class="summary-header">
+            <h2>辨識結果清單</h2>
+            <div class="btn-group">
+                <button class="btn-secondary" id="btn-copy-list" type="button" style="font-size: 13px; padding: 6px 12px;">📋 複製清單</button>
+                <button class="btn-secondary" id="btn-export-csv" type="button" style="font-size: 13px; padding: 6px 12px;">💾 匯出 CSV</button>
+            </div>
+        </div>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">編號</th>
+                    <th style="width: 200px;">商品名稱</th>
+                    <th style="width: 120px;">辨識數量</th>
+                    <th>逐排清點說明 / 缺漏備註</th>
+                </tr>
+            </thead>
+            <tbody id="summary-tbody">
+                <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">尚未執行辨識</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<div class="link-divider">
-  <svg viewBox="0 0 900 90" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="rb" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#FF4B5C"/>
-        <stop offset="20%" stop-color="#FF9F40"/>
-        <stop offset="40%" stop-color="#FFD93D"/>
-        <stop offset="60%" stop-color="#4ECB86"/>
-        <stop offset="80%" stop-color="#4D96FF"/>
-        <stop offset="100%" stop-color="#9B5DE5"/>
-      </linearGradient>
-    </defs>
-    <g stroke="url(#rb)" stroke-width="4" fill="none" stroke-linecap="round">
-      <path d="M10,60 Q40,20 70,60 T130,60 T190,60 T250,60 T310,60 T370,60 T430,60 T490,60 T550,60 T610,60 T670,60 T730,60 T790,60 T850,60 T890,60"/>
-    </g>
-    <g fill="url(#rb)">
-      <circle cx="70" cy="34" r="9"/>
-      <circle cx="190" cy="34" r="9"/>
-      <circle cx="310" cy="34" r="9"/>
-      <circle cx="430" cy="34" r="9"/>
-      <circle cx="550" cy="34" r="9"/>
-      <circle cx="670" cy="34" r="9"/>
-      <circle cx="790" cy="34" r="9"/>
-    </g>
-  </svg>
-</div>
-
-<div class="tabbar" id="tabbar">
-  <button class="tab-btn active" data-tab="info" data-i18n="nav_info">活動訊息</button>
-  <button class="tab-btn" data-tab="register" data-i18n="nav_register">報名及查詢</button>
-  <button class="tab-btn" data-tab="payment" data-i18n="nav_payment">匯款轉帳</button>
-  <button class="tab-btn" data-tab="gallery" data-i18n="nav_gallery">活動相簿</button>
-</div>
-
-<main>
-
-  <!-- ============ 活動訊息 ============ -->
-  <section class="panel active" id="panel-info">
-    <h2 class="section-title" data-i18n="info_title">活動訊息</h2>
-
-    <div class="prose">
-      <p class="tagline" data-i18n="info_tagline">TAIWAN PRIDE 邁入第三屆</p>
-      <p data-i18n="info_intro">持續邀請來自世界各地的朋友，在遊行前齊聚一堂，用一頓飯的時間認識彼此、交換這一年的故事。無論是台北在地朋友，還是遠道而來的旅人，這裡都留了你的位置。</p>
-    </div>
-
-    <div class="location-card">
-      <div class="ic-bar"></div>
-      <div class="ic-label" data-i18n="loc_label">地點</div>
-      <div class="ic-value" data-i18n="loc_value">彭園壹品宴</div>
-      <div class="location-addr" data-i18n="loc_addr">台北市中山區南京東路二段63號2樓</div>
-      <div class="map-embed">
-        <iframe src="https://www.google.com/maps?q=彭園壹品宴 台北市中山區南京東路二段63號2樓&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-      </div>
-      <a class="map-btn" href="https://maps.app.goo.gl/rT5NpJxUYpTiZMN77?g_st=il" target="_blank" rel="noopener" data-i18n="loc_btn">📍 在 Google 地圖開啟 →</a>
-    </div>
-
-    <div class="card-grid">
-      <div class="info-card">
-        <div class="ic-bar"></div>
-        <div class="ic-label" data-i18n="time_label">時間</div>
-        <div class="ic-value" data-i18n="time_value">10/30（五）19:00</div>
-      </div>
-      <div class="info-card">
-        <div class="ic-bar"></div>
-        <div class="ic-label" data-i18n="fee_label">費用</div>
-        <div class="ic-value" data-i18n="fee_value">NT$1,200／人</div>
-      </div>
-      <div class="info-card">
-        <div class="ic-bar"></div>
-        <div class="ic-label" data-i18n="community_label">社群</div>
-        <div class="ic-value" style="font-size:0.85rem; font-weight:500; font-family:'Inter';" data-i18n="community_value">報名成功後，主辦單位將提供 QR Code 供加入 LINE 群組</div>
-      </div>
-    </div>
-
-    <h3 class="subhead" data-i18n="notice_title">注意事項</h3>
-    <ul class="notice-list">
-      <li data-i18n="notice_1">因餐廳桌數有限，請盡速報名；如報名超額，主辦單位將協助辦理退費</li>
-      <li data-i18n="notice_2">現場僅提供無酒精飲品，酒水可自行攜帶</li>
-      <li data-i18n="notice_3">如活動當日臨時無法出席，請自行尋找替代人員頂替名額，恕不接受退款</li>
-      <li data-i18n="notice_4">攜伴出席者須與同行者一同完成報名與付款，並安排於同一桌</li>
-      <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號以利辨識；資訊不明確者恕無法安排同桌</li>
-      <li data-i18n="notice_7">請盡可能於活動開始前入場，以免現場混亂</li>
-      <li data-i18n="notice_8">請尊重現場工作人員與其他賓客，主辦單位保有請不當行為者離場之權利</li>
-      <li data-i18n="notice_9">活動當天可能安排拍照攝影，若不希望入鏡請於報到時告知工作人員</li>
-    </ul>
-
-    <h3 class="subhead" data-i18n="seating_title">座位表</h3>
-    <div class="seating-slot">
-      <span data-i18n="seating_1">座位表預留區</span>
-      <span class="small" data-i18n="seating_2">活動確認桌數後，座位表將公布於此</span>
-    </div>
-  </section>
-
-  <!-- ============ 報名及查詢 ============ -->
-  <section class="panel" id="panel-register">
-    <h2 class="section-title" data-i18n="register_title">報名及查詢</h2>
-    <p class="section-desc" data-i18n="register_desc">填寫表單完成報名，或用報名時填寫的電話查詢目前狀態。</p>
-
-    <div class="form-toggle">
-      <button class="active" data-form="signup" data-i18n="toggle_signup">我要報名</button>
-      <button data-form="lookup" data-i18n="toggle_lookup">查詢報名狀態</button>
-    </div>
-
-    <div class="edit-banner" id="edit-banner">
-      <span id="edit-banner-text">✏️ 正在修改報名編號 <b id="edit-banner-id"></b> 的資料</span>
-      <button type="button" class="btn-secondary" id="edit-cancel-btn" data-i18n="edit_cancel_btn">放棄修改</button>
-    </div>
-
-    <form id="signup-form">
-      <div class="field-row">
-        <div class="field">
-          <label for="su-name" data-i18n="field_name">姓名 / Name</label>
-          <input type="text" id="su-name" required>
-        </div>
-        <div class="field">
-          <label for="su-country" data-i18n="field_country">國籍 / Country</label>
-          <div class="cpick" id="su-country-picker"></div>
-          <input type="hidden" id="su-country" class="country-input" required>
-          <div class="country-hint idle" id="su-country-hint"></div>
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="su-email" data-i18n="field_email">Email</label>
-          <input type="email" id="su-email" required>
-        </div>
-        <div class="field">
-          <label for="su-phone" data-i18n="field_phone">聯絡電話</label>
-          <input type="tel" id="su-phone" required>
-          <div class="hint critical" data-i18n="field_phone_hint">※查詢報名狀態及付款詳情會用到這組電話，請務必確認填寫正確</div>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="su-ig" data-i18n="field_ig">Instagram 帳號（必填）</label>
-        <input type="text" id="su-ig" placeholder="@your_ig" required>
-      </div>
-      <div class="guest-section">
-        <label data-i18n="guest_label">攜伴（不含本人）</label>
-        <div id="existing-members" style="display:none;"></div>
-        <div class="hint" id="existing-members-hint" style="display:none;" data-i18n="existing_hint">※ 已報名的人不能在這裡刪除。若有人無法出席，請回到查詢結果，針對該位送出取消申請，由主辦單位確認。</div>
-        <div id="guest-rows"></div>
-        <button type="button" id="add-guest-btn" class="btn-add-guest" data-i18n="guest_add_btn">＋ 新增攜伴</button>
-        <div class="hint" id="guest-count-hint">尚未新增攜伴（總人數：1人，含本人）</div>
-      </div>
-
-      <div class="subtotal-card">
-        <span data-i18n="subtotal_label">應付金額小計</span>
-        <span class="subtotal-amount" id="subtotal-amount">NT$1,200</span>
-      </div>
-
-
-      <div class="field">
-        <label for="su-notes" data-i18n="field_notes">飲食限制或其他備註（選填）</label>
-        <textarea id="su-notes" rows="2"></textarea>
-      </div>
-
-      <div class="field">
-        <label data-i18n="field_tablewith">同桌需求（選填）</label>
-        <div class="field-row three-col">
-          <input type="text" id="su-tablewith-name" data-i18n-ph="field_tablewith_name_ph" placeholder="姓名">
-          <div class="ig-wrap">
-            <input type="text" id="su-tablewith-ig" autocomplete="off"
-                   role="combobox" aria-expanded="false" aria-autocomplete="list"
-                   aria-controls="ig-suggest"
-                   data-i18n-ph="field_tablewith_ig_ph" placeholder="IG">
-            <div class="ig-suggest" id="ig-suggest" role="listbox" hidden></div>
-          </div>
-          <div class="cpick" id="su-tablewith-country-picker"></div>
-          <input type="hidden" id="su-tablewith-country">
-        </div>
-        <div class="hint" data-i18n="field_tablewith_hint">※務必填寫對方姓名、IG 帳號以避免同姓名/綽號；描述不清無法辨識者恕不安排</div>
-      </div>
-
-      <div class="field">
-        <label data-i18n="paymethod_label">付款方式</label>
-        <div class="radio-group">
-          <label class="radio-pill" id="pay-online-pill"><input type="radio" name="paymethod" value="online" checked> <span data-i18n="paymethod_online">線上付款</span></label>
-          <label class="radio-pill" id="pay-onsite-pill"><input type="radio" name="paymethod" value="onsite"> <span data-i18n="paymethod_onsite">現場付款</span></label>
-        </div>
-        <div class="hint warn" id="paymethod-warn" style="display:none;" data-i18n="paymethod_warn">台灣賓客請先完成線上匯款，報名才算完成，恕不提供現場付款</div>
-      </div>
-
-      <details class="notice-recap">
-        <summary data-i18n="notice_recap_summary">📋 再看一次注意事項</summary>
-        <ul class="notice-list" style="margin-top:12px;">
-          <li data-i18n="notice_1">因餐廳桌數有限，請盡速報名；如報名超額，主辦單位將協助辦理退費</li>
-          <li data-i18n="notice_2">現場僅提供無酒精飲品，酒水可自行攜帶</li>
-          <li data-i18n="notice_3">如活動當日臨時無法出席，請自行尋找替代人員頂替名額，恕不接受退款</li>
-          <li data-i18n="notice_4">攜伴出席者須與同行者一同完成報名與付款，並安排於同一桌</li>
-              <li data-i18n="notice_6">同桌需求請填寫姓名、IG 帳號以利辨識；資訊不明確者恕無法安排同桌</li>
-          <li data-i18n="notice_7">請盡可能於活動開始前入場，以免現場混亂</li>
-          <li data-i18n="notice_8">請尊重現場工作人員與其他賓客，主辦單位保有請不當行為者離場之權利</li>
-          <li data-i18n="notice_9">活動當天可能安排拍照攝影，若不希望入鏡請於報到時告知工作人員</li>
-        </ul>
-      </details>
-
-      <div class="agree-row">
-        <input type="checkbox" id="su-agree" required>
-        <label for="su-agree" data-i18n="agree_label">我已閱讀並同意「活動訊息」頁面中的注意事項</label>
-      </div>
-
-      <button type="submit" class="btn-primary" id="signup-submit-btn" data-i18n="signup_submit">送出報名</button>
-      <div class="form-msg" id="signup-msg" data-i18n="signup_msg">🎉 報名已送出！若選擇線上付款，請至「匯款轉帳」分頁完成付款並回報轉帳資訊。</div>
-      <div class="form-msg" id="signup-error" style="background:rgba(255,75,92,0.15); border-color:var(--red); color:var(--red);" data-i18n="signup_error">請完整填寫必填欄位（姓名、國籍、Email、電話），並勾選同意注意事項後再送出</div>
-    </form>
-
-    <form id="lookup-form" style="display:none;">
-      <div class="field">
-        <label for="lk-query" data-i18n="lookup_field">聯絡電話</label>
-        <input type="tel" id="lk-query" required>
-        <div class="hint" data-i18n="lookup_hint">請輸入報名時填寫的聯絡電話進行查詢</div>
-      </div>
-      <button type="submit" class="btn-primary" id="lookup-submit-btn" data-i18n="lookup_submit">查詢狀態</button>
-      <div class="form-msg" id="lookup-msg" data-i18n="lookup_msg">查無資料，請確認電話輸入是否正確，或聯繫主辦單位協助查詢。</div>
-    </form>
-
-    <!-- 查詢結果：列出整組成員，可個別申請取消，也可直接修改／加人 -->
-    <div class="lookup-result" id="lookup-result">
-      <div class="lr-head">
-        <span class="lr-title" id="lr-name">—</span>
-        <span class="st-badge" id="lr-badge">—</span>
-      </div>
-      <div class="lr-row"><span class="lr-label" data-i18n="lr_regid">報名編號</span><span class="lr-value" id="lr-regid">—</span></div>
-      <div class="lr-row"><span class="lr-label" data-i18n="lr_count">出席人數</span><span class="lr-value" id="lr-count">—</span></div>
-      <div class="lr-row"><span class="lr-label" data-i18n="lr_due">應付金額</span><span class="lr-value" id="lr-due">—</span></div>
-      <div class="lr-row"><span class="lr-label" data-i18n="lr_method">付款方式</span><span class="lr-value" id="lr-method">—</span></div>
-      <div class="lr-note" id="lr-note"></div>
-
-      <div class="lr-members" id="lr-members"></div>
-
-      <div class="lr-editbar">
-        <button type="button" class="btn-secondary" id="lr-edit-btn" data-i18n="lr_edit_btn">✏️ 修改報名資料 / 加人</button>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ============ 匯款轉帳 ============ -->
-  <section class="panel" id="panel-payment">
-    <h2 class="section-title" data-i18n="payment_title">匯款轉帳</h2>
-    <p class="section-desc" data-i18n="payment_desc">完成報名後，請依下方資訊完成轉帳，並回報轉帳資料以利核對。</p>
-
-    <div class="pay-grid">
-      <div class="qr-card">
-        <div class="qr-box">
-          <svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <rect width="200" height="200" fill="#F6F3FF"/>
-            <g fill="#1B1533">
-              <rect x="15" y="15" width="50" height="50"/>
-              <rect x="27" y="27" width="26" height="26" fill="#F6F3FF"/>
-              <rect x="35" y="35" width="10" height="10" fill="#1B1533"/>
-              <rect x="135" y="15" width="50" height="50"/>
-              <rect x="147" y="27" width="26" height="26" fill="#F6F3FF"/>
-              <rect x="155" y="35" width="10" height="10" fill="#1B1533"/>
-              <rect x="15" y="135" width="50" height="50"/>
-              <rect x="27" y="147" width="26" height="26" fill="#F6F3FF"/>
-              <rect x="35" y="155" width="10" height="10" fill="#1B1533"/>
-              <rect x="85" y="15" width="10" height="10"/>
-              <rect x="105" y="25" width="10" height="10"/>
-              <rect x="85" y="45" width="10" height="10"/>
-              <rect x="105" y="55" width="10" height="10"/>
-              <rect x="85" y="75" width="10" height="10"/>
-              <rect x="105" y="85" width="10" height="10"/>
-              <rect x="75" y="95" width="10" height="10"/>
-              <rect x="135" y="85" width="10" height="10"/>
-              <rect x="155" y="95" width="10" height="10"/>
-              <rect x="175" y="75" width="10" height="10"/>
-              <rect x="85" y="115" width="10" height="10"/>
-              <rect x="105" y="135" width="10" height="10"/>
-              <rect x="85" y="155" width="10" height="10"/>
-              <rect x="105" y="175" width="10" height="10"/>
-              <rect x="135" y="115" width="10" height="10"/>
-              <rect x="155" y="135" width="10" height="10"/>
-              <rect x="175" y="155" width="10" height="10"/>
-              <rect x="135" y="175" width="10" height="10"/>
-              <rect x="155" y="175" width="10" height="10"/>
-            </g>
-          </svg>
-        </div>
-        <div class="qr-caption" data-i18n="qr_caption">付款碼示意圖，請替換成實際收款 QR Code</div>
-      </div>
-
-      <div class="bank-card">
-        <div class="bank-row"><span class="bl" data-i18n="bank_name_label">銀行</span><span class="bv">富邦銀行</span></div>
-        <div class="bank-row"><span class="bl" data-i18n="bank_branch_label">分行</span><span class="bv" data-i18n="bank_branch_value">總行</span></div>
-        <div class="bank-row"><span class="bl" data-i18n="bank_holder_label">戶名</span><span class="bv">陳椿華</span></div>
-        <div class="bank-row">
-          <span class="bl" data-i18n="bank_acct_label">帳號</span>
-          <span class="acct-wrap">
-            <span class="bv" id="acct-number">000-0000-0000</span>
-            <button type="button" class="copy-btn" id="copy-acct-btn" data-i18n="copy_btn">複製帳號</button>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <form id="payment-form">
-      <div class="field-row">
-        <div class="field">
-          <label for="pay-name" data-i18n="pay_name_label">匯款人姓名</label>
-          <input type="text" id="pay-name" required>
-        </div>
-        <div class="field">
-          <label for="pay-phone" data-i18n="pay_phone_label">聯絡電話</label>
-          <input type="tel" id="pay-phone" required>
-          <div class="hint critical" data-i18n="pay_phone_hint">※請務必填寫報名時所使用的聯絡電話</div>
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="pay-last5" data-i18n="pay_last5_label">帳號後五碼</label>
-          <input type="text" id="pay-last5" maxlength="5" required>
-        </div>
-        <div class="field">
-          <label for="pay-amount" data-i18n="pay_amount_label">匯款金額</label>
-          <input type="number" id="pay-amount" required>
-        </div>
-      </div>
-      <div class="field">
-        <label for="pay-date" data-i18n="pay_date_label">匯款日期</label>
-        <input type="date" id="pay-date" required>
-      </div>
-      <button type="submit" class="btn-primary" id="payment-submit-btn" data-i18n="pay_submit">回報轉帳資訊</button>
-      <div class="form-msg" id="payment-msg" data-i18n="pay_msg">✅ 已收到你的轉帳回報，我們會盡快核對並更新報名狀態。</div>
-    </form>
-  </section>
-
-  <!-- ============ 花絮 ============ -->
-  <section class="panel" id="panel-gallery">
-    <h2 class="section-title" data-i18n="gallery_title">活動相簿</h2>
-    <p class="section-desc" data-i18n="gallery_desc">活動照片將於活動結束後陸續更新於此。</p>
-
-    <div class="countdown-card">
-      <div class="countdown-label" data-i18n="countdown_label">距離 Taiwan Pride 還有</div>
-      <div class="countdown-grid">
-        <div class="countdown-unit"><span class="cd-num" id="cd-days">00</span><span class="cd-unit" data-i18n="countdown_days">天</span></div>
-        <div class="countdown-unit"><span class="cd-num" id="cd-hours">00</span><span class="cd-unit" data-i18n="countdown_hours">時</span></div>
-        <div class="countdown-unit"><span class="cd-num" id="cd-mins">00</span><span class="cd-unit" data-i18n="countdown_mins">分</span></div>
-        <div class="countdown-unit"><span class="cd-num" id="cd-secs">00</span><span class="cd-unit" data-i18n="countdown_secs">秒</span></div>
-      </div>
-    </div>
-
-    <div class="empty-state">
-      <div class="es-icon">📸</div>
-      <div data-i18n="gallery_empty">活動還沒開始，活動相簿先預留位置給你之後上傳照片</div>
-    </div>
-
-    <div class="gallery-grid">
-      <div class="gallery-slot" data-slot="1">照片位 1</div>
-      <div class="gallery-slot" data-slot="2">照片位 2</div>
-      <div class="gallery-slot" data-slot="3">照片位 3</div>
-      <div class="gallery-slot" data-slot="4">照片位 4</div>
-      <div class="gallery-slot" data-slot="5">照片位 5</div>
-      <div class="gallery-slot" data-slot="6">照片位 6</div>
-      <div class="gallery-slot" data-slot="7">照片位 7</div>
-      <div class="gallery-slot" data-slot="8">照片位 8</div>
-    </div>
-  </section>
-
-  <!-- ============ 後台 ============ -->
-  <section class="panel" id="panel-admin">
-    <h2 class="section-title" data-i18n="admin_title">後台</h2>
-    <p class="section-desc" data-i18n="admin_desc">工作人員專用，查看報名與匯款資料。</p>
-
-    <div class="admin-gate" id="admin-gate">
-      <div class="admin-gate-icon">🔒</div>
-      <h3 data-i18n="admin_gate_title">工作人員登入</h3>
-      <p data-i18n="admin_gate_desc">請輸入密碼查看後台資料</p>
-      <input type="password" id="admin-pw" data-i18n-ph="admin_gate_ph" placeholder="請輸入密碼">
-      <button class="btn-primary" id="admin-unlock-btn" data-i18n="admin_gate_btn">登入</button>
-      <div class="hint warn" id="admin-gate-error" style="display:none;" data-i18n="admin_gate_error">密碼錯誤，請再試一次</div>
-    </div>
-
-    <div class="admin-content" id="admin-content" style="display:none;">
-      <div class="warn-banner" id="warn-banner" style="display:none;"></div>
-
-      <div class="admin-banner">
-        <span class="ic">🔧</span>
-        <span data-i18n="admin_banner_text">款項狀態就是唯一判斷依據，系統不做金額比對：使用者回報匯款會自動變成「帳款確認中」，你確認錢真的進來後按「已收款」即可。每一次異動都會記錄在「異動紀錄」分頁，含操作者。電話是唯一識別碼，同一支電話永遠只有一組報名。</span>
-      </div>
-
-      <div class="adm-viewtabs">
-        <button type="button" class="adm-viewtab active" data-view="list" data-i18n="admin_view_list">📋 報名名單</button>
-        <button type="button" class="adm-viewtab" data-view="log" data-i18n="admin_view_log">🕓 異動紀錄</button>
-      </div>
-
-      <div id="admin-view-list">
-        <div class="admin-stats">
-          <div class="stat-box"><div class="stat-num" id="stat-groups">0</div><div class="stat-label" data-i18n="stat_groups">有效報名組數</div></div>
-          <div class="stat-box"><div class="stat-num" id="stat-people">0</div><div class="stat-label" data-i18n="stat_people">總人數</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">已收款組數</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--orange);" id="stat-outstanding">NT$0</div><div class="stat-label" data-i18n="stat_outstanding">未收金額</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--yellow);" id="stat-topup">0</div><div class="stat-label" data-i18n="stat_topup">待補款組數</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--red);" id="stat-pending">0</div><div class="stat-label" data-i18n="stat_pending">待處理取消申請</div></div>
-        </div>
-
-        <div class="adm-toolbar">
-          <button type="button" class="btn-secondary" id="admin-refresh-btn" data-i18n="admin_refresh_btn">🔄 更新資料</button>
-          <span class="hint" id="admin-last-updated"></span>
-        </div>
-
-        <div class="admin-filters" id="admin-filters">
-          <button type="button" class="filter-btn active" data-filter="all" data-i18n="filter_all">全部</button>
-          <button type="button" class="filter-btn" data-filter="cancelreq" data-i18n="filter_cancelreq">⚠ 取消申請</button>
-          <button type="button" class="filter-btn" data-filter="none" data-i18n="filter_unpaid">未收款</button>
-          <button type="button" class="filter-btn" data-filter="checking" data-i18n="filter_checking">帳款確認中</button>
-          <button type="button" class="filter-btn" data-filter="topup" data-i18n="filter_topup">待補款</button>
-          <button type="button" class="filter-btn" data-filter="done" data-i18n="filter_success">已收款</button>
-          <button type="button" class="filter-btn" data-filter="cancelled" data-i18n="filter_cancelled">全數取消</button>
-        </div>
-
-        <div class="adm-list" id="admin-list">
-          <div class="adm-empty" data-i18n="admin_loading">載入中…</div>
-        </div>
-      </div>
-
-      <div id="admin-view-log" style="display:none;">
-        <div class="adm-toolbar">
-          <button type="button" class="btn-secondary" id="admin-log-refresh-btn" data-i18n="admin_log_refresh">🔄 重新載入紀錄</button>
-          <span class="hint" data-i18n="admin_log_hint">顯示最近 300 筆異動，完整內容（含修改前後的 JSON）保存在試算表的「異動紀錄」分頁。</span>
-        </div>
-        <div class="log-list" id="admin-log-list">
-          <div class="adm-empty" data-i18n="admin_loading">載入中…</div>
-        </div>
-      </div>
-
-      <div class="admin-logic" style="margin-top:22px;">
-        <h4 data-i18n="admin_logic_title">操作說明</h4>
-        <ol>
-          <li data-i18n="admin_logic_1">款項狀態四種：<b>未收款</b> → <b>帳款確認中</b>（使用者回報匯款後自動變成這個）→ <b>已收款</b>，另有 <b>待補款</b>（報名後又加人）</li>
-          <li data-i18n="admin_logic_2">系統不比對金額。你在「匯款回報」分頁看到錢確實進來，直接按「已收款」即可，金額對不對由你判斷</li>
-          <li data-i18n="admin_logic_3">出席狀態（已報名／已取消）每個人各自獨立，主揪與攜伴都能單獨取消；取消後有效人數與應付金額會自動重算</li>
-          <li data-i18n="admin_logic_4">主揪取消後，這組仍然掛在他原本的電話底下，其他人照常用同一支電話查詢</li>
-          <li data-i18n="admin_logic_5">已收款的組別若事後加人，款項狀態會自動變成「待補款」，補款金額 = 新增人數 × NT$1,200</li>
-          <li data-i18n="admin_logic_6">退不退款、退多少由你決定，系統不會自動處理；決定後可寫在該組的「後台備註」留底</li>
-          <li data-i18n="admin_logic_7">後台不顯示完整電話。需要聯絡對方時請直接到試算表查看</li>
-        </ol>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<footer data-i18n="footer_text">
-  Taiwan Pride — Proud Together ・ 如有問題請聯繫主辦單位
-</footer>
-
-<div class="modal-overlay" id="line-modal" style="display:none;">
-  <div class="modal-card">
-    <button class="modal-close" id="line-modal-close" aria-label="Close">✕</button>
-    <div class="modal-icon">🎉</div>
-    <h3 data-i18n="line_modal_title">歡迎加入 Taiwan Pride！</h3>
-    <p data-i18n="line_modal_desc">掃描下方 QR Code 加入 LINE 社群，掌握活動最新消息</p>
-    <div class="line-regid" id="line-modal-regid" style="display:none;"></div>
-    <p class="line-regid-hint" id="line-modal-regid-hint" style="display:none;" data-i18n="line_modal_regid_hint">回報匯款時填上這組編號，可以讓對帳更準確</p>
-    <div class="line-qr-box" data-i18n="line_modal_ph">LINE 群組 QR Code 預留區，之後請替換成實際圖片</div>
-    <p class="line-modal-note" data-i18n="line_modal_note">務必加入活動群組，接收最新公告或詢問相關問題</p>
-    <button class="btn-primary" id="line-modal-ok" data-i18n="line_modal_close_btn">知道了</button>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-  // ===================== i18n =====================
-  const I18N = {
-    nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'}, nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
-    nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},    banner_loc:{en:'Peng Yuan Yi Pin Banquet', ja:'彭園壹品宴', ko:'펑위안 이핀옌'},
-    info_title:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'},
-    info_tagline:{en:'TAIWAN PRIDE — Third Edition', ja:'TAIWAN PRIDE 第3回開催', ko:'TAIWAN PRIDE 제3회 개최'},
-    info_intro:{en:'We\'re bringing together friends from around the world before the parade for an evening of food, conversation, and new connections. Whether you\'re local to Taipei or visiting from afar, there\'s a seat for you.', ja:'世界各地から集まる仲間たちと、パレード前に食卓を囲みます。食事を楽しみながらお互いを知り、この一年の出来事を語り合いましょう。台北在住の方も、遠方からお越しの方も、皆さまのための席をご用意しています。', ko:'세계 각지의 친구들을 초대해, 퍼레이드에 앞서 다 함께 식사를 나눕니다. 한 끼 식사를 나누며 서로를 알아가고 지난 일 년의 이야기를 나눠요. 타이베이에 사는 분도, 멀리서 오신 여행자도 자리를 마련해 두었습니다.'},
-    loc_label:{en:'Location', ja:'会場', ko:'장소'}, loc_value:{en:'Peng Yuan Yi Pin Banquet', ja:'彭園壹品宴', ko:'펑위안 이핀옌(彭園壹品宴)'},
-    loc_addr:{en:'2F, No. 63, Sec. 2, Nanjing E. Rd., Zhongshan Dist., Taipei', ja:'台北市中山区南京東路二段63号2階', ko:'타이베이시 중산구 난징둥루 2단 63호 2층'},
-    loc_btn:{en:'📍 Open in Google Maps →', ja:'📍 Google マップで開く →', ko:'📍 Google 지도에서 열기 →'},
-    time_label:{en:'Time', ja:'日時', ko:'일시'}, fee_label:{en:'Fee', ja:'参加費', ko:'참가비'}, fee_value:{en:'NT$1,200 / person', ja:'NT$1,200／人', ko:'1인당 NT$1,200'},
-    community_label:{en:'Community', ja:'コミュニティ', ko:'커뮤니티'}, community_value:{en:'After registering, we\'ll provide a QR code to join our LINE group', ja:'お申込み完了後、LINE グループ参加用の QR コードをお送りします', ko:'신청이 완료되면 LINE 그룹 참여용 QR 코드를 보내드립니다'},
-    notice_title:{en:'Notes', ja:'注意事項', ko:'유의사항'},
-    notice_1:{en:'Seating at the restaurant is limited — please register early. If registration exceeds capacity, the organizer will process refunds', ja:'席数に限りがございますので、お早めにお申込みください。定員を超えた場合は主催者より返金のご案内をいたします', ko:'좌석이 한정되어 있으니 서둘러 신청해 주세요. 정원을 초과할 경우 주최 측에서 환불을 안내해 드립니다'},
-    notice_2:{en:'Only non-alcoholic drinks will be provided on-site; you\'re welcome to bring your own alcohol', ja:'会場ではノンアルコール飲料のみご用意しております。お酒はお持ち込みいただけます', ko:'현장에서는 무알코올 음료만 제공됩니다. 주류는 각자 가져오실 수 있습니다'},
-    notice_3:{en:'If you can\'t make it on the day, please find your own replacement — no refunds', ja:'当日やむを得ずご欠席の場合は、代わりの方をご自身でお探しください。返金はいたしかねます', ko:'당일 부득이하게 참석하지 못하실 경우 대체 참가자를 직접 구해 주세요. 환불은 불가합니다'},
-    notice_4:{en:'Guests bringing a plus-one must register and pay together, and will be seated at the same table', ja:'同伴者がいる場合は、お申込みとお支払いをまとめて行っていただき、同じテーブルにご案内します', ko:'동반자와 함께 한 번에 신청 및 결제를 완료해 주세요. 같은 테이블로 안내해 드립니다'},
-    notice_6:{en:'For table requests, please provide the person\'s name and IG handle — unclear details may not be accommodated', ja:'同席のご希望は、お相手のお名前と Instagram アカウントをご記入ください。情報が不明確な場合はご希望に添えないことがあります', ko:'동석 희망은 상대방의 이름과 Instagram 계정을 적어 주세요. 정보가 불명확할 경우 반영이 어려울 수 있습니다'},
-    notice_7:{en:'Please arrive before the event starts to help keep check-in smooth', ja:'会場の混雑を避けるため、開始時刻までにご入場ください', ko:'현장 혼잡을 피하기 위해 시작 시각 전까지 입장해 주세요'},
-    notice_8:{en:'Please treat staff and other guests with respect — the organizer reserves the right to remove anyone behaving inappropriately', ja:'スタッフや他のお客様への配慮をお願いします。不適切な行為があった場合、主催者はご退場をお願いすることがあります', ko:'스태프와 다른 참가자를 존중해 주세요. 부적절한 행위가 있을 경우 주최 측이 퇴장을 요청할 수 있습니다'},
-    notice_9:{en:'Photography may take place during the event — let staff know at check-in if you\'d prefer not to be photographed', ja:'当日は写真・動画の撮影を行う場合があります。写り込みを避けたい方は受付時にスタッフへお申し出ください', ko:'당일 사진 및 영상 촬영이 있을 수 있습니다. 사진이나 영상에 나오기를 원하지 않으시면 접수 시 스태프에게 말씀해 주세요'},
-    seating_title:{en:'Seating Chart', ja:'座席表', ko:'좌석 배치도'},
-    seating_1:{en:'Seating chart placeholder', ja:'座席表は準備中です', ko:'좌석 배치도를 준비 중입니다'}, seating_2:{en:'The seating chart will be posted here once table counts are confirmed', ja:'テーブル数が確定次第、こちらに座席表を掲載します', ko:'테이블 수가 확정되면 이곳에 좌석 배치도를 게시합니다'},
-    register_title:{en:'Register & Lookup', ja:'お申込み・照会', ko:'신청 및 조회'},
-    register_desc:{en:'Fill out the form to register, or look up your status using the phone number you registered with.', ja:'フォームにご記入いただくか、お申込み時の電話番号で現在の状況を確認できます。', ko:'양식을 작성하거나, 신청 시 입력한 전화번호로 현재 상태를 확인할 수 있습니다.'},
-    toggle_signup:{en:'Register', ja:'申し込む', ko:'신청하기'}, toggle_lookup:{en:'Check Status', ja:'申込状況を確認', ko:'신청 상태 조회'},
-    field_name:{en:'Name', ja:'お名前 / Name', ko:'이름 / Name'}, field_country:{en:'Country', ja:'国籍 / Country', ko:'국적 / Country'}, field_email:{en:'Email', ja:'メールアドレス', ko:'이메일'},
-    field_phone:{en:'Phone', ja:'電話番号', ko:'연락처'}, field_phone_hint:{en:'※ This phone number is used to check your registration status and payment details — please make sure it\'s correct', ja:'※申込状況やお支払いの確認に使用しますので、お間違いのないようご確認ください', ko:'※신청 상태와 결제 확인에 사용되므로 정확히 입력해 주세요'},
-    field_ig:{en:'Instagram Handle (required)', ja:'Instagram アカウント（必須）', ko:'Instagram 계정 (필수)'},
-    field_ig_public:{en:'Make my IG handle visible to other guests'},
-    field_ig_public_sub:{en:'If checked, your IG handle may be shown to other registered guests'},
-    guest_label:{en:'Plus-ones (not including yourself)', ja:'同伴者（ご本人を除く）', ko:'동반자 (본인 제외)'},
-    guest_add_btn:{en:'+ Add plus-one', ja:'＋ 同伴者を追加', ko:'＋ 동반자 추가'},
-    subtotal_label:{en:'Amount Due (Subtotal)', ja:'お支払い金額', ko:'결제 금액'},
-    field_notes:{en:'Dietary restrictions or other notes (optional)', ja:'食物アレルギー・食事上の制限、その他ご要望（任意）', ko:'식사 제한 및 기타 요청 (선택)'},
-    field_tablewith:{en:'Table request (optional)', ja:'同席のご希望（任意）', ko:'동석 희망 (선택)'},
-    field_tablewith_name_ph:{en:'Name', ja:'お名前', ko:'이름'}, field_tablewith_ig_ph:{en:'IG', ja:'IG', ko:'IG'},
-    time_value:{en:'Fri, Oct 30 · 7:00 PM', ja:'2026年10月30日（金）19:00', ko:'2026년 10월 30일(금) 19:00'},
-    tablewith_country_ph:{en:'Country', ja:'国籍', ko:'국적'},
-    tablewith_ig_required:{en:'Please also fill in that person\'s IG handle so we can identify them',
-      ja:'ご本人を特定するため、お相手の Instagram アカウントもご記入ください',
-      ko:'해당 인원을 확인할 수 있도록 상대방의 Instagram 계정도 입력해 주세요'},
-    field_tablewith_hint:{en:'※ Please give the other person\'s name and IG handle to avoid mix-ups with same names/nicknames — unclear info may not be accommodated', ja:'※同姓同名やニックネームの取り違えを防ぐため、お相手のお名前と Instagram アカウントを必ずご記入ください。情報が不明確な場合はご希望に添えかねます', ko:'※동명이인이나 닉네임 혼동을 막기 위해 상대방의 이름과 Instagram 계정을 반드시 적어 주세요. 정보가 불명확하면 반영이 어렵습니다'},
-    paymethod_label:{en:'Payment Method', ja:'お支払い方法', ko:'결제 방법'}, paymethod_online:{en:'Pay Online', ja:'事前振込', ko:'사전 계좌이체'}, paymethod_onsite:{en:'Pay On-site', ja:'当日現地払い', ko:'현장 결제'},
-    paymethod_warn:{en:'On-site payment is not available for guests in Taiwan', ja:'台湾在住の方は現地払いをご利用いただけません', ko:'대만에 계신 분은 현장 결제를 이용하실 수 없습니다'},
-    notice_recap_summary:{en:'📋 Review the notes again', ja:'📋 注意事項をもう一度確認する', ko:'📋 유의사항 다시 보기'},
-    agree_label:{en:'I have read and agree to the notes on the Event Info page', ja:'「イベント情報」ページの注意事項を読み、同意します', ko:'‘행사 정보’ 페이지의 유의사항을 읽고 동의합니다'},
-    signup_submit:{en:'Submit Registration', ja:'申し込む', ko:'신청하기'},
-    signup_submitting:{en:'Submitting…'},
-    signup_msg:{en:'🎉 Registration submitted! If you chose to pay online, please go to the Payment tab to complete payment and report your transfer.', ja:'🎉 お申込みを受け付けました！オンラインでお支払いの方は「お振込み」タブでお振込みとご報告をお願いします。', ko:'🎉 신청이 접수되었습니다! 온라인 결제를 선택하신 분은 ‘송금 안내’ 탭에서 송금 후 보고해 주세요.'},
-    signup_error:{en:'Please fill in all required fields (name, country, email, phone) and check the agreement box before submitting', ja:'必須項目（お名前・国籍・メールアドレス・電話番号）をご記入のうえ、注意事項への同意にチェックを入れてください', ko:'필수 항목(이름·국적·이메일·연락처)을 입력하고 유의사항 동의에 체크해 주세요'},
-    lookup_field:{en:'Phone Number', ja:'電話番号', ko:'연락처'}, lookup_hint:{en:'Enter the phone number you used when registering', ja:'お申込み時にご記入いただいた電話番号を入力してください', ko:'신청 시 입력하신 전화번호를 입력해 주세요'},
-    lookup_submit:{en:'Check Status', ja:'状況を確認', ko:'상태 조회'},
-    lookup_submitting:{en:'Checking…'},
-    lookup_msg:{en:'No record found — please double check your phone number, or contact the organizer for help.', ja:'データが見つかりません。電話番号をご確認いただくか、主催者までお問い合わせください。', ko:'조회된 정보가 없습니다. 전화번호를 확인하시거나 주최 측에 문의해 주세요.'},
-    payment_title:{en:'Payment', ja:'銀行振込', ko:'송금 안내'}, payment_desc:{en:'After registering, please transfer using the details below and report your transfer for verification.', ja:'お申込み後、下記の口座へお振込みのうえ、振込内容をご報告ください。照合に使用します。', ko:'신청 후 아래 계좌로 송금하시고, 송금 내용을 보고해 주세요. 확인에 사용됩니다.'},
-    qr_caption:{en:'Sample payment QR code — replace with your actual receiving QR code', ja:'決済コードのサンプルです。実際の QR コードに差し替えてください', ko:'결제 코드 예시입니다. 실제 QR 코드로 교체해 주세요'},
-    bank_name_label:{en:'Bank', ja:'銀行名', ko:'은행'}, bank_branch_label:{en:'Branch', ja:'支店', ko:'지점'}, bank_branch_value:{en:'Head Office', ja:'本店', ko:'본점'},
-    bank_holder_label:{en:'Account Name', ja:'口座名義', ko:'예금주'}, bank_acct_label:{en:'Account No.', ja:'口座番号', ko:'계좌번호'}, copy_btn:{en:'Copy', ja:'口座番号をコピー', ko:'계좌번호 복사'},
-    pay_name_label:{en:'Payer Name', ja:'振込人のお名前', ko:'송금인 이름'}, pay_phone_label:{en:'Phone', ja:'電話番号', ko:'연락처'},
-    pay_phone_hint:{en:'※ Please use the same phone number you registered with', ja:'※お申込み時と同じ電話番号をご入力ください', ko:'※신청 시 사용한 전화번호를 입력해 주세요'},
-    pay_last5_label:{en:'Last 5 Digits', ja:'振込元口座番号の下5桁', ko:'계좌번호 뒤 5자리'}, pay_amount_label:{en:'Amount', ja:'振込金額', ko:'송금 금액'}, pay_date_label:{en:'Transfer Date', ja:'振込日', ko:'송금일'},
-    pay_regid_label:{en:'Registration Number (optional)'},
-    pay_regid_hint:{en:'If you know your registration number, enter it here for more accurate matching (shown in the popup after you registered)'},
-    pay_submit:{en:'Report Transfer', ja:'振込情報を送信', ko:'송금 정보 제출'},
-    pay_submitting:{en:'Submitting…'},
-    pay_msg:{en:'✅ Your transfer report has been received — we\'ll verify it and update your status soon.', ja:'✅ 振込のご報告を受け付けました。確認のうえ、お申込み状況を更新いたします。', ko:'✅ 송금 보고를 접수했습니다. 확인 후 신청 상태를 업데이트하겠습니다.'},
-    gallery_title:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, gallery_desc:{en:'Event photos will be posted here after the event.', ja:'イベント終了後、写真を順次こちらに掲載します。', ko:'행사 종료 후 사진을 순차적으로 게시합니다.'},
-    gallery_empty:{en:'The event hasn\'t happened yet — photo slots are reserved here for later', ja:'イベントはまだ開催前です。写真はこちらに掲載予定です', ko:'행사는 아직 시작 전입니다. 사진은 이곳에 게시될 예정입니다'},
-    gallery_slot:{en:'Photo slot', ja:'写真 1', ko:'사진 1'},
-    countdown_label:{en:'Countdown to Taiwan Pride', ja:'TAIWAN PRIDE まであと', ko:'TAIWAN PRIDE까지'},
-    countdown_days:{en:'Days', ja:'日', ko:'일'}, countdown_hours:{en:'Hours', ja:'時間', ko:'시간'}, countdown_mins:{en:'Minutes', ja:'分', ko:'분'}, countdown_secs:{en:'Seconds', ja:'秒', ko:'초'},
-    admin_title:{en:'Admin'}, admin_desc:{en:'Staff only — view and manage registrations, payments and change history.'},
-    admin_gate_title:{en:'Staff Login'}, admin_gate_desc:{en:'Enter the password to view backend data'},
-    admin_gate_ph:{en:'Enter password', ja:'パスワードを入力', ko:'비밀번호 입력'}, admin_gate_btn:{en:'Log In'},
-    admin_refresh_btn:{en:'🔄 Refresh'},
-    admin_gate_error:{en:'Incorrect password — please try again'},
-    admin_refresh_btn:{en:'🔄 Refresh Data'},
-    admin_loading:{en:'Loading…'}, admin_no_data:{en:'No registrations yet'},
-    admin_banner_text:{en:'The payment status column is the single source of truth — the system never compares amounts. A transfer report automatically moves a group to \"Verifying\"; once you see the money in the bank, press \"Paid\". Every change is recorded in the 異動紀錄 tab with the operator name. One phone number always maps to exactly one registration.'},
-    admin_logic_title:{en:'Reconciliation & Actions'},
-    admin_logic_1:{en:'Four payment statuses: Unpaid → Verifying (set automatically when the guest reports a transfer) → Paid, plus Top-up due (people added after payment)'},
-    admin_logic_2:{en:'The system does not compare amounts. When you see the money in the 匯款回報 tab, press \"Paid\" — whether the amount is right is your call'},
-    admin_logic_3:{en:'Attendance (registered / cancelled) is per person — the main registrant and each plus-one can be cancelled individually, and headcount and amount due are recalculated automatically'},
-    admin_logic_4:{en:'If the main registrant cancels, the group stays under their original phone number — everyone else still looks it up with the same number'},
-    admin_logic_5:{en:'If a paid group adds people later, the status automatically becomes Top-up due; the amount owed is (new people) × NT$1,200'},
-    admin_empty:{en:'No registrations yet'},
-    stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Paid Groups'},
-    stat_outstanding:{en:'Outstanding'}, stat_revenue:{en:'Expected Revenue'},
-    filter_all:{en:'All'}, filter_unpaid:{en:'Unpaid'},
-    admin_logic_6:{en:'Refund decisions are yours — the system never processes them automatically. Record what you decided in that group\'s staff note'},
-    lr_regid:{en:'Registration No.', ja:'申込番号', ko:'신청 번호'}, lr_count:{en:'Attending', ja:'参加人数', ko:'참석 인원'}, lr_due:{en:'Amount Due', ja:'お支払い金額', ko:'결제 금액'}, lr_method:{en:'Payment Method', ja:'お支払い方法', ko:'결제 방법'},
-    field_country_ph:{en:'Type TW, Taiwan, or pick from the list'},
-    country_unknown:{en:'Not in our list — will be submitted as typed'},
-    lr_companions:{en:'Plus-ones'},
-    cancel_reason_label:{en:'If you can no longer attend, you can request cancellation here (subject to organizer confirmation)'},
-    cancel_reason_ph:{en:'Reason (optional)'},
-    cancel_btn:{en:'Request Cancellation'},
-    cancel_pending_note:{en:'⏳ Your cancellation request has been submitted. The organizer will confirm and mark this registration as cancelled. If this was a mistake, please contact the organizer directly.'},
-    filter_cancelreq:{en:'⚠ Cancel Requests'}, filter_mismatch:{en:'Amount Mismatch'},
-    filter_success:{en:'Paid'}, filter_cancelled:{en:'Cancelled'},
-    stat_pending:{en:'Cancel Requests'},
-    footer_text:{en:'Taiwan Pride — Proud Together · Contact the organizer with any questions', ja:'Taiwan Pride — Proud Together ・ ご不明な点は主催者までお問い合わせください', ko:'Taiwan Pride — Proud Together ・ 문의 사항은 주최 측에 연락해 주세요'},
-    line_modal_title:{en:'Welcome to Taiwan Pride!', ja:'TAIWAN PRIDE へようこそ！', ko:'TAIWAN PRIDE에 오신 것을 환영합니다!'},
-    line_modal_desc:{en:'Scan the QR code below to join our LINE group and get event updates', ja:'下の QR コードから LINE コミュニティに参加して、最新情報を受け取ってください', ko:'아래 QR 코드로 LINE 커뮤니티에 참여해 최신 소식을 받아보세요'},
-    line_modal_ph:{en:'LINE group QR code placeholder — replace with the real image', ja:'LINE グループの QR コードエリア（実際の画像に差し替えてください）', ko:'LINE 그룹 QR 코드 영역 (실제 이미지로 교체해 주세요)'},
-    line_modal_note:{en:'Be sure to join the event group for the latest announcements or to ask questions', ja:'最新のお知らせやお問い合わせのため、必ずグループにご参加ください', ko:'최신 공지와 문의를 위해 반드시 그룹에 참여해 주세요'},
-    line_modal_regid_hint:{en:'Enter this number when you report your payment — it helps us match things up accurately', ja:'お振込みのご報告時にこの番号をご記入いただくと、照合がスムーズです', ko:'송금 보고 시 이 번호를 입력하시면 확인이 수월합니다'},
-    admin_view_list:{en:'📋 Registrations'}, admin_view_log:{en:'🕓 Change Log'},
-    admin_log_refresh:{en:'🔄 Reload log'},
-    admin_log_hint:{en:'Showing the latest 300 changes. Full details (including before/after JSON) are kept in the 異動紀錄 tab of the spreadsheet.'},
-    stat_topup:{en:'Top-up Due'},
-    filter_checking:{en:'Verifying'}, filter_topup:{en:'Top-up Due'},
-    lr_edit_btn:{en:'✏️ Edit registration / add people', ja:'✏️ 申込内容の変更 / 同伴者の追加', ko:'✏️ 신청 내용 수정 / 인원 추가'},
-    edit_cancel_btn:{en:'Discard changes', ja:'編集をやめる', ko:'수정 취소'},
-    existing_hint:{en:'※ People already registered cannot be removed here. If someone can no longer attend, go back to your lookup result and submit a cancellation request for that person.', ja:'※ すでにお申込み済みの方はここでは削除できません。ご欠席の場合は照会画面に戻り、その方のキャンセル申請を送信してください。主催者が確認いたします。', ko:'※ 이미 신청된 분은 여기서 삭제할 수 없습니다. 참석이 어려우시면 조회 화면으로 돌아가 해당 인원의 취소를 신청해 주세요. 주최 측에서 확인합니다.'},
-    admin_logic_7:{en:'Full phone numbers are not shown in the admin panel. Check the spreadsheet directly when you need to contact someone'},
-    country_search_ph:{en:'Search country…'},
-    line_modal_close_btn:{en:'Got it', ja:'閉じる', ko:'확인'}
-  };
+    const gridContainer = document.getElementById('grid-container');
+    const apiKeyInput = document.getElementById('api-key');
+    const btnToggleKey = document.getElementById('btn-toggle-key');
+    const btnTestKey = document.getElementById('btn-test-key');
+    const diagBox = document.getElementById('diag-box');
+    const btnAddCard = document.getElementById('btn-add-card');
+    const btnClearImages = document.getElementById('btn-clear-images');
+    const btnRunAll = document.getElementById('btn-run-all');
+    const overallStatus = document.getElementById('overall-status');
+    const summaryTbody = document.getElementById('summary-tbody');
+    const btnCopyList = document.getElementById('btn-copy-list');
+    const btnExportCsv = document.getElementById('btn-export-csv');
+    
+    let activeModelName = 'gemini-3.6-flash';
+    let cardSeq = 0;
 
-  // ===================== Backend (Google Apps Script) =====================
-  // 部署 Google Apps Script 後，把拿到的網址填在這裡即可自動啟用真實後端。
-  // 留空時，表單會維持目前的前端展示模式（不會報錯，只是不會真的存資料）。
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbwSiXOtHJEtzvmmgqTRoNXPLfwNFa_MZ1mnFjZzRf0XwphOG86BSwTj3QcaHhB__VR0Og/exec';
-
-  let currentLang = 'zh';
-
-  /**
-   * 取得目前語言的文字。
-   *   T('key')                  → 從 I18N 取（中文用 zh 欄，沒有就退回 HTML 原文找不到時回 key）
-   *   T({zh:'…',en:'…',...})    → 直接給一組對照表
-   * 日／韓缺翻譯時退回英文，英文再缺才退中文，畫面不會出現空白。
-   */
-  function T(keyOrMap){
-    const m = (typeof keyOrMap === 'string') ? I18N[keyOrMap] : keyOrMap;
-    if(!m) return (typeof keyOrMap === 'string') ? keyOrMap : '';
-    if(currentLang === 'zh') return m.zh || m.en || '';
-    return m[currentLang] || m.en || m.zh || '';
-  }
-
-  /** 後台文字只有中英兩種，維持原本的判斷方式 */
-  function isEn(){ return currentLang !== 'zh'; }
-
-  /** 多處重複使用的短語，集中一份避免同一句話在不同地方翻得不一樣 */
-  const TXT = {
-    cancelled:        { zh:'已取消', en:'Cancelled', ja:'キャンセル済み', ko:'취소됨' },
-    cancelPending:    { zh:'取消申請中', en:'Cancel requested', ja:'キャンセル申請中', ko:'취소 신청 중' },
-    cancelPendingLong:{ zh:'取消申請處理中', en:'Cancel requested', ja:'キャンセル申請を確認中', ko:'취소 신청 확인 중' },
-    requestCancel:    { zh:'申請取消', en:'Request cancel', ja:'キャンセルを申請', ko:'취소 신청' },
-    undoRequest:      { zh:'撤回申請', en:'Undo request', ja:'申請を取り消す', ko:'신청 철회' }
-  };
-  const zhCache = new Map();
-
-  const LANG_LABEL = { zh:'中文', en:'English', ja:'日本語', ko:'한국어' };
-  const HTML_LANG = { zh:'zh-Hant', en:'en', ja:'ja', ko:'ko' };
-
-  /**
-   * 取某個 key 在目前語言的文字。
-   * 找不到該語言時往下退：日/韓 → 英文 → 中文（原始 HTML 內容）。
-   * 這樣即使某句話還沒翻譯，畫面也不會出現空白或 key 名稱。
-   */
-  function pickLang(entry, lang){
-    if(!entry) return null;
-    if(lang === 'zh') return null;                 // 中文用 HTML 原文
-    if(entry[lang]) return entry[lang];
-    if(lang !== 'en' && entry.en) return entry.en; // 日韓缺翻譯時退回英文
-    return null;
-  }
-
-  function applyLang(lang){
-    currentLang = lang;
-    document.querySelectorAll('[data-i18n]').forEach(el=>{
-      const key = el.getAttribute('data-i18n');
-      if(!zhCache.has(el)) zhCache.set(el, el.textContent);
-      const txt = pickLang(I18N[key], lang);
-      el.textContent = txt !== null ? txt : zhCache.get(el);
-    });
-    document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-      const key = el.getAttribute('data-i18n-ph');
-      if(!el.hasAttribute('data-zh-ph')) el.setAttribute('data-zh-ph', el.getAttribute('placeholder') || '');
-      const txt = pickLang(I18N[key], lang);
-      el.setAttribute('placeholder', txt !== null ? txt : el.getAttribute('data-zh-ph'));
-    });
-    document.getElementById('lang-toggle-btn').textContent = '🌐 ' + LANG_LABEL[lang];
-    document.querySelectorAll('.lang-opt').forEach(function(b){
-      b.classList.toggle('is-active', b.dataset.lang === lang);
-    });
-    // 相簿：只換前綴詞，編號 1~8 保留
-    const slotWord = T({ zh:'照片位', en:'Photo', ja:'写真', ko:'사진' });
-    document.querySelectorAll('.gallery-slot[data-slot]').forEach(function(el){
-      el.textContent = slotWord + ' ' + el.dataset.slot;
-    });
-    document.documentElement.lang = HTML_LANG[lang] || 'zh-Hant';
-    renumberGuests();
-    updateGuestHint();
-    refreshCountryPickers();
-    if(typeof adminData !== 'undefined' && adminData.length){
-      renderAdminStats();
-      renderAdminList();
-    }
-    document.querySelectorAll('.country-input').forEach(function(inp){
-      if(inp._countryUpdate) inp._countryUpdate(false);
-    });
-  }
-  (function initLangPicker(){
-    const btn = document.getElementById('lang-toggle-btn');
-    const menu = document.getElementById('lang-menu');
-
-    btn.addEventListener('click', function(e){
-      e.stopPropagation();
-      const willOpen = menu.hidden;
-      menu.hidden = !willOpen;
-      btn.setAttribute('aria-expanded', String(willOpen));
+    apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+    apiKeyInput.addEventListener('input', () => {
+        localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
     });
 
-    menu.addEventListener('click', function(e){
-      const opt = e.target.closest('.lang-opt');
-      if(!opt) return;
-      applyLang(opt.dataset.lang);
-      menu.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
+    btnToggleKey.addEventListener('click', () => {
+        const isPwd = apiKeyInput.type === 'password';
+        apiKeyInput.type = isPwd ? 'text' : 'password';
+        btnToggleKey.textContent = isPwd ? '隱藏' : '顯示';
     });
 
-    document.addEventListener('click', function(e){
-      if(!menu.hidden && !menu.contains(e.target) && e.target !== btn){
-        menu.hidden = true;
-        btn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  })();
-
-  // ---- tab switching ----
-  const tabButtons = document.querySelectorAll('.tab-btn');
-  const panels = document.querySelectorAll('.panel');
-
-  function setTab(name){
-    tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
-    panels.forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
-  tabButtons.forEach(btn=>{
-    btn.addEventListener('click', ()=> setTab(btn.dataset.tab));
-  });
-
-  // ---- signup / lookup form toggle ----
-  const formToggleBtns = document.querySelectorAll('.form-toggle button');
-  const signupForm = document.getElementById('signup-form');
-  const lookupForm = document.getElementById('lookup-form');
-  formToggleBtns.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      formToggleBtns.forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      const isSignup = btn.dataset.form === 'signup';
-      signupForm.style.display = isSignup ? 'block' : 'none';
-      lookupForm.style.display = isSignup ? 'none' : 'block';
-    });
-  });
-
-  // ---- dynamic guest rows ----
-  // 進入修改模式時，這裡放的是查詢到的那一組資料；一般報名時為 null。
-  // 刻意用 var 並提前宣告：底下的人數／金額計算會用到它，
-  // 而那些函式在頁面初始化時就會先跑一次。
-  var editingGroup = null;
-
-  const guestRowsContainer = document.getElementById('guest-rows');
-  const addGuestBtn = document.getElementById('add-guest-btn');
-  const guestCountHint = document.getElementById('guest-count-hint');
-  const payOnlinePill = document.getElementById('pay-online-pill');
-  const payOnsitePill = document.getElementById('pay-onsite-pill');
-  const payOnsiteRadio = payOnsitePill.querySelector('input');
-  const payOnlineRadio = payOnlinePill.querySelector('input');
-  const paymethodWarn = document.getElementById('paymethod-warn');
-
-  // 選中的那顆加高亮外框（純視覺，不影響邏輯）
-  function syncPayPills(){
-    document.querySelectorAll('input[name="paymethod"]').forEach(function(r){
-      r.closest('.radio-pill').classList.toggle('is-checked', r.checked);
-    });
-  }
-  document.querySelectorAll('input[name="paymethod"]').forEach(function(r){
-    r.addEventListener('change', syncPayPills);
-  });
-  syncPayPills();
-  // 攜伴人數沒有上限（原本限制 9 位／總計 10 人，已取消）
-  let guestCount = 0;
-
-  function guestLabelText(n){
-    return T({ zh:`攜伴 ${n} 姓名`, en:`Plus-one ${n} name`,
-               ja:`同伴者 ${n} のお名前`, ko:`동반자 ${n} 이름` });
-  }
-  function removeLabelText(){
-    return T({ zh:'移除', en:'Remove', ja:'削除', ko:'삭제' });
-  }
-  /** 修改模式下，既有的有效人數要一起算進總人數與金額 */
-  function baseHeadcount(){
-    return editingGroup ? (Number(editingGroup.activeCount) || 1) : 1;
-  }
-  function totalHeadcount(){
-    return baseHeadcount() + guestCount;
-  }
-  function updateGuestHint(){
-    const base = baseHeadcount();
-    const total = totalHeadcount();
-    if(guestCount === 0){
-      guestCountHint.textContent = editingGroup
-        ? T({ zh:`目前這組共 ${base} 人`, en:`${base} people currently registered`,
-              ja:`現在このグループは ${base} 名です`, ko:`현재 이 그룹은 ${base}명입니다` })
-        : T({ zh:'尚未新增攜伴（總人數：1人，含本人）', en:'No plus-ones added yet (total: 1 person, including you)',
-              ja:'同伴者はまだ追加されていません（合計 1 名／ご本人のみ）', ko:'동반자가 아직 없습니다 (총 1명, 본인 포함)' });
-    } else {
-      guestCountHint.textContent = T({
-        zh:`新增 ${guestCount} 位（總人數：${total}人）`, en:`${guestCount} more added (total: ${total} people)`,
-        ja:`${guestCount} 名を追加（合計 ${total} 名）`, ko:`${guestCount}명 추가 (총 ${total}명)` });
-    }
-    addGuestBtn.disabled = false;
-    updatePaymethodAvailability();
-    const subtotalEl = document.getElementById('subtotal-amount');
-    if(subtotalEl){
-      subtotalEl.textContent = 'NT$' + (total * 1200).toLocaleString();
-    }
-  }
-  /**
-   * 現場付款只保留給國外賓客。
-   *
-   * 台灣賓客一律先線上匯款才算報名完成 —— 現場收現金要對帳、找零、
-   * 還得承擔當天沒出現的風險，人力成本遠高於事前匯款。
-   * 國外賓客沒有台灣帳戶、匯款不便，所以保留現場付款這條路。
-   *
-   * 判斷依據是主報名人的國籍（同一組的費用本來就由主揪統一處理）。
-   */
-  function updatePaymethodAvailability(){
-    const country = (document.getElementById('su-country').value || '').trim().toUpperCase();
-    const mustPayOnline = (country === 'TW');
-
-    payOnsiteRadio.disabled = mustPayOnline;
-    payOnsitePill.classList.toggle('is-disabled', mustPayOnline);
-    paymethodWarn.style.display = mustPayOnline ? 'block' : 'none';
-
-    if(mustPayOnline && payOnsiteRadio.checked){
-      payOnlineRadio.checked = true;
-      if(typeof syncPayPills === 'function') syncPayPills();
-    }
-  }
-
-  // 國籍一改，付款方式的可用選項要跟著更新
-  document.getElementById('su-country').addEventListener('change', updatePaymethodAvailability);
-  function renumberGuests(){
-    guestRowsContainer.querySelectorAll('.guest-row').forEach((row,i)=>{
-      row.querySelector('.guest-row-top label').textContent = guestLabelText(i+1);
-      row.querySelector('.remove-guest-btn').textContent = removeLabelText();
-    });
-  }
-  function guestFieldPh(kind){
-    if(kind === 'name') return T({ zh:'姓名', en:'Name', ja:'お名前', ko:'이름' });
-    if(kind === 'country') return T({ zh:'國籍', en:'Country', ja:'国籍', ko:'국적' });
-    return 'IG';
-  }
-  function addGuestRow(){
-
-    guestCount++;
-    const row = document.createElement('div');
-    row.className = 'guest-row';
-    row.innerHTML = `
-      <div class="guest-row-top">
-        <label>${guestLabelText(guestCount)}</label>
-        <button type="button" class="btn-secondary remove-guest-btn">${removeLabelText()}</button>
-      </div>
-      <div class="guest-row-fields">
-        <input type="text" class="guest-name-input" placeholder="${guestFieldPh('name')}" required>
-        <div class="cpick guest-country-picker"></div>
-        <input type="hidden" class="guest-country-input country-input" required>
-        <input type="text" class="guest-ig-input" placeholder="${guestFieldPh('ig')}" required>
-        <div class="country-hint idle guest-country-hint"></div>
-      </div>
-    `;
-    guestRowsContainer.appendChild(row);
-
-    const picker = createCountryPicker(
-      row.querySelector('.guest-country-picker'),
-      row.querySelector('.guest-country-input'),
-      row.querySelector('.guest-country-hint')
-    );
-    countryPickers.push(picker);
-
-    row.querySelector('.remove-guest-btn').addEventListener('click', ()=>{
-      const i = countryPickers.indexOf(picker);
-      if(i >= 0) countryPickers.splice(i, 1);   // 移除該列時一併移除，避免累積無用的參照
-      row.remove();
-      guestCount--;
-      renumberGuests();
-      updateGuestHint();
-    });
-    updateGuestHint();
-  }
-  addGuestBtn.addEventListener('click', addGuestRow);
-  updateGuestHint();
-
-  // ---- copy account number ----
-  const copyBtn = document.getElementById('copy-acct-btn');
-  const acctNumber = document.getElementById('acct-number');
-  copyBtn.addEventListener('click', ()=>{
-    const text = acctNumber.textContent.trim();
-    const done = ()=>{
-      copyBtn.textContent = T({ zh:'已複製', en:'Copied', ja:'コピーしました', ko:'복사했습니다' });
-      copyBtn.classList.add('copied');
-      setTimeout(()=>{
-        copyBtn.textContent = T({ zh:'複製帳號', en:'Copy', ja:'口座番号をコピー', ko:'계좌번호 복사' });
-        copyBtn.classList.remove('copied');
-      }, 2000);
-    };
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(done).catch(()=>{ fallbackCopy(text); done(); });
-    } else {
-      fallbackCopy(text); done();
-    }
-  });
-  function fallbackCopy(text){
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); }catch(e){}
-    document.body.removeChild(ta);
-  }
-
-  // ---- LINE group QR modal ----
-  const lineModal = document.getElementById('line-modal');
-  function openLineModal(regId){
-    const regEl = document.getElementById('line-modal-regid');
-    const hintEl = document.getElementById('line-modal-regid-hint');
-    if(regId){
-      const label = T({ zh:'你的報名編號：', en:'Your registration number: ',
-                        ja:'お申込番号：', ko:'신청 번호: ' });
-      regEl.textContent = label + regId;
-      regEl.style.display = 'inline-block';
-      hintEl.style.display = 'block';
-    } else {
-      regEl.style.display = 'none';
-      hintEl.style.display = 'none';
-    }
-    lineModal.style.display = 'flex';
-  }
-  function closeLineModal(){ lineModal.style.display = 'none'; }
-  document.getElementById('line-modal-close').addEventListener('click', closeLineModal);
-  document.getElementById('line-modal-ok').addEventListener('click', closeLineModal);
-
-  // ==========================================================
-  // 後端連線層
-  //
-  // LINE、Instagram 等 App 的內建瀏覽器常常擋掉對 Apps Script 的 fetch POST
-  // （/exec 會 302 轉址到 script.googleusercontent.com，那些 WebView 對這種
-  //  跨網域轉址的處理很不穩），所以這裡做成兩段式：
-  //    1. 先照正常方式送 POST
-  //    2. 失敗或超過 12 秒沒回應，就自動改用 JSONP（塞一個 <script> 標籤打 doGet）
-  // JSONP 完全不受 CORS 限制，在 LINE 裡也一定通。後端兩條路走同一個 route()，
-  // 所以不管走哪一條，行為與回傳格式都一模一樣。
-  // ==========================================================
-  const REQUEST_TIMEOUT = 12000;
-
-  function withTimeout(promise, ms){
-    return new Promise((resolve, reject)=>{
-      const timer = setTimeout(()=> reject(new Error('timeout')), ms);
-      promise.then(v=>{ clearTimeout(timer); resolve(v); },
-                   e=>{ clearTimeout(timer); reject(e); });
-    });
-  }
-
-  /** 走 <script> 標籤，繞過 CORS。同一包 payload 直接塞進網址的 p 參數。 */
-  let jsonpSeq = 0;
-  function jsonpRequest(payload){
-    return new Promise((resolve, reject)=>{
-      const cbName = '__tpcb' + (++jsonpSeq) + '_' + Date.now();
-      const script = document.createElement('script');
-      let done = false;
-
-      const cleanup = ()=>{
-        done = true;
-        try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
-        if(script.parentNode) script.parentNode.removeChild(script);
-      };
-
-      window[cbName] = (data)=>{ if(done) return; cleanup(); resolve(data); };
-
-      const timer = setTimeout(()=>{
-        if(done) return;
-        cleanup();
-        reject(new Error('jsonp-timeout'));
-      }, REQUEST_TIMEOUT);
-
-      script.onerror = ()=>{
-        if(done) return;
-        clearTimeout(timer); cleanup();
-        reject(new Error('jsonp-error'));
-      };
-
-      const url = GAS_URL + '?callback=' + cbName
-                + '&p=' + encodeURIComponent(JSON.stringify(payload))
-                + '&_=' + Date.now();
-
-      // 網址有長度上限（約 8000 字元），太長就不要嘗試，直接讓上層報錯
-      if(url.length > 7500){ clearTimeout(timer); cleanup(); reject(new Error('payload-too-large')); return; }
-
-      script.src = url;
-      document.head.appendChild(script);
-    });
-  }
-
-  /**
-   * 統一的後端呼叫。回傳 { ok, body, via }：
-   *   ok=false 代表兩條路都不通（真的沒網路 / 網址錯 / 部署權限沒開）
-   *   via 是實際走通的路（post 或 jsonp），只拿來 debug 用
-   */
-  async function postToBackend(payload){
-    if(!GAS_URL) return { ok:false, reason:'no-url' };
-
-    // ── 第一段：正常的 POST ──
-    try{
-      const res = await withTimeout(fetch(GAS_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // 純文字才不會觸發 CORS 預檢
-        body: JSON.stringify(payload)
-      }), REQUEST_TIMEOUT);
-      const raw = await res.text();
-      const body = JSON.parse(raw);
-      return { ok:true, via:'post', status:res.status, body:body };
-    }catch(err){
-      console.warn('POST 失敗，改走 JSONP：', err);
+    async function resolveBestModel(apiKey) {
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            const models = data.models || [];
+            
+            const candidate = models.find(m => m.name.includes('gemini-3.6-flash') && m.supportedGenerationMethods?.includes('generateContent'))
+                           || models.find(m => m.name.includes('flash') && m.supportedGenerationMethods?.includes('generateContent'))
+                           || models.find(m => m.supportedGenerationMethods?.includes('generateContent'));
+            
+            if (candidate) {
+                return candidate.name.replace('models/', '');
+            }
+        } catch (e) {
+            console.warn('動態配對失敗，採用預設 gemini-3.6-flash', e);
+        }
+        return 'gemini-3.6-flash';
     }
 
-    // ── 第二段：JSONP ──
-    try{
-      const body = await jsonpRequest(payload);
-      return { ok:true, via:'jsonp', body:body };
-    }catch(err2){
-      console.error('JSONP 也失敗：', err2);
-      return { ok:false, reason:'network', error:String(err2) };
-    }
-  }
+    btnTestKey.addEventListener('click', async () => {
+        const key = apiKeyInput.value.trim();
+        if (!key) {
+            alert('請先輸入 API Key！');
+            apiKeyInput.focus();
+            return;
+        }
 
-  // ==========================================================
-  // 報名送出
-  // 同一支電話送第二次不會變成第二筆，而是修改原本那一組（後端依電話判斷）。
-  // editingGroup 有值時 = 使用者是從查詢結果按「修改」進來的，
-  // 此時電話鎖住不給改（改了就等於換一組，會對不上匯款紀錄），
-  // 且既有成員只能看不能刪 —— 要減人一律走取消申請。
-  // ==========================================================
-  document.getElementById('signup-form').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const form = e.target;
-    const errorEl = document.getElementById('signup-error');
-    const showError = (text, ms)=>{
-      errorEl.textContent = text;
-      errorEl.classList.add('show');
-      setTimeout(()=> errorEl.classList.remove('show'), ms || 8000);
-    };
+        btnTestKey.disabled = true;
+        btnTestKey.textContent = '連線測試中...';
+        diagBox.style.display = 'block';
+        diagBox.style.background = '#f1f5f9';
+        diagBox.style.color = '#475569';
+        diagBox.innerHTML = '⏳ 正在向 Google 驗證 API Key 與連線...';
 
-    if(!form.checkValidity()){
-      showError(T('signup_error'));
-      if(form.reportValidity) form.reportValidity();
-      return;
-    }
+        try {
+            activeModelName = await resolveBestModel(key);
 
-    // 同桌需求整體是選填；但只要填了姓名，就必須一併填 IG。
-    // 光有姓名很容易撞名或只是綽號，沒有 IG 就無法確定是誰，排桌會排錯人。
-    const twName = document.getElementById('su-tablewith-name');
-    const twIg = document.getElementById('su-tablewith-ig');
-    if(twName.value.trim() && !twIg.value.trim()){
-      showError(T('tablewith_ig_required'));
-      twIg.focus();
-      return;
-    }
+            const startTime = performance.now();
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModelName}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: "ping" }] }]
+                })
+            });
 
-    // 國籍必須是清單裡的國家（打錯字擋在這裡，不會寫進試算表變成髒資料）
-    const badCountry = validateAllCountries();
-    if(badCountry){
-      showError(T({
-        zh:'國籍「' + badCountry + '」不在清單中，請從下拉選單挑選正確的國家',
-        en:'Country "' + badCountry + '" is not in our list — please pick one from the dropdown.',
-        ja:'国籍「' + badCountry + '」は一覧にありません。プルダウンからお選びください。',
-        ko:'국적 「' + badCountry + '」은(는) 목록에 없습니다. 드롭다운에서 선택해 주세요.' }));
-      return;
-    }
-    errorEl.classList.remove('show');
+            const elapsed = Math.round(performance.now() - startTime);
 
-    const submitBtn = document.getElementById('signup-submit-btn');
-    const restoreBtn = ()=>{
-      submitBtn.disabled = false;
-      submitBtn.textContent = editingGroup
-        ? T({ zh:'儲存修改', en:'Save changes', ja:'変更を保存', ko:'변경 사항 저장' })
-        : T('signup_submit');
-    };
-    submitBtn.disabled = true;
-    submitBtn.textContent = T('signup_submitting');
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error?.message || `HTTP ${res.status}`);
+            }
 
-    // 這裡收到的 guest-row 一律是「新增的人」；既有成員顯示在唯讀區，不會混進來
-    const guests = Array.from(guestRowsContainer.querySelectorAll('.guest-row')).map(row=>({
-      name: row.querySelector('.guest-name-input').value.trim(),
-      country: readCountry(row.querySelector('.guest-country-input')),
-      ig: row.querySelector('.guest-ig-input').value.trim()
-    })).filter(g => g.name);
-
-    const payload = {
-      type: 'registration',
-      name: document.getElementById('su-name').value.trim(),
-      country: readCountry(document.getElementById('su-country')),
-      email: document.getElementById('su-email').value.trim(),
-      phone: document.getElementById('su-phone').value.trim(),
-      ig: document.getElementById('su-ig').value.trim(),
-      igPublic: false,   // 「願意公開 IG」勾選已移除，欄位保留但不再使用
-      guests: guests,
-      notes: document.getElementById('su-notes').value.trim(),
-      tableWithName: document.getElementById('su-tablewith-name').value.trim(),
-      tableWithIg: document.getElementById('su-tablewith-ig').value.trim(),
-      tableWithCountry: document.getElementById('su-tablewith-country').value.trim(),
-      paymethod: document.querySelector('input[name="paymethod"]:checked').value
-    };
-
-    const r = await postToBackend(payload);
-    const body = r.body || {};
-
-    if(!r.ok || body.result !== 'success'){
-      showError(body.message || T({
-        zh:'連線失敗，請確認網路後再試一次',
-        en:'Could not reach the server — please check your connection and try again.',
-        ja:'サーバーに接続できませんでした。通信環境をご確認のうえ、もう一度お試しください。',
-        ko:'서버에 연결할 수 없습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.' }), 10000);
-      restoreBtn();
-      return;
-    }
-
-    if(body.mode === 'updated'){
-      // 修改成功：留在原地顯示結果，順便把查詢結果重新拉一次
-      showToast(T({ zh:'✅ 報名資料已更新', en:'✅ Your registration has been updated',
-                    ja:'✅ お申込内容を更新しました', ko:'✅ 신청 정보가 업데이트되었습니다' }));
-      if(body.topup > 0){
-        const topupAmt = Number(body.topup).toLocaleString();
-        alert(T({
-          zh:'已加入 ' + guests.length + ' 位，需補款 NT$' + topupAmt + '。\n請至「匯款轉帳」頁面完成補匯並回報。',
-          en:'Added ' + guests.length + ' more people. Please transfer an additional NT$' + topupAmt + ' and report it on the Payment tab.',
-          ja:guests.length + ' 名を追加しました。追加で NT$' + topupAmt + ' のお振込みが必要です。\n「銀行振込」ページよりお手続きとご報告をお願いします。',
-          ko:guests.length + '명을 추가했습니다. 추가로 NT$' + topupAmt + '을 송금해 주세요.\n‘송금 안내’ 페이지에서 송금 후 보고해 주세요.' }));
-      }
-      exitEditMode();
-      const phone = payload.phone;
-      document.getElementById('lk-query').value = phone;
-      await doLookup(phone);
-      switchToLookupTab();
-    } else {
-      const msg = document.getElementById('signup-msg');
-      msg.classList.add('show');
-      setTimeout(()=> msg.classList.remove('show'), 6000);
-      openLineModal(body.id || '');
-      signupForm.reset();
-      mainCountryPicker.set('');
-      guestRowsContainer.innerHTML = '';
-      guestCount = 0;
-      updateGuestHint();
-    }
-
-    restoreBtn();
-  });
-
-  /** 切到「查詢報名狀態」那一頁（修改完成後把使用者帶回結果畫面） */
-  function switchToLookupTab(){
-    formToggleBtns.forEach(b=> b.classList.toggle('active', b.dataset.form === 'lookup'));
-    signupForm.style.display = 'none';
-    lookupForm.style.display = 'block';
-    document.getElementById('lookup-result').scrollIntoView({ behavior:'smooth', block:'start' });
-  }
-
-  // ---- 進入 / 離開修改模式 ----
-  function enterEditMode(g){
-    editingGroup = g;
-
-    document.getElementById('su-name').value = g.name || '';
-    mainCountryPicker.set(g.country || '');
-    document.getElementById('su-email').value = g.email || '';
-    document.getElementById('su-phone').value = g.phone || '';
-    document.getElementById('su-ig').value = g.ig || '';
-    document.getElementById('su-notes').value = g.notes || '';
-    document.getElementById('su-tablewith-name').value = g.tableWithName || '';
-    document.getElementById('su-tablewith-ig').value = g.tableWithIg || '';
-    tableWithCountryPicker.set(g.tableWithCountry || '');
-    document.getElementById('su-agree').checked = true;
-    const onsite = g.paymethod === '現場付款';
-    (onsite ? payOnsiteRadio : payOnlineRadio).checked = true;
-
-    // 電話是這組的鑰匙，修改時不給動
-    const phoneInput = document.getElementById('su-phone');
-    phoneInput.readOnly = true;
-    phoneInput.style.opacity = '0.6';
-
-    // 既有成員唯讀列出（含已取消的，讓使用者知道系統上的實際狀態）
-    const box = document.getElementById('existing-members');
-    box.innerHTML = (g.members || []).map(m=>{
-      const tags = m.cancelled
-        ? '<span class="st-badge st-void">' + T(TXT.cancelled) + '</span>'
-        : (m.cancelPending
-            ? '<span class="st-badge st-topup">' + T(TXT.cancelPending) + '</span>'
-            : '');
-      return '<div class="existing-mem' + (m.cancelled ? ' is-cancelled' : '') + '">'
-        + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
-        + '<span class="mem-name">' + flagOf(m.country) + ' ' + escapeHtml(m.name) + '</span>'
-        + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
-        + tags + '</div>';
-    }).join('');
-    box.style.display = 'block';
-    document.getElementById('existing-members-hint').style.display = 'block';
-
-    guestRowsContainer.innerHTML = '';
-    guestCount = 0;
-    updateGuestHint();
-
-    document.getElementById('edit-banner-id').textContent = g.regId;
-    document.getElementById('edit-banner').classList.add('show');
-    document.getElementById('signup-submit-btn').textContent =
-      T({ zh:'儲存修改', en:'Save changes', ja:'変更を保存', ko:'변경 사항 저장' });
-
-    formToggleBtns.forEach(b=> b.classList.toggle('active', b.dataset.form === 'signup'));
-    signupForm.style.display = 'block';
-    lookupForm.style.display = 'none';
-    document.getElementById('edit-banner').scrollIntoView({ behavior:'smooth', block:'start' });
-  }
-
-  function exitEditMode(){
-    editingGroup = null;
-    mainCountryPicker.set('');
-    const phoneInput = document.getElementById('su-phone');
-    phoneInput.readOnly = false;
-    phoneInput.style.opacity = '';
-    document.getElementById('existing-members').style.display = 'none';
-    document.getElementById('existing-members').innerHTML = '';
-    document.getElementById('existing-members-hint').style.display = 'none';
-    document.getElementById('edit-banner').classList.remove('show');
-    document.getElementById('signup-submit-btn').textContent = T('signup_submit');
-    signupForm.reset();
-    guestRowsContainer.innerHTML = '';
-    guestCount = 0;
-    updateGuestHint();
-  }
-
-  document.getElementById('edit-cancel-btn').addEventListener('click', ()=>{
-    exitEditMode();
-    switchToLookupTab();
-  });
-
-  // ---- payment form ----
-  document.getElementById('payment-form').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const submitBtn = document.getElementById('payment-submit-btn');
-    submitBtn.disabled = true;
-    submitBtn.textContent = T('pay_submitting');
-
-    const payload = {
-      type: 'payment',
-      id: 'pay-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
-      name: document.getElementById('pay-name').value.trim(),
-      phone: document.getElementById('pay-phone').value.trim(),
-      last5: document.getElementById('pay-last5').value.trim(),
-      amount: Number(document.getElementById('pay-amount').value) || 0,
-      date: document.getElementById('pay-date').value
-    };
-    await postToBackend(payload);
-
-    const msg = document.getElementById('payment-msg');
-    msg.classList.add('show');
-    setTimeout(()=> msg.classList.remove('show'), 6000);
-    document.getElementById('payment-form').reset();
-
-    submitBtn.disabled = false;
-    submitBtn.textContent = T('pay_submit');
-  });
-
-
-  // ==========================================================
-  // 國籍標準化
-  // 目的：不管使用者打「TW」「tw」「Taiwan」「台灣」「中華民國」，
-  //       最後存進試算表的都固定是同一個代碼「TW」，避免同一國有十幾種寫法。
-  // 使用者可以用打的（會即時對應）或從下拉選單挑，兩種都會得到一樣的結果。
-  // 認不出來的寫法不會擋著不讓送出，而是原文照送並在後台看得出來，
-  // 避免因為清單沒收錄某個國家就害人家報名不了。
-  // ==========================================================
-  // 每筆格式：[代碼, 中文名, 英文名, 其他可辨識的寫法...]
-  const COUNTRIES = [
-    ['TW','台灣','Taiwan','TWN','ROC','中華民國','台湾','臺灣','CHINESE TAIPEI','FORMOSA'],
-    ['HK','香港','Hong Kong','HKG','HONGKONG','香港特別行政區'],
-    ['MO','澳門','Macau','MAC','MACAO','澳门'],
-    ['CN','中國','China','CHN','PRC','中国','中國大陸','MAINLAND CHINA','PEOPLES REPUBLIC OF CHINA'],
-    ['JP','日本','Japan','JPN','NIPPON','NIHON'],
-    ['KR','韓國','South Korea','KOR','KOREA','韓国','南韓','大韓民國','REPUBLIC OF KOREA'],
-    ['SG','新加坡','Singapore','SGP'],
-    ['MY','馬來西亞','Malaysia','MYS','马来西亚'],
-    ['TH','泰國','Thailand','THA','泰国'],
-    ['VN','越南','Vietnam','VNM','VIET NAM'],
-    ['PH','菲律賓','Philippines','PHL','菲律宾'],
-    ['ID','印尼','Indonesia','IDN','印度尼西亞'],
-    ['IN','印度','India','IND'],
-    ['MN','蒙古','Mongolia','MNG'],
-    ['NP','尼泊爾','Nepal','NPL'],
-    ['LK','斯里蘭卡','Sri Lanka','LKA'],
-    ['PK','巴基斯坦','Pakistan','PAK'],
-    ['BD','孟加拉','Bangladesh','BGD'],
-    ['KH','柬埔寨','Cambodia','KHM'],
-    ['LA','寮國','Laos','LAO','老撾'],
-    ['MM','緬甸','Myanmar','MMR','BURMA'],
-    ['BN','汶萊','Brunei','BRN','文萊'],
-    ['US','美國','United States','USA','AMERICA','UNITED STATES OF AMERICA','美国','U S A'],
-    ['CA','加拿大','Canada','CAN'],
-    ['MX','墨西哥','Mexico','MEX'],
-    ['BR','巴西','Brazil','BRA'],
-    ['AR','阿根廷','Argentina','ARG'],
-    ['CL','智利','Chile','CHL'],
-    ['PE','秘魯','Peru','PER'],
-    ['CO','哥倫比亞','Colombia','COL'],
-    ['UK','英國','United Kingdom','GB','GBR','BRITAIN','GREAT BRITAIN','ENGLAND','SCOTLAND','WALES','英国','大不列顛'],
-    ['IE','愛爾蘭','Ireland','IRL'],
-    ['FR','法國','France','FRA','法国'],
-    ['DE','德國','Germany','DEU','GER','德国','DEUTSCHLAND'],
-    ['NL','荷蘭','Netherlands','NLD','HOLLAND','荷兰'],
-    ['BE','比利時','Belgium','BEL'],
-    ['ES','西班牙','Spain','ESP'],
-    ['PT','葡萄牙','Portugal','PRT'],
-    ['IT','義大利','Italy','ITA','意大利'],
-    ['CH','瑞士','Switzerland','CHE'],
-    ['AT','奧地利','Austria','AUT'],
-    ['SE','瑞典','Sweden','SWE'],
-    ['NO','挪威','Norway','NOR'],
-    ['DK','丹麥','Denmark','DNK'],
-    ['FI','芬蘭','Finland','FIN'],
-    ['IS','冰島','Iceland','ISL'],
-    ['PL','波蘭','Poland','POL'],
-    ['CZ','捷克','Czechia','CZE','CZECH REPUBLIC'],
-    ['SK','斯洛伐克','Slovakia','SVK'],
-    ['HU','匈牙利','Hungary','HUN'],
-    ['RO','羅馬尼亞','Romania','ROU'],
-    ['BG','保加利亞','Bulgaria','BGR'],
-    ['HR','克羅埃西亞','Croatia','HRV'],
-    ['SI','斯洛維尼亞','Slovenia','SVN'],
-    ['RS','塞爾維亞','Serbia','SRB'],
-    ['GR','希臘','Greece','GRC'],
-    ['LT','立陶宛','Lithuania','LTU'],
-    ['LV','拉脫維亞','Latvia','LVA'],
-    ['EE','愛沙尼亞','Estonia','EST'],
-    ['LU','盧森堡','Luxembourg','LUX'],
-    ['MT','馬爾他','Malta','MLT'],
-    ['CY','賽普勒斯','Cyprus','CYP'],
-    ['RU','俄羅斯','Russia','RUS','俄罗斯'],
-    ['UA','烏克蘭','Ukraine','UKR'],
-    ['TR','土耳其','Turkey','TUR','TURKIYE','TÜRKIYE'],
-    ['IL','以色列','Israel','ISR'],
-    ['AE','阿聯','United Arab Emirates','ARE','UAE','DUBAI','杜拜','阿拉伯聯合大公國'],
-    ['SA','沙烏地阿拉伯','Saudi Arabia','SAU'],
-    ['EG','埃及','Egypt','EGY'],
-    ['ZA','南非','South Africa','ZAF'],
-    ['NG','奈及利亞','Nigeria','NGA'],
-    ['KE','肯亞','Kenya','KEN'],
-    ['MA','摩洛哥','Morocco','MAR'],
-    ['AU','澳洲','Australia','AUS','澳大利亞'],
-    ['NZ','紐西蘭','New Zealand','NZL','新西蘭','AOTEAROA']
-  ];
-
-  // 建立查詢索引：把所有寫法都正規化成同一種形式當 key
-  const COUNTRY_LOOKUP = {};
-  const COUNTRY_NAME = {};
-  function countryKey(s){
-    // 去掉空白、標點、大小寫差異，讓 "u.s.a"、"USA"、"u s a" 都對應到同一個 key
-    return String(s || '').toUpperCase().replace(/[\s.\-_,()（）·'"]/g, '');
-  }
-  COUNTRIES.forEach(function(row){
-    const code = row[0];
-    COUNTRY_NAME[code] = { zh: row[1], en: row[2] };
-    row.forEach(function(alias){
-      const k = countryKey(alias);
-      if(k && !COUNTRY_LOOKUP[k]) COUNTRY_LOOKUP[k] = code;
-    });
-  });
-
-  // COUNTRY_LOOKUP 現在只給選擇器的搜尋比對用：
-  // 使用者打 "台灣"、"Taiwan"、"TW"、"formosa" 都能篩到同一筆。
-  // 國籍已經不能自由輸入，所以不再需要「把亂打的字轉成代碼」那套邏輯。
-
-  function countryDisplayName(code){
-    const n = COUNTRY_NAME[code];
-    if(!n) return '';
-    return isEn() ? n.en : (n.zh + ' ' + n.en);   // 國名只有中英兩種寫法
-  }
-
-  /**
-   * 國碼轉國旗 emoji：把兩個英文字母換成對應的 Regional Indicator 符號。
-   * UK 在 emoji 標準裡是 GB，要另外對應，不然會變成空白方框。
-   */
-  const FLAG_FIX = { UK:'GB' };
-  function flagOf(code){
-    const c = String(code || '').trim().toUpperCase();
-    if(!/^[A-Z]{2}$/.test(FLAG_FIX[c] || c)) return '🏳️‍🌈';
-    const cc = FLAG_FIX[c] || c;
-    return String.fromCodePoint(cc.charCodeAt(0) + 127397, cc.charCodeAt(1) + 127397);
-  }
-
-  /** 後台與查詢結果統一用「國旗 + 代碼」顯示 */
-  function countryTag(code){
-    const c = String(code || '').trim().toUpperCase();
-    if(!c) return '';
-    return flagOf(c) + ' ' + c;
-  }
-
-  // ==========================================================
-  // 國籍選擇器
-  //
-  // 收合時顯示已選的國家，點一下展開完整清單，打字即時篩選，
-  // 只能從清單挑 —— 使用者輸入的字永遠只拿來篩選，不會被當成答案。
-  // 所以「清單以外的國家」從源頭就不可能被送出，不需要在送出前補驗證。
-  //
-  // 值寫進一個 hidden input，表單送出、修改模式回填、驗證都是對它操作。
-  // ==========================================================
-  let cpickSeq = 0;
-
-  function createCountryPicker(mount, hiddenInput, hintEl, placeholderText){
-    let value = '';
-    let filtered = [];
-    let activeIdx = -1;
-    let open = false;
-
-    // 每個選擇器要有唯一 id，aria-controls / aria-activedescendant 才指得到
-    const uid = 'cpick' + (++cpickSeq);
-
-    mount.innerHTML =
-      '<div class="cpick-toggle">'
-        + '<div class="cpick-field">'
-          + '<span class="cpick-value is-placeholder"></span>'
-          + '<input type="text" class="cpick-search" id="' + uid + '-input"'
-            + ' role="combobox" autocomplete="off" autocorrect="off" spellcheck="false"'
-            + ' aria-expanded="false" aria-haspopup="listbox"'
-            + ' aria-controls="' + uid + '-listbox" aria-autocomplete="list">'
-        + '</div>'
-        + '<span class="cpick-actions">'
-          + '<button type="button" class="cpick-clear" tabindex="-1" aria-label="Clear selection">✕</button>'
-          + '<span class="cpick-caret" aria-hidden="true"></span>'
-        + '</span>'
-      + '</div>'
-      + '<div class="cpick-list" id="' + uid + '-listbox" role="listbox" hidden></div>';
-
-    const toggle = mount.querySelector('.cpick-toggle');
-    const valueEl = mount.querySelector('.cpick-value');
-    const search = mount.querySelector('.cpick-search');
-    const clearBtn = mount.querySelector('.cpick-clear');
-    const list = mount.querySelector('.cpick-list');
-
-    function labelOf(code){
-      const n = COUNTRY_NAME[code];
-      if(!n) return code;
-      return flagOf(code) + '  ' + code + ' · ' + (isEn() ? n.en : n.zh + ' ' + n.en);
-    }
-
-    function renderValue(){
-      if(value){
-        valueEl.textContent = labelOf(value);
-        valueEl.classList.remove('is-placeholder');
-      } else {
-        valueEl.textContent = placeholderText
-          ? placeholderText()
-          : T({ zh:'請選擇國籍…', en:'Select your country…',
-                ja:'国籍を選択してください…', ko:'국적을 선택해 주세요…' });
-        valueEl.classList.add('is-placeholder');
-      }
-      // 選中的國家已經顯示在框框裡了，不再重複寫一行提示文字在下面
-      if(hintEl){ hintEl.textContent = ''; hintEl.className = 'country-hint idle'; }
-    }
-
-    function renderList(){
-      const kw = countryKey(search.value || '');
-      filtered = COUNTRIES.filter(function(row){
-        if(!kw) return true;
-        // 比對整列（代碼、中文、英文，以及 USA、新西蘭 這類別名），
-        // 只比前三欄的話 u.s.a、UK、Holland 這種常見寫法會找不到
-        return countryKey(row.join('')).indexOf(kw) >= 0;
-      });
-
-      if(filtered.length === 0){
-        list.innerHTML = '<div class="cpick-empty">'
-          + T({ zh:'找不到符合的國家', en:'No matching country',
-                ja:'該当する国が見つかりません', ko:'해당하는 국가가 없습니다' })
-          + '</div>';
-        activeIdx = -1;
-        return;
-      }
-      list.innerHTML = filtered.map(function(row, i){
-        return '<div class="cpick-opt' + (i === activeIdx ? ' active' : '') + '"'
-          + ' role="option" id="' + uid + '-opt' + i + '"'
-          + ' aria-selected="' + (row[0] === value) + '"'
-          + ' data-code="' + row[0] + '">'
-          + escapeHtml(labelOf(row[0])) + '</div>';
-      }).join('');
-      // 讓輔助技術知道目前游標停在哪一個選項
-      if(activeIdx >= 0) search.setAttribute('aria-activedescendant', uid + '-opt' + activeIdx);
-      else search.removeAttribute('aria-activedescendant');
-    }
-
-    function scrollActiveIntoView(){
-      const el = list.querySelector('.cpick-opt.active');
-      if(el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block:'nearest' });
-    }
-
-    function openList(){
-      if(open) return;
-      open = true;
-      mount.classList.add('is-open');
-      list.hidden = false;
-      search.setAttribute('aria-expanded', 'true');
-      search.value = '';
-      activeIdx = -1;
-      renderList();
-      search.focus();
-      // 選中的項目捲到看得見的位置
-      const sel = list.querySelector('.cpick-opt[aria-selected="true"]');
-      if(sel) list.scrollTop = sel.offsetTop - 60;
-    }
-
-    function closeList(){
-      if(!open) return;
-      open = false;
-      mount.classList.remove('is-open');
-      list.hidden = true;
-      search.setAttribute('aria-expanded', 'false');
-      search.removeAttribute('aria-activedescendant');
-      search.value = '';
-    }
-
-    function setValue(code){
-      value = code || '';
-      hiddenInput.value = value;
-      mount.classList.toggle('has-value', !!value);
-      renderValue();
-      hiddenInput.dispatchEvent(new Event('change', { bubbles:true }));
-    }
-
-    toggle.addEventListener('mousedown', function(e){
-      if(e.target.closest('.cpick-clear')) return;
-      e.preventDefault();                 // 避免點擊後焦點跑掉
-      open ? closeList() : openList();
-    });
-    // 用鍵盤 Tab 到這個欄位再按 Enter/空白/下鍵也要能展開
-    search.addEventListener('keydown', function(e){
-      if(!open && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown')){
-        e.preventDefault();
-        openList();
-      }
+            diagBox.style.background = '#dcfce7';
+            diagBox.style.color = '#166534';
+            diagBox.innerHTML = `✅ <b>連線測試成功！</b><br>• 成功配對模型：<code>${activeModelName}</code><br>• 伺服器延遲：${elapsed} ms<br>• 狀態：可正常進行辨識！`;
+        } catch (err) {
+            console.error(err);
+            diagBox.style.background = '#fee2e2';
+            diagBox.style.color = '#991b1b';
+            diagBox.innerHTML = `❌ <b>連線失敗</b>：${err.message}`;
+        } finally {
+            btnTestKey.disabled = false;
+            btnTestKey.textContent = '🧪 測試連線';
+        }
     });
 
-    search.addEventListener('input', function(){ activeIdx = -1; renderList(); });
+    for (let i = 1; i <= 9; i++) createCard(`商品項目 ${i}`);
 
-    search.addEventListener('keydown', function(e){
-      if(e.key === 'ArrowDown'){
-        e.preventDefault();
-        activeIdx = Math.min(activeIdx + 1, filtered.length - 1);
-        renderList();
-        scrollActiveIntoView();
-      } else if(e.key === 'ArrowUp'){
-        e.preventDefault();
-        activeIdx = Math.max(activeIdx - 1, 0);
-        renderList();
-        scrollActiveIntoView();
-      } else if(e.key === 'Enter'){
-        e.preventDefault();   // 不要讓 Enter 直接送出表單
-        // 只剩一個結果時，不必先按方向鍵也能直接確認
-        if(activeIdx < 0 && filtered.length === 1) activeIdx = 0;
-        if(activeIdx >= 0){ setValue(filtered[activeIdx][0]); closeList(); }
-      } else if(e.key === 'Escape'){
-        closeList();
-      }
+    btnAddCard.addEventListener('click', () => {
+        createCard(`自訂商品 ${document.querySelectorAll('.product-card').length + 1}`);
     });
 
-    list.addEventListener('mousedown', function(e){
-      // 用 mousedown：blur 會先觸發並關掉清單，click 就永遠收不到
-      const opt = e.target.closest('.cpick-opt');
-      if(!opt) return;
-      e.preventDefault();
-      setValue(opt.dataset.code);
-      closeList();
+    btnClearImages.addEventListener('click', () => {
+        if (!confirm('確定要清空所有已上傳的照片嗎？')) return;
+        document.querySelectorAll('.product-card').forEach(card => {
+            delete card.dataset.base64;
+            delete card.dataset.hasImage;
+            card.querySelector('.preview-img').style.display = 'none';
+            card.querySelector('.drop-prompt').style.display = 'block';
+            card.querySelector('.count-badge').className = 'count-badge';
+            card.querySelector('.count-badge').textContent = '-';
+            card.querySelector('.card-notes').textContent = '等待上傳照片';
+        });
+        summaryTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">尚未執行辨識</td></tr>`;
     });
 
-    clearBtn.addEventListener('click', function(e){
-      e.stopPropagation();
-      setValue('');
-      closeList();
+    function createCard(title) {
+        cardSeq++;
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <div class="card-header">
+                <input type="text" class="item-name-input" value="${title}">
+                <button class="btn-delete" type="button" title="刪除">&times;</button>
+            </div>
+            <div class="drop-zone">
+                <div class="drop-prompt">📷 點擊或拖曳照片至此</div>
+                <img class="preview-img" alt="預覽圖">
+                <input type="file" class="file-input" accept="image/*">
+            </div>
+            <div class="card-footer">
+                <div class="status-row">
+                    <span style="color: var(--text-muted); font-size: 13px;">數量：</span>
+                    <span class="count-badge">-</span>
+                </div>
+                <div class="card-notes">等待上傳照片</div>
+            </div>
+        `;
+        gridContainer.appendChild(card);
+        bindCardEvents(card);
+    }
+
+    function bindCardEvents(card) {
+        const dropZone = card.querySelector('.drop-zone');
+        const fileInput = card.querySelector('.file-input');
+        const deleteBtn = card.querySelector('.btn-delete');
+
+        dropZone.addEventListener('click', (e) => {
+            if (e.target !== deleteBtn) fileInput.click();
+        });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], card);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0], card);
+        });
+        deleteBtn.addEventListener('click', () => card.remove());
+    }
+
+    function handleFile(file, card) {
+        const reader = new FileReader();
+        const preview = card.querySelector('.preview-img');
+        const prompt = card.querySelector('.drop-prompt');
+        const notes = card.querySelector('.card-notes');
+        const badge = card.querySelector('.count-badge');
+
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const maxLen = 1024;
+                let w = img.width;
+                let h = img.height;
+                if (w > maxLen || h > maxLen) {
+                    if (w > h) { h = Math.round((h * maxLen) / w); w = maxLen; }
+                    else { w = Math.round((w * maxLen) / h); h = maxLen; }
+                }
+
+                canvas.width = w;
+                canvas.height = h;
+                ctx.drawImage(img, 0, 0, w, h);
+
+                const base64Jpeg = canvas.toDataURL('image/jpeg', 0.85);
+                card.dataset.base64 = base64Jpeg.split(',')[1];
+                card.dataset.hasImage = "true";
+
+                if (preview) { preview.src = base64Jpeg; preview.style.display = 'block'; }
+                if (prompt) prompt.style.display = 'none';
+                if (notes) notes.textContent = '照片已就緒';
+                if (badge) { badge.textContent = '-'; badge.className = 'count-badge'; }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // 核心辨識函式（採用強制思維鏈與逐排清點 Prompt）
+    async function requestGemini(apiKey, base64Data, itemName) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModelName}:generateContent?key=${apiKey}`;
+        
+        const prompt = `你是一個極度嚴謹且高精準度的視覺庫存清點專家。
+請仔細清點這張照片中名為「${itemName}」或畫面核心商品物件的真實數量。
+
+【強制清點規則】：
+1. 嚴禁直接粗估或透過「矩陣總格數」直覺相減！
+2. 若商品排列成矩陣/多直排/多橫列：
+   - 請由左至右（或由上至下）逐排逐列清點「每一排」的真實個數。
+   - 特別仔細檢查每一排的「最頂部」與「最底部」是否有缺漏空位（例如角落缺一盒）。
+   - 請將每一排實際數到的數量寫出加總算式（例如：8 + 10 + 10 + 10 = 38）。
+3. 若商品為散落擺放，請逐一標記清點。
+4. 若無任何商品，數量填 0。
+
+請嚴格只回傳 JSON 格式（不要包含多餘 Markdown 代碼或解釋）：
+{
+  "count": 實際總數整數,
+  "notes": "逐排清點說明與缺漏備註（例如：共4直排，左1排8個(左上與左下缺漏)、第2排10個、第3排10個、第4排10個，合計38個）"
+}`;
+
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                    ]
+                }],
+                generationConfig: { response_mime_type: "application/json" }
+            })
+        });
+
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error?.message || `狀態碼: ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+        return JSON.parse(rawText);
+    }
+
+    btnRunAll.addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+            alert('請先輸入 Gemini API Key！');
+            apiKeyInput.focus();
+            return;
+        }
+
+        const cards = Array.from(document.querySelectorAll('.product-card'));
+        const activeCards = cards.filter(c => c.dataset.hasImage === "true");
+
+        if (activeCards.length === 0) {
+            alert('請至少在一格區域上傳商品照片！');
+            return;
+        }
+
+        btnRunAll.disabled = true;
+        overallStatus.textContent = `⏳ 正在透過 ${activeModelName} 逐排精準分析 ${activeCards.length} 個區域...`;
+        summaryTbody.innerHTML = '';
+
+        const summaryList = new Array(cards.length);
+
+        const tasks = cards.map(async (card, idx) => {
+            const nameInput = card.querySelector('.item-name-input');
+            const name = nameInput ? nameInput.value.trim() : `項目 ${idx + 1}`;
+            const badge = card.querySelector('.count-badge');
+            const notes = card.querySelector('.card-notes');
+
+            if (card.dataset.hasImage !== "true") {
+                summaryList[idx] = { seq: idx + 1, name, count: '-', notes: '未上傳圖片' };
+                return;
+            }
+
+            if (badge) badge.textContent = '分析中';
+            if (notes) notes.textContent = 'AI 逐排清點中...';
+
+            try {
+                const res = await requestGemini(apiKey, card.dataset.base64, name);
+                const count = typeof res.count === 'number' ? res.count : 0;
+                const noteText = res.notes || '辨識完成';
+
+                if (badge) {
+                    badge.textContent = `${count} 件`;
+                    badge.className = 'count-badge success';
+                }
+                if (notes) notes.textContent = noteText;
+
+                summaryList[idx] = { seq: idx + 1, name, count: `${count} 件`, notes: noteText };
+            } catch (error) {
+                if (badge) {
+                    badge.textContent = '失敗';
+                    badge.className = 'count-badge error';
+                }
+                if (notes) notes.textContent = `錯誤: ${error.message}`;
+
+                summaryList[idx] = { seq: idx + 1, name, count: '錯誤', notes: error.message };
+            }
+        });
+
+        await Promise.all(tasks);
+
+        summaryTbody.innerHTML = '';
+        summaryList.forEach(item => {
+            if (!item) return;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.seq}</td>
+                <td><strong>${item.name}</strong></td>
+                <td><b style="color: #2563eb; font-size: 15px;">${item.count}</b></td>
+                <td style="color: var(--text-muted);">${item.notes}</td>
+            `;
+            summaryTbody.appendChild(tr);
+        });
+
+        overallStatus.textContent = '✅ 全部辨識完成！';
+        btnRunAll.disabled = false;
     });
 
-    document.addEventListener('click', function(e){
-      if(!mount.contains(e.target)) closeList();
+    btnCopyList.addEventListener('click', () => {
+        const rows = summaryTbody.querySelectorAll('tr');
+        if (rows.length === 0 || rows[0].innerText.includes('尚未執行')) {
+            alert('尚無辨識結果可複製'); return;
+        }
+        let textOutput = "【商品數量辨識清單】\n";
+        rows.forEach(tr => {
+            const cols = tr.querySelectorAll('td');
+            if (cols.length >= 4) {
+                textOutput += `${cols[1].innerText}：${cols[2].innerText} (${cols[3].innerText})\n`;
+            }
+        });
+        navigator.clipboard.writeText(textOutput).then(() => {
+            alert('已成功複製清單至剪貼簿！');
+        });
     });
 
-    renderValue();
-
-    const api = {
-      get: function(){ return value; },
-      set: setValue,
-      open: function(){ openList(); },
-      refresh: function(){ renderValue(); if(open) renderList(); }
-    };
-    mount._picker = api;   // 讓驗證流程可以直接叫它展開
-    return api;
-  }
-
-  const countryPickers = [];
-  // 主報名人
-  const mainCountryPicker = createCountryPicker(
-    document.getElementById('su-country-picker'),
-    document.getElementById('su-country'),
-    document.getElementById('su-country-hint')
-  );
-  countryPickers.push(mainCountryPicker);
-
-  // 同桌對象的國籍（選填，可留空）
-  const tableWithCountryPicker = createCountryPicker(
-    document.getElementById('su-tablewith-country-picker'),
-    document.getElementById('su-tablewith-country'),
-    null,
-    function(){ return T({ zh:'國籍（選填）', en:'Country (optional)',
-                           ja:'国籍（任意）', ko:'국적 (선택)' }); }
-  );
-  countryPickers.push(tableWithCountryPicker);
-
-  /** 語言切換時，所有選擇器的顯示文字要跟著換 */
-  function refreshCountryPickers(){
-    countryPickers.forEach(function(p){ p.refresh(); });
-  }
-
-  /** 送出前讀值：值一定來自清單，直接回傳即可 */
-  function readCountry(input){
-    return String((input && input.value) || '').trim();
-  }
-
-  /** 檢查所有國籍都選好了；沒選的回傳提示字串 */
-  function validateAllCountries(){
-    if(!document.getElementById('su-country').value.trim()){
-      document.getElementById('su-country-picker')._picker.open();
-      return T({ zh:'（尚未選擇你的國籍）', en:'(your country is not selected)',
-                 ja:'（国籍が選択されていません）', ko:'(국적이 선택되지 않았습니다)' });
-    }
-    const rows = Array.from(guestRowsContainer.querySelectorAll('.guest-row'));
-    for(let i = 0; i < rows.length; i++){
-      const hidden = rows[i].querySelector('.guest-country-input');
-      if(!hidden.value.trim()){
-        rows[i].querySelector('.cpick')._picker.open();
-        return T({
-          zh:'（第 ' + (i + 1) + ' 位攜伴尚未選擇國籍）',
-          en:'(plus-one #' + (i + 1) + ' has no country selected)',
-          ja:'（同伴者 ' + (i + 1) + ' 名目の国籍が未選択です）',
-          ko:'(동반자 ' + (i + 1) + '번째의 국적이 선택되지 않았습니다)' });
-      }
-    }
-    return '';
-  }
-
-  // ==========================================================
-  // 同桌對象的 IG：自訂下拉清單
-  //
-  // 沒有用原生的 <datalist>，因為各家瀏覽器對「中間字比對」的支援不一致
-  // （有的只比對開頭），排桌要靠這個對應到人，不能讓行為隨瀏覽器而異。
-  //
-  // 比對規則：把 @、大小寫、底線、點號、空白都拉平之後做「包含」比對，
-  // 所以打 ming 找得到 xiaoming_tw，打 @Ming.Ming 也找得到 mingming。
-  //
-  // 清單列出所有已報名者的 IG（已取消的不列），只有帳號字串，
-  // 沒有姓名、電話或其他個資。
-  // ==========================================================
-  let igDirectory = [];
-
-  /** 把 IG 帳號拉平成可比對的形式：忽略 @、大小寫、底線、點號、空白 */
-  function igKey(v){
-    return String(v || '').trim().toLowerCase().replace(/^@/, '').replace(/[._\s-]/g, '');
-  }
-
-  async function loadIgDirectory(){
-    const r = await postToBackend({ type:'igList' });
-    const body = r.body || {};
-    if(body.result !== 'success') return;
-    igDirectory = body.igs || [];
-  }
-
-  /** 找出所有「包含關係」的帳號：輸入包含在項目裡、或項目包含在輸入裡都算 */
-  function filterIgs(input){
-    const k = igKey(input);
-    if(!k) return igDirectory.slice(0, 80);
-    return igDirectory.filter(function(ig){
-      const t = igKey(ig);
-      return t.indexOf(k) >= 0 || k.indexOf(t) >= 0;
-    }).slice(0, 80);
-  }
-
-  (function initIgPicker(){
-    const input = document.getElementById('su-tablewith-ig');
-    const box = document.getElementById('ig-suggest');
-    if(!input) return;
-
-    let activeIdx = -1;
-    let current = [];
-
-    function close(){
-      box.hidden = true;
-      box.innerHTML = '';
-      activeIdx = -1;
-      input.setAttribute('aria-expanded', 'false');
-    }
-
-    function openBox(){
-      box.hidden = false;
-      input.setAttribute('aria-expanded', 'true');
-    }
-
-    function render(){
-      current = filterIgs(input.value);
-
-      if(igDirectory.length === 0){ close(); return; }
-
-      if(current.length === 0){
-        box.innerHTML = '<div class="ig-empty">'
-          + T({ zh:'沒有相符的已報名帳號，你仍然可以直接手動輸入',
-                en:'No registered IG matches — you can still type it in manually.',
-                ja:'一致する登録済みアカウントがありません。手入力も可能です',
-                ko:'일치하는 등록 계정이 없습니다. 직접 입력하셔도 됩니다' })
-          + '</div>';
-        openBox();
-        activeIdx = -1;
-        return;
-      }
-
-      box.innerHTML = current.map(function(ig, i){
-        return '<div class="ig-opt' + (i === activeIdx ? ' active' : '') + '"'
-          + ' role="option" aria-selected="' + (i === activeIdx) + '"'
-          + ' data-ig="' + escapeHtml(ig) + '">' + escapeHtml(ig) + '</div>';
-      }).join('');
-      openBox();
-    }
-
-    function choose(ig){
-      input.value = ig;
-      close();
-    }
-
-    input.addEventListener('focus', render);
-    input.addEventListener('input', function(){ activeIdx = -1; render(); });
-
-    // 鍵盤上下選、Enter 確認、Esc 關閉
-    input.addEventListener('keydown', function(e){
-      if(box.hidden || current.length === 0) return;
-      if(e.key === 'ArrowDown'){ e.preventDefault(); activeIdx = Math.min(activeIdx + 1, current.length - 1); render(); }
-      else if(e.key === 'ArrowUp'){ e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); render(); }
-      else if(e.key === 'Enter' && activeIdx >= 0){ e.preventDefault(); choose(current[activeIdx]); }
-      else if(e.key === 'Escape'){ close(); }
+    btnExportCsv.addEventListener('click', () => {
+        const rows = summaryTbody.querySelectorAll('tr');
+        if (rows.length === 0 || rows[0].innerText.includes('尚未執行')) {
+            alert('尚無辨識結果可匯出'); return;
+        }
+        let csvContent = "\uFEFF編號,商品名稱,辨識數量,逐排說明\n";
+        rows.forEach(tr => {
+            const cols = tr.querySelectorAll('td');
+            if (cols.length >= 4) {
+                csvContent += `"${cols[0].innerText}","${cols[1].innerText}","${cols[2].innerText}","${cols[3].innerText}"\n`;
+            }
+        });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `商品清點報表_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
     });
-
-    box.addEventListener('mousedown', function(e){
-      // 用 mousedown 而不是 click：blur 會先觸發並把清單關掉，click 就永遠收不到
-      const opt = e.target.closest('.ig-opt');
-      if(!opt) return;
-      e.preventDefault();
-      choose(opt.dataset.ig);
-    });
-
-    document.addEventListener('click', function(e){
-      if(e.target !== input && !box.contains(e.target)) close();
-    });
-  })();
-
-  // ---- toast ----
-  let toastTimer = null;
-  function showToast(text){
-    const el = document.getElementById('toast');
-    el.textContent = text;
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> el.classList.remove('show'), 3400);
-  }
-
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
-  }
-
-  // ==========================================================
-  // 狀態
-  //
-  // 款項狀態（整組一個）：試算表第 25 欄長什麼樣，這裡就顯示什麼，
-  // 前端不做任何金額比對、不推算。要改狀態只有兩條路：
-  // 使用者回報匯款（後端自動 → 帳款確認中）、或工作人員在後台按按鈕。
-  //
-  // 出席狀態（每個人各自一個）：已報名／已取消。
-  // ==========================================================
-  const PS = { NONE:'未收款', CHECKING:'帳款確認中', TOPUP:'待補款', DONE:'已收款' };
-  const PS_META = {
-    [PS.NONE]:     { cls:'st-none',     zh:'未收款',     en:'Unpaid',     ja:'未入金',       ko:'미입금' },
-    [PS.CHECKING]: { cls:'st-checking', zh:'帳款確認中', en:'Verifying',  ja:'入金確認中',   ko:'입금 확인 중' },
-    [PS.TOPUP]:    { cls:'st-topup',    zh:'待補款',     en:'Top-up due', ja:'追加入金待ち', ko:'추가 입금 대기' },
-    [PS.DONE]:     { cls:'st-paid',     zh:'已收款',     en:'Paid',       ja:'入金済み',     ko:'입금 완료' }
-  };
-  const CANCELLED_META = { cls:'st-void', zh:'已取消', en:'Cancelled', ja:'キャンセル済み', ko:'취소됨' };
-  // 後端在試算表缺少「款項狀態」欄時會回 N/A。刻意不假裝成「未收款」——
-  // 那會讓你以為錢真的沒收到，比直接說「讀不到」危險得多。
-  const NA_META = { cls:'st-na', zh:'N/A', en:'N/A', ja:'N/A', ko:'N/A' };
-
-  function psMeta(g){
-    if(g && g.allCancelled) return CANCELLED_META;
-    if(g && g.payStatus === 'N/A') return NA_META;
-    return PS_META[g && g.payStatus] || PS_META[PS.NONE];
-  }
-  function psText(g){
-    const m = psMeta(g);
-    return T(m);
-  }
-
-  // ---- 查詢 ----
-  const lookupResult = document.getElementById('lookup-result');
-  let lastLookupPhone = '';
-  let lastLookupData = null;
-
-  document.getElementById('lookup-form').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    await doLookup(document.getElementById('lk-query').value.trim());
-  });
-
-  async function doLookup(phone){
-    const msg = document.getElementById('lookup-msg');
-    const btn = document.getElementById('lookup-submit-btn');
-    msg.classList.remove('show');
-    lookupResult.classList.remove('show');
-
-    btn.disabled = true;
-    btn.textContent = T('lookup_submitting');
-
-    const notFound = (text)=>{
-      msg.textContent = text || T('lookup_msg');
-      msg.classList.add('show');
-      setTimeout(()=> msg.classList.remove('show'), 8000);
-    };
-
-    const r = await postToBackend({ type:'lookup', phone: phone });
-    const data = r.body || {};
-
-    if(!r.ok){
-      notFound(T({ zh:'連線失敗，請確認網路後再試一次。',
-                   en:'Could not reach the server — please check your connection and try again.',
-                   ja:'サーバーに接続できませんでした。通信環境をご確認ください。',
-                   ko:'서버에 연결할 수 없습니다. 네트워크를 확인해 주세요.' }));
-    } else if(data.found){
-      lastLookupPhone = phone;
-      lastLookupData = data;
-      renderLookup(data);
-    } else {
-      notFound();
-    }
-
-    btn.disabled = false;
-    btn.textContent = T('lookup_submit');
-  }
-
-  function renderLookup(d){
-    const isOnline = d.paymethod !== '現場付款';
-
-    document.getElementById('lr-name').textContent = d.name || '—';
-    const badge = document.getElementById('lr-badge');
-    badge.className = 'st-badge ' + psMeta(d).cls;
-    badge.textContent = psText(d);
-
-    document.getElementById('lr-regid').textContent = d.regId || '—';
-    document.getElementById('lr-count').textContent = T({
-      zh: d.activeCount + ' 人', en: d.activeCount + ' people',
-      ja: d.activeCount + ' 名', ko: d.activeCount + '명' });
-    document.getElementById('lr-due').textContent = 'NT$' + Number(d.due || 0).toLocaleString();
-    document.getElementById('lr-method').textContent =
-      isOnline ? T('paymethod_online') : T('paymethod_onsite');
-
-    // 說明文字完全對應款項狀態，不另外推算
-    const NOTE = {
-      [PS.DONE]: {
-        zh:'已確認收到您的付款，我們活動現場見！',
-        en:'Payment confirmed — see you at the event!',
-        ja:'ご入金を確認しました。当日会場でお会いしましょう！',
-        ko:'입금이 확인되었습니다. 행사 당일에 뵙겠습니다!' },
-      [PS.CHECKING]: {
-        zh:'已收到你的匯款回報，主辦單位正在核對中，確認後這裡會變成「已收款」。',
-        en:'We have received your transfer report and are verifying it.',
-        ja:'お振込みのご報告を受け取りました。確認が取れ次第「入金済み」に変わります。',
-        ko:'송금 보고를 접수했습니다. 확인이 완료되면 ‘입금 완료’로 변경됩니다.' },
-      [PS.TOPUP]: {
-        zh:'報名後有新增人數，請補匯差額並至「匯款轉帳」頁面回報。',
-        en:'People were added after payment — please transfer the difference and report it on the Payment tab.',
-        ja:'お申込み後に人数が追加されました。差額をお振込みのうえ「銀行振込」ページよりご報告ください。',
-        ko:'신청 후 인원이 추가되었습니다. 차액을 송금하신 뒤 ‘송금 안내’ 페이지에서 보고해 주세요.' },
-      [PS.NONE]: {
-        zh:'尚未收到您的匯款回報，請至「匯款轉帳」頁面完成轉帳並回報。',
-        en:'We have not received your transfer report yet — please complete it on the Payment tab.',
-        ja:'お振込みのご報告がまだ届いていません。「銀行振込」ページよりお手続きとご報告をお願いします。',
-        ko:'아직 송금 보고가 접수되지 않았습니다. ‘송금 안내’ 페이지에서 송금 후 보고해 주세요.' }
-    };
-    const onsiteNote = {
-      zh:'請於活動當天現場付款，工作人員會協助收款。',
-      en:'Please pay on-site on the day; staff will assist you.',
-      ja:'当日会場にてお支払いください。スタッフがご案内いたします。',
-      ko:'행사 당일 현장에서 결제해 주세요. 스태프가 안내해 드립니다.' };
-    const cancelledNote = {
-      zh:'這組報名的成員都已取消。',
-      en:'Everyone in this registration has been cancelled.',
-      ja:'このお申込みの参加者は全員キャンセル済みです。',
-      ko:'이 신청의 참가자가 모두 취소되었습니다.' };
-
-    let note;
-    if(d.allCancelled) note = cancelledNote;
-    else if(!isOnline && d.payStatus === PS.NONE) note = onsiteNote;
-    else note = NOTE[d.payStatus] || NOTE[PS.NONE];
-    document.getElementById('lr-note').textContent = T(note);
-
-    // 成員清單：每個人各自一列，各自可以申請取消
-    const box = document.getElementById('lr-members');
-    box.innerHTML = (d.members || []).map(m=>{
-      let right = '';
-      if(m.cancelled){
-        right = '<span class="st-badge st-void">' + T(TXT.cancelled) + '</span>';
-      } else if(m.cancelPending){
-        // 申請中還能反悔：最常見的情況就是「本來不能來，後來又可以了」，
-        // 沒有這顆按鈕的話使用者只能回頭麻煩主辦
-        right = '<span class="st-badge st-topup">' + T(TXT.cancelPendingLong) + '</span>'
-              + '<button type="button" class="mini-btn" data-withdraw-member="' + m.index + '">'
-              + T(TXT.undoRequest) + '</button>';
-      } else {
-        right = '<button type="button" class="mini-btn danger" data-cancel-member="' + m.index + '">'
-              + T(TXT.requestCancel) + '</button>';
-      }
-      return '<div class="lr-mem' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
-        + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
-        + '<span class="mem-name">' + countryTag(m.country) + ' ' + escapeHtml(m.name) + '</span>'
-        + right + '</div>';
-    }).join('');
-
-    document.getElementById('lr-edit-btn').style.display = d.allCancelled ? 'none' : 'inline-block';
-
-    lookupResult.classList.add('show');
-  }
-
-  // ---- 個別申請取消 ----
-  // 一樣是「申請」而不是直接取消：只靠電話沒辦法確認送出的人是誰，
-  // 做成一鍵直接取消的話，任何知道這支電話的人都能把別人踢掉，而且無法復原。
-  document.getElementById('lr-members').addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-cancel-member]');
-    if(!btn || !lastLookupPhone) return;
-
-    const idx = btn.dataset.cancelMember;
-    const member = (lastLookupData.members || []).filter(m=> String(m.index) === String(idx))[0];
-    const who = member ? member.name : '';
-
-    const ok = confirm(T({
-      zh:'確定要為「' + who + '」送出取消申請嗎？\n送出後由主辦單位確認。退費依「活動訊息」頁面的注意事項辦理。',
-      en:'Submit a cancellation request for "' + who + '"?\nThe organizer will confirm it. Refunds follow the policy on the Event Info page.',
-      ja:'「' + who + '」さんのキャンセルを申請しますか？\n主催者が確認いたします。返金は「イベント情報」ページの注意事項に従います。',
-      ko:'「' + who + '」님의 취소를 신청하시겠습니까?\n주최 측에서 확인합니다. 환불은 ‘행사 정보’ 페이지의 유의사항에 따릅니다.' }));
-    if(!ok) return;
-
-    const reason = prompt(T({ zh:'取消原因（選填）', en:'Reason (optional)',
-                              ja:'キャンセル理由（任意）', ko:'취소 사유 (선택)' }), '') || '';
-
-    btn.disabled = true;
-    btn.textContent = T({ zh:'送出中…', en:'Submitting…', ja:'送信中…', ko:'전송 중…' });
-
-    const r = await postToBackend({
-      type:'cancelRequest', phone: lastLookupPhone, memberIndex: idx, reason: reason
-    });
-    const body = r.body || {};
-
-    if(body.result === 'success'){
-      showToast(T({ zh:'✅ 已送出取消申請', en:'✅ Cancellation request submitted',
-                    ja:'✅ キャンセル申請を送信しました', ko:'✅ 취소 신청을 접수했습니다' }));
-      await doLookup(lastLookupPhone);
-    } else {
-      showToast(body.message || T({ zh:'⚠️ 申請失敗，請稍後再試', en:'⚠️ Request failed',
-                                    ja:'⚠️ 申請に失敗しました。時間をおいてお試しください', ko:'⚠️ 신청에 실패했습니다. 잠시 후 다시 시도해 주세요' }));
-      btn.disabled = false;
-      btn.textContent = T(TXT.requestCancel);
-    }
-  });
-
-  // ---- 撤回取消申請 ----
-  document.getElementById('lr-members').addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-withdraw-member]');
-    if(!btn || !lastLookupPhone) return;
-
-    const idx = btn.dataset.withdrawMember;
-    const member = (lastLookupData.members || []).filter(m=> String(m.index) === String(idx))[0];
-    const who = member ? member.name : '';
-
-    const ok = confirm(T({
-      zh:'確定要撤回「' + who + '」的取消申請嗎？\n撤回後這位維持出席，費用照原本計算。',
-      en:'Undo the cancellation request for "' + who + '"? They will stay registered.',
-      ja:'「' + who + '」さんのキャンセル申請を取り消しますか？\n取り消すとご参加のままとなり、料金も元のままです。',
-      ko:'「' + who + '」님의 취소 신청을 철회하시겠습니까?\n철회하면 참석이 유지되며 금액도 그대로입니다.' }));
-    if(!ok) return;
-
-    btn.disabled = true;
-    btn.textContent = T({ zh:'處理中…', en:'Undoing…', ja:'処理中…', ko:'처리 중…' });
-
-    const r = await postToBackend({
-      type:'withdrawCancel', phone: lastLookupPhone, memberIndex: idx
-    });
-    const body = r.body || {};
-
-    if(body.result === 'success'){
-      showToast(T({ zh:'✅ 已撤回取消申請', en:'✅ Request withdrawn',
-                    ja:'✅ キャンセル申請を取り消しました', ko:'✅ 취소 신청을 철회했습니다' }));
-      await doLookup(lastLookupPhone);
-    } else {
-      showToast(body.message || T({ zh:'⚠️ 撤回失敗，請稍後再試', en:'⚠️ Failed',
-                                    ja:'⚠️ 取り消しに失敗しました。時間をおいてお試しください', ko:'⚠️ 철회에 실패했습니다. 잠시 후 다시 시도해 주세요' }));
-      btn.disabled = false;
-      btn.textContent = T(TXT.undoRequest);
-    }
-  });
-
-  // ---- 修改報名資料 / 加人 ----
-  document.getElementById('lr-edit-btn').addEventListener('click', ()=>{
-    if(!lastLookupData) return;
-    enterEditMode(Object.assign({}, lastLookupData, { phone: lastLookupPhone }));
-  });
-
-  // ==========================================================
-  // 後台
-  //
-  // 【登入】密碼比對在前端完成，所以按下去是「秒進」，
-  // 進去之後才非同步撈資料 —— 不會像以前那樣卡在登入按鈕等後端撈完整張表。
-  //
-  // 【之後要換掉】密碼寫在這裡只是暫時的，任何人看網頁原始碼都找得到。
-  // 要換成 Firebase Auth 或雲端密碼表時，只要改寫 verifyAdminLocal() 這一個
-  // 函式（把它變成 async、去打驗證服務），底下所有程式都不用動。
-  // 後端 GS 那邊也有一個對應的 verifyAdmin()，兩邊各改一個函式就完成。
-  //
-  // 【操作者】每組密碼對應一個名字，所有後台動作都會把名字寫進「異動紀錄」，
-  // 之後查得到某一筆是誰按的。
-  // ==========================================================
-  // 密碼不在這裡，也不在任何前端程式碼裡。
-  // 它存在 Apps Script 的「指令碼屬性」中（等同伺服器端環境變數），
-  // 由後端的 verifyAdmin() 驗證。要新增或修改密碼，
-  // 請在 Apps Script 編輯器執行 setupAdminUsers()。
-  //
-  // 登入流程：送出密碼 → 後端只驗密碼、不讀試算表（所以很快）→
-  // 通過就立刻開畫面，名單在背景載入。
-  //
-  // 密碼在登入後留在記憶體裡（adminPassword），每個後台動作都會一起送出，
-  // 後端每次都重新驗證，不使用任何長期憑證。重新整理頁面就得再登入一次。
-  let adminPassword = '';
-  let adminOperator = '';
-  let adminData = [];
-  let adminLogs = [];
-  let adminFilter = 'all';
-  let adminView = 'list';
-
-  async function tryUnlockAdmin(){
-    const input = document.getElementById('admin-pw');
-    const errEl = document.getElementById('admin-gate-error');
-    const btn = document.getElementById('admin-unlock-btn');
-    const pw = input.value.trim();
-
-    if(!pw){
-      errEl.textContent = isEn() ? 'Please enter a password' : '請輸入密碼';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = isEn() ? 'Signing in…' : '登入中…';
-    errEl.style.display = 'none';
-
-    // 只驗密碼，後端不讀任何試算表，所以這一趟很快
-    const r = await postToBackend({ type:'adminLogin', password: pw });
-    const body = r.body || {};
-
-    btn.disabled = false;
-    btn.textContent = isEn() ? 'Sign in' : '登入';
-
-    if(!r.ok){
-      errEl.textContent = isEn()
-        ? 'Could not reach the server — please check your connection.'
-        : '連線失敗，請確認網路後再試一次';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    if(body.result !== 'success'){
-      // 分辨「密碼錯」與「後台根本還沒設定」，後者要顯示後端給的說明
-      errEl.textContent = body.reason === 'not-configured'
-        ? (body.message || '後台密碼尚未設定')
-        : (isEn() ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次');
-      errEl.style.display = 'block';
-      input.select();
-      return;
-    }
-
-    adminPassword = pw;
-    adminOperator = body.operator || '';
-    input.value = '';
-
-    document.getElementById('admin-gate').style.display = 'none';
-    document.getElementById('admin-content').style.display = 'block';
-    document.getElementById('admin-list').innerHTML =
-      '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
-    showToast((isEn() ? 'Welcome, ' : '歡迎，') + adminOperator);
-    loadAdminList();
-  }
-  document.getElementById('admin-unlock-btn').addEventListener('click', tryUnlockAdmin);
-  document.getElementById('admin-pw').addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') tryUnlockAdmin();
-  });
-
-  async function loadAdminList(){
-    const btn = document.getElementById('admin-refresh-btn');
-    btn.disabled = true;
-    const r = await postToBackend({ type:'adminList', password: adminPassword });
-    const body = r.body || {};
-    showWarnings(body);
-    if(body.result === 'success'){
-      applyAdminData(body.results || []);
-    } else {
-      document.getElementById('admin-list').innerHTML =
-        '<div class="adm-empty">' + escapeHtml(body.message || (isEn()
-          ? 'Could not load data — check that GAS_URL is correct and the deployment allows access from "Anyone".'
-          : '讀取失敗。請確認 GAS_URL 網址正確，且部署時「誰可以存取」有設為「任何人」。')) + '</div>';
-    }
-    btn.disabled = false;
-  }
-
-  async function loadAdminLog(){
-    const btn = document.getElementById('admin-log-refresh-btn');
-    btn.disabled = true;
-    document.getElementById('admin-log-list').innerHTML =
-      '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
-    const r = await postToBackend({ type:'adminLog', password: adminPassword, limit: 300 });
-    const body = r.body || {};
-    adminLogs = (body.result === 'success') ? (body.logs || []) : [];
-    renderAdminLog();
-    btn.disabled = false;
-  }
-
-  document.getElementById('admin-refresh-btn').addEventListener('click', async ()=>{
-    await loadAdminList();
-    showToast(isEn() ? '✅ Updated' : '✅ 資料已更新');
-  });
-  document.getElementById('admin-log-refresh-btn').addEventListener('click', loadAdminLog);
-
-  document.querySelectorAll('.adm-viewtab').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      document.querySelectorAll('.adm-viewtab').forEach(x=> x.classList.remove('active'));
-      b.classList.add('active');
-      adminView = b.dataset.view;
-      document.getElementById('admin-view-list').style.display = adminView === 'list' ? 'block' : 'none';
-      document.getElementById('admin-view-log').style.display = adminView === 'log' ? 'block' : 'none';
-      if(adminView === 'log' && adminLogs.length === 0) loadAdminLog();
-    });
-  });
-
-  document.querySelectorAll('#admin-filters .filter-btn').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      document.querySelectorAll('#admin-filters .filter-btn').forEach(x=> x.classList.remove('active'));
-      b.classList.add('active');
-      adminFilter = b.dataset.filter;
-      renderAdminList();
-    });
-  });
-
-  /**
-   * 後端每個回應都可能帶 warnings（缺欄位、標題重複、某次寫入被略過…）。
-   * 一定要顯示出來：降級處理最怕的就是安靜地發生，
-   * 你以為按下去存好了，其實那一格根本沒有寫進去。
-   */
-  function showWarnings(body){
-    const box = document.getElementById('warn-banner');
-    const list = (body && body.warnings) || [];
-    if(list.length === 0){ box.style.display = 'none'; box.innerHTML = ''; return; }
-    box.innerHTML = '<b>⚠️ ' + (isEn()
-        ? 'Spreadsheet column issues detected'
-        : '試算表欄位有問題') + '</b><ul>'
-      + list.map(function(t){ return '<li>' + escapeHtml(t) + '</li>'; }).join('')
-      + '</ul>';
-    box.style.display = 'block';
-  }
-
-  function applyAdminData(results){
-    adminData = Array.isArray(results) ? results : [];
-    renderAdminStats();
-    renderAdminList();
-    const t = new Date().toLocaleTimeString(isEn() ? 'en-US' : 'zh-TW',
-      { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    document.getElementById('admin-last-updated').textContent =
-      (isEn() ? 'Last updated: ' : '最後更新：') + t;
-  }
-
-  function renderAdminStats(){
-    const active = adminData.filter(g=> !g.allCancelled);
-    const people = active.reduce((s,g)=> s + (Number(g.activeCount)||0), 0);
-    const done = active.filter(g=> g.payStatus === PS.DONE);
-    const outstanding = active.filter(g=> g.payStatus !== PS.DONE)
-                              .reduce((s,g)=> s + (Number(g.due)||0), 0);
-    const topup = active.filter(g=> g.payStatus === PS.TOPUP);
-    const pending = adminData.reduce((s,g)=> s + (Number(g.cancelPendingCount)||0), 0);
-
-    document.getElementById('stat-groups').textContent = active.length;
-    document.getElementById('stat-people').textContent = people;
-    document.getElementById('stat-paid').textContent = done.length;
-    document.getElementById('stat-outstanding').textContent = 'NT$' + outstanding.toLocaleString();
-    document.getElementById('stat-topup').textContent = topup.length;
-    document.getElementById('stat-pending').textContent = pending;
-  }
-
-  function matchesFilter(g){
-    switch(adminFilter){
-      case 'all':       return !g.allCancelled;
-      case 'cancelreq': return (Number(g.cancelPendingCount)||0) > 0;
-      case 'cancelled': return !!g.allCancelled;
-      case 'none':      return !g.allCancelled && g.payStatus === PS.NONE;
-      case 'checking':  return !g.allCancelled && g.payStatus === PS.CHECKING;
-      case 'topup':     return !g.allCancelled && g.payStatus === PS.TOPUP;
-      case 'done':      return !g.allCancelled && g.payStatus === PS.DONE;
-      default:          return true;
-    }
-  }
-
-  const L = (zh, en)=> isEn() ? en : zh;
-
-  function renderAdminList(){
-    const box = document.getElementById('admin-list');
-    const rows = adminData.filter(matchesFilter);
-
-    if(rows.length === 0){
-      box.innerHTML = '<div class="adm-empty">' + L('沒有符合條件的資料','No matching records') + '</div>';
-      return;
-    }
-    box.innerHTML = rows.map(cardHtml).join('');
-  }
-
-  function cardHtml(g){
-    const meta = psMeta(g);
-    const members = g.members || [];
-    const extra = members.filter(m=> m.role !== '本人' && !m.cancelled).length;
-    const req = Number(g.cancelPendingCount) || 0;
-
-    // ── 成員清單 ──
-    const memHtml = members.map(m=>{
-      let right = '';
-      if(m.cancelPending){
-        right = '<span class="st-badge st-topup">' + L('取消申請中','Cancel requested') + '</span>'
-              + '<button class="mini-btn danger" data-act="approve" data-idx="' + m.index + '">' + L('核准取消','Approve') + '</button>'
-              + '<button class="mini-btn" data-act="reject" data-idx="' + m.index + '">' + L('駁回','Reject') + '</button>';
-      } else if(m.cancelled){
-        right = '<span class="st-badge st-void">' + L('已取消','Cancelled') + '</span>'
-              + '<button class="mini-btn" data-act="restore" data-idx="' + m.index + '">' + L('恢復出席','Restore') + '</button>';
-      } else {
-        right = '<button class="mini-btn danger" data-act="kick" data-idx="' + m.index + '">' + L('取消這位','Cancel') + '</button>';
-      }
-      return '<div class="mem-row' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
-        + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
-        + '<span class="mem-name">' + countryTag(m.country) + ' ' + escapeHtml(m.name) + '</span>'
-        + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
-        + '<span class="adm-spacer"></span>' + right
-        + (m.cancelReason ? '<div style="width:100%; font-size:0.74rem; color:var(--orange);">' + escapeHtml(m.cancelReason) + '</div>' : '')
-        + (m.staffNote ? '<div style="width:100%; font-size:0.74rem; color:var(--text-muted);">' + escapeHtml(m.staffNote) + '</div>' : '')
-        + '</div>';
-    }).join('');
-
-    // ── 匯款回報明細 ──
-    const payHtml = (g.payments || []).length
-      ? g.payments.map(p=> '<div class="pay-line"><b>' + escapeHtml(p.date || '—') + '</b>'
-          + '<span>NT$' + Number(p.amount||0).toLocaleString() + '</span>'
-          + '<span>' + L('後五碼','Last 5') + ' ' + escapeHtml(p.last5 || '—') + '</span></div>').join('')
-      : '<div class="adm-sub" style="padding:0;">' + L('尚無匯款回報','No transfer reported yet') + '</div>';
-
-    // ── 款項狀態切換 ──
-    // 只有「目前的狀態」那一顆亮起對應顏色，其他一律中性。
-    // 四顆都上色的話，已收款那顆永遠是綠的，看起來像錢已經收到了。
-    const CUR_CLS = {
-      [PS.NONE]:'cur-none', [PS.CHECKING]:'cur-checking',
-      [PS.TOPUP]:'cur-topup', [PS.DONE]:'cur-done'
-    };
-    const statusBtns = [PS.NONE, PS.CHECKING, PS.TOPUP, PS.DONE].map(st=>{
-      const on = (g.payStatus === st);
-      const cls = 'mini-btn' + (on ? ' is-current ' + CUR_CLS[st] : '');
-      return '<button class="' + cls + '" data-act="pay" data-status="' + st + '"' + (on ? ' disabled' : '') + '>'
-        + (on ? '● ' : '') + (isEn() ? PS_META[st].en : st) + '</button>';
-    }).join('');
-
-    // ── 編輯表單 ──
-    const f = (label, key, val)=>
-      '<div><label>' + label + '</label><input data-edit="' + key + '" value="' + escapeHtml(val || '') + '"></div>';
-    const memEdit = members.map(m=>
-      '<div class="adm-edit-grid" data-member="' + m.index + '">'
-      + f(L('姓名','Name'), 'name', m.name)
-      + f(L('國籍','Country'), 'country', m.country)
-      + f('IG', 'ig', m.ig)
-      + '</div>').join('');
-
-    const editHtml = '<div class="adm-editor">'
-      + '<div class="adm-edit-grid">'
-      + f(L('姓名','Name'), 'name', g.name)
-      + f(L('國籍','Country'), 'country', g.country)
-      + f('IG', 'ig', g.ig)
-      + f(L('付款方式','Method'), 'paymethod', g.paymethod)
-      + f(L('桌次','Table'), 'seatNo', g.seatNo)
-      + '</div>'
-      + '<div><label>' + L('備註','Notes') + '</label><input data-edit="notes" value="' + escapeHtml(g.notes || '') + '"></div>'
-      + '<div class="adm-edit-grid">'
-      + f(L('同桌姓名','With (name)'), 'tableWithName', g.tableWithName)
-      + f(L('同桌IG','With (IG)'), 'tableWithIg', g.tableWithIg)
-      + f(L('同桌國籍','With (country)'), 'tableWithCountry', g.tableWithCountry)
-      + '</div>'
-      + '<div><label>' + L('後台備註（退款決定等，只有工作人員看得到）','Staff note') + '</label>'
-      + '<input data-edit="staffNote" value="' + escapeHtml(g.staffNote || '') + '"></div>'
-      + '<h5 style="margin-top:12px;">' + L('成員資料','Members') + '</h5>' + memEdit
-      + '<div class="adm-actions"><button class="mini-btn ok" data-act="save-edit">' + L('儲存修改','Save') + '</button>'
-      + '<button class="mini-btn" data-act="close-edit">' + L('取消','Discard') + '</button></div>'
-      + '</div>';
-
-    return '<div class="adm-card' + (g.allCancelled?' is-void':'') + (req?' has-req':'') + '" data-id="' + escapeHtml(g.regId) + '">'
-      + '<div class="adm-head">'
-        + '<span class="adm-id">' + escapeHtml(g.regId) + '</span>'
-        + '<span class="adm-name">' + countryTag(g.country) + ' ' + escapeHtml(g.name) + '</span>'
-        + (extra ? '<span class="adm-plus">+' + extra + '</span>' : '')
-        + '<span class="adm-spacer"></span>'
-        + (req ? '<span class="adm-req">⚠ ' + req + '</span>' : '')
-        + '<span class="st-badge ' + meta.cls + '">' + psText(g) + '</span>'
-        + '<span class="adm-caret">▶</span>'
-      + '</div>'
-      + '<div class="adm-sub">'
-        + '<span>' + L('應付','Due') + ' <b>NT$' + Number(g.due||0).toLocaleString() + '</b></span>'
-        + '<span>' + L('已回報','Reported') + ' <b>NT$' + Number(g.reportedSum||0).toLocaleString() + '</b></span>'
-        + '<span>' + escapeHtml(g.paymethod || '') + '</span>'
-        + '<span>' + L('出席','Attending') + ' <b>' + g.activeCount + '</b> ' + L('人','') + '</span>'
-        + (g.seatNo ? '<span>' + L('桌次','Table') + ' <b>' + escapeHtml(String(g.seatNo)) + '</b></span>' : '')
-        + (g.editCount ? '<span>' + L('已修改','Edited') + ' ' + g.editCount + ' ' + L('次','times') + '</span>' : '')
-      + '</div>'
-      + '<div class="adm-detail">'
-        + '<div class="adm-sec"><h5>' + L('成員','Members') + '</h5>' + memHtml + '</div>'
-        + '<div class="adm-sec"><h5>' + L('匯款回報','Transfer reports') + '</h5>' + payHtml + '</div>'
-        + '<div class="adm-sec"><h5>' + L('其他資料','Details') + '</h5><dl class="kv">'
-          + '<dt>IG</dt><dd>' + escapeHtml(g.ig || '—') + '</dd>'
-          + '<dt>' + L('同桌需求','Table request') + '</dt><dd>' + escapeHtml(g.tableWith || '—') + '</dd>'
-          + '<dt>' + L('備註','Notes') + '</dt><dd>' + escapeHtml(g.notes || '—') + '</dd>'
-          + '<dt>' + L('最後修改','Last edited') + '</dt><dd>' + escapeHtml(g.lastEdited || '—') + '</dd>'
-        + '</dl></div>'
-        + '<div class="adm-sec"><h5>' + L('款項狀態','Payment status') + '</h5>'
-          + '<div class="adm-actions">' + statusBtns + '</div></div>'
-        + '<div class="adm-actions"><button class="mini-btn" data-act="open-edit">✏️ ' + L('編輯資料','Edit') + '</button></div>'
-        + editHtml
-      + '</div></div>';
-  }
-
-  function renderAdminLog(){
-    const box = document.getElementById('admin-log-list');
-    if(adminLogs.length === 0){
-      box.innerHTML = '<div class="adm-empty">' + L('目前沒有異動紀錄','No changes recorded yet') + '</div>';
-      return;
-    }
-    box.innerHTML = adminLogs.map(x=>
-      '<div class="log-item">'
-      + '<div class="log-top">'
-        + '<span class="log-act">' + escapeHtml(x.action || '') + '</span>'
-        + '<span class="log-src">' + escapeHtml(x.source || '') + ' · ' + escapeHtml(x.operator || '') + '</span>'
-        + '<span class="adm-spacer"></span>'
-        + '<span class="log-time">' + escapeHtml(x.timestamp || '') + '</span>'
-      + '</div>'
-      + '<div class="log-sum"><b>' + escapeHtml(x.regId || '') + '</b> '
-        + escapeHtml(x.name || '') + (x.target ? '（' + escapeHtml(x.target) + '）' : '') + '<br>'
-        + escapeHtml(x.summary || '') + '</div>'
-      + '</div>').join('');
-  }
-
-  // ---- 卡片互動（事件委派：重繪時不用重新綁定每顆按鈕） ----
-  document.getElementById('admin-list').addEventListener('click', async (e)=>{
-    const card = e.target.closest('.adm-card');
-    if(!card) return;
-    const regId = card.dataset.id;
-
-    // 點標題列 = 展開／收合
-    if(e.target.closest('.adm-head')){
-      card.classList.toggle('is-open');
-      return;
-    }
-
-    const btn = e.target.closest('.mini-btn');
-    if(!btn) return;
-    const act = btn.dataset.act;
-
-    if(act === 'open-edit'){ card.querySelector('.adm-editor').classList.add('is-open'); return; }
-    if(act === 'close-edit'){ card.querySelector('.adm-editor').classList.remove('is-open'); return; }
-
-    let payload = null;
-
-    if(act === 'pay'){
-      const status = btn.dataset.status;
-      if(!confirm(L('確定把「' + regId + '」的款項狀態改成「' + status + '」？',
-                    'Change payment status of ' + regId + ' to "' + status + '"?'))) return;
-      payload = { type:'adminSetPayStatus', regId: regId, status: status };
-
-    } else if(act === 'approve' || act === 'reject'){
-      const approve = (act === 'approve');
-      if(!confirm(approve
-        ? L('核准這位的取消申請？\n他將不列入出席人數，應付金額會自動重算。', 'Approve this cancellation request?')
-        : L('駁回這位的取消申請？\n申請標記會被清除，維持出席。', 'Reject this cancellation request?'))) return;
-      const note = prompt(L('備註（選填，會留在後台備註欄）','Note (optional)'), '') || '';
-      payload = { type:'adminResolveCancel', memberIndex: btn.dataset.idx, approve: approve, note: note };
-
-    } else if(act === 'kick' || act === 'restore'){
-      const restore = (act === 'restore');
-      if(!confirm(restore
-        ? L('確定恢復這位的出席？應付金額會自動重算。', 'Restore this person?')
-        : L('確定直接取消這位？\n資料會保留，但不列入出席人數，應付金額會自動重算。', 'Cancel this person?'))) return;
-      const note = prompt(L('備註（選填）','Note (optional)'), '') || '';
-      payload = { type:'adminCancelPerson', memberIndex: btn.dataset.idx, restore: restore, note: note };
-
-    } else if(act === 'save-edit'){
-      const editor = card.querySelector('.adm-editor');
-      const fields = {};
-      editor.querySelectorAll(':scope > div > [data-edit], :scope > .adm-edit-grid > div > [data-edit]')
-        .forEach(el=>{ fields[el.dataset.edit] = el.value.trim(); });
-      const members = Array.from(editor.querySelectorAll('[data-member]')).map(row=>{
-        const o = { index: row.dataset.member };
-        row.querySelectorAll('[data-edit]').forEach(el=>{ o[el.dataset.edit] = el.value.trim(); });
-        return o;
-      });
-      payload = { type:'adminEdit', regId: regId, fields: fields, members: members };
-    }
-
-    if(!payload) return;
-    payload.password = adminPassword;
-
-    card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = true);
-    const r = await postToBackend(payload);
-    const body = r.body || {};
-    showWarnings(body);
-
-    if(body.result === 'success'){
-      applyAdminData(body.results || []);
-      showToast(isEn() ? '✅ Updated' : '✅ 已更新');
-      if(adminView === 'log') loadAdminLog();
-      else adminLogs = [];   // 讓下次切到紀錄分頁時重新抓
-    } else {
-      showToast(body.message || (isEn() ? '⚠️ Update failed' : '⚠️ 更新失敗'));
-      card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = false);
-    }
-  });
-
-  // 頁面載入後在背景抓可選的 IG 清單，抓不到也不影響報名（只是少了建議）
-  loadIgDirectory().catch(function(){});
-
-  // ---- countdown to the event ----
-  const EVENT_TIME = new Date('2026-10-30T19:00:00+08:00').getTime();
-  function updateCountdown(){
-    const cdDays = document.getElementById('cd-days');
-    if(!cdDays) return;
-    const diff = EVENT_TIME - Date.now();
-    if(diff <= 0){
-      document.getElementById('cd-days').textContent = '00';
-      document.getElementById('cd-hours').textContent = '00';
-      document.getElementById('cd-mins').textContent = '00';
-      document.getElementById('cd-secs').textContent = '00';
-      return;
-    }
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    document.getElementById('cd-days').textContent = String(d).padStart(2,'0');
-    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
-    document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
-    document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
-  }
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
 </script>
-
 </body>
 </html>
