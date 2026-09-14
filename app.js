@@ -150,7 +150,7 @@
       const txt = pickLang(I18N[key], lang);
       el.setAttribute('placeholder', txt !== null ? txt : el.getAttribute('data-zh-ph'));
     });
-    document.getElementById('lang-toggle-btn').textContent = '🌐 ' + LANG_LABEL[lang];
+    document.getElementById('lang-toggle-btn').innerHTML = '<span class="lang-emoji">🌐</span> ' + LANG_LABEL[lang];
     document.querySelectorAll('.lang-opt').forEach(function(b){
       b.classList.toggle('is-active', b.dataset.lang === lang);
     });
