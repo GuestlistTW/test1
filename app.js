@@ -206,7 +206,6 @@
   function setTab(name){
     tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
     panels.forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
-    window.scrollTo({top:0, behavior:'smooth'});
   }
   tabButtons.forEach(btn=>{
     btn.addEventListener('click', ()=> setTab(btn.dataset.tab));
@@ -1660,6 +1659,7 @@
         + (extra ? '<span class="adm-plus">+' + extra + '</span>' : '')
         + '<span class="adm-spacer"></span>'
         + (req ? '<span class="adm-req">⚠ ' + req + '</span>' : '')
+        + '<span class="adm-head-amount">NT$' + Number(g.due||0).toLocaleString() + '</span>'
         + '<span class="st-badge ' + meta.cls + '">' + psText(g) + '</span>'
         + '<span class="adm-caret">▶</span>'
       + '</div>'

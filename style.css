@@ -49,9 +49,9 @@
   }
   .lang-btn{
     flex:0 0 auto;
-    padding:11px 20px; border-radius:999px; border:1px solid var(--line);
+    padding:7px 14px; border-radius:999px; border:1px solid var(--line);
     background:var(--bg-surface); color:var(--text-light);
-    font-family:'Inter'; font-weight:800; font-size:0.95rem; cursor:pointer;
+    font-family:'Inter'; font-weight:700; font-size:0.82rem; cursor:pointer;
   }
   .lang-btn:hover{border-color:var(--purple);}
   .lang-picker{position:relative;}
@@ -69,7 +69,7 @@
   .lang-opt:hover{background:var(--purple); color:#fff;}
   .lang-opt.is-active{font-weight:700; color:var(--yellow);}
   .small-admin{
-    padding:11px 20px !important; font-size:0.95rem !important; font-weight:800 !important;
+    padding:7px 14px !important; font-size:0.82rem !important; font-weight:700 !important;
   }
 
   .banner{
@@ -87,13 +87,14 @@
   .banner-overlay{
     position:relative; z-index:2;
     width:100%;
-    padding:18px 24px 20px;
-    background:linear-gradient(0deg, rgba(15,11,32,0.8) 0%, rgba(15,11,32,0) 60%);
+    padding:22px 24px 20px;
+    background:linear-gradient(0deg, rgba(12,8,26,0.92) 0%, rgba(12,8,26,0.55) 45%, rgba(12,8,26,0) 100%);
   }
   .banner-meta{
     display:flex; flex-wrap:wrap; gap:18px;
     justify-content:center; text-align:center;
-    font-size:0.9rem; color:var(--text-light);
+    font-size:0.9rem; color:#fff; font-weight:600;
+    text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 14px rgba(0,0,0,0.8);
   }
   .banner-meta span{display:flex; align-items:center; gap:6px;}
 
@@ -779,4 +780,18 @@
   .adm-due-amount{
     font-family:'Baloo 2'; font-weight:700; font-size:1.05rem;
     display:inline-flex; align-items:center; margin-right:6px; color:var(--text-light);
+  }
+  .adm-head-amount{
+    font-family:'Baloo 2'; font-weight:600; font-size:0.78rem;
+    color:var(--text-muted); white-space:nowrap;
+  }
+
+  /* 防止 iOS 點選欄位時自動放大：表單控制項字級需 >= 16px */
+  .field input, .field select, .field textarea,
+  .guest-row-fields input,
+  .cpick .cpick-value, .cpick .cpick-search,
+  .guest-row-fields .cpick .cpick-value, .guest-row-fields .cpick .cpick-search,
+  #lk-query, .admin-gate input,
+  .adm-editor input, .adm-editor textarea{
+    font-size:16px;
   }
