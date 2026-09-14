@@ -397,7 +397,7 @@
   document.getElementById('line-modal-ok').addEventListener('click', closeLineModal);
 
   // ---- Backend Communication ----
-  const REQUEST_TIMEOUT = 12000;
+  const REQUEST_TIMEOUT = 25000;
 
   function withTimeout(promise, ms){
     return new Promise((resolve, reject)=>{
@@ -466,7 +466,9 @@
       return { ok:true, via:'jsonp', body:body };
     }catch(err2){
       console.error('JSONP 也失敗：', err2);
-      return { ok:false, reason:'network', error:String(err2) };
+      const msg = String(err2 && err2.message ? err2.message : err2);
+      const reason = /timeout/i.test(msg) ? 'timeout' : 'network';
+      return { ok:false, reason:reason, error:msg };
     }
   }
 
@@ -1429,11 +1431,21 @@
     showWarnings(body);
     if(body.result === 'success'){
       applyAdminData(body.results || []);
+    } else if(!r.ok){
+      const reasonTxt = (r.reason === 'timeout')
+        ? (isEn()
+            ? 'The server took too long to respond (large data or a cold start right after redeploying). Press "Refresh Data" again — the second try is usually much faster.'
+            : '伺服器回應逾時：可能是資料較多，或剛重新部署造成「冷啟動」。請再按一次「更新資料」，通常第二次就會快很多。這不是網址或權限問題（登入已經成功，代表連線正常）。')
+        : (isEn()
+            ? 'The request did not complete (network, or an in-app browser such as LINE/Instagram blocking it). Try opening the page in a normal browser.'
+            : '請求沒有完成：可能是網路問題，或你正用 LINE／Instagram 內建瀏覽器（會擋掉部分連線）。請改用系統瀏覽器（Safari／Chrome）再試一次。');
+      document.getElementById('admin-list').innerHTML =
+        '<div class="adm-empty">' + escapeHtml(reasonTxt) + '</div>';
     } else {
       document.getElementById('admin-list').innerHTML =
         '<div class="adm-empty">' + escapeHtml(body.message || (isEn()
-          ? 'Could not load data — check that GAS_URL is correct and the deployment allows access from "Anyone".'
-          : '讀取失敗。請確認 GAS_URL 網址正確，且部署時「誰可以存取」有設為「任何人」。')) + '</div>';
+          ? 'Could not load data.'
+          : '讀取失敗，後端回報了錯誤，請看上方黃色警告或試算表的「異動紀錄」。')) + '</div>';
     }
     btn.disabled = false;
   }
