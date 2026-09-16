@@ -1570,6 +1570,17 @@
       (isEn() ? 'Last updated: ' : '最後更新：') + t;
   }
 
+  // 用目前的本機資料重畫統計與名單（不碰後端）
+  function refreshAdminView(){
+    populateAdminCountryFilter();
+    renderAdminStats();
+    renderAdminList();
+    const t = new Date().toLocaleTimeString(isEn() ? 'en-US' : 'zh-TW',
+      { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    document.getElementById('admin-last-updated').textContent =
+      (isEn() ? 'Last updated: ' : '最後更新：') + t;
+  }
+
   function renderAdminStats(){
     const active = adminData.filter(g=> !g.allCancelled);
     const people = active.reduce((s,g)=> s + (Number(g.activeCount)||0), 0);
@@ -1846,7 +1857,19 @@
     showWarnings(body);
 
     if(body.result === 'success'){
-      applyAdminData(body.results || []);
+      // 後端現在只回傳被改動的那一組（約 1KB），不再回傳整份名單（約 231KB）。
+      // 這裡就地把本機資料中的該組換掉再重畫，畫面反應幾乎是立即的。
+      if(Array.isArray(body.results)){
+        applyAdminData(body.results);          // 舊版後端相容
+      } else if(body.removed && body.regId){
+        adminData = adminData.filter(g=> g.regId !== body.regId);
+        refreshAdminView();
+      } else if(body.group){
+        const idx = adminData.findIndex(g=> g.regId === body.group.regId);
+        if(idx >= 0) adminData[idx] = body.group;
+        else adminData.unshift(body.group);
+        refreshAdminView();
+      }
       showToast(isEn() ? '✅ Updated' : '✅ 已更新');
       if(adminView === 'log') loadAdminLog();
       else adminLogs = [];
