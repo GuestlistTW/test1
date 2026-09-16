@@ -1619,7 +1619,7 @@
       if(m.ig) infoParts.push(m.ig);
       const infoText = infoParts.filter(Boolean).join('　·　');
       return '<div class="mem-row' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
-        + '<span class="mem-info" data-mem-info="' + escapeHtml(infoText) + '">' + escapeHtml(infoText) + '</span>'
+        + '<span class="mem-info">' + escapeHtml(infoText) + '</span>'
         + '<span class="mem-right">' + right + '</span>'
         + (m.cancelReason ? '<div style="width:100%; font-size:0.74rem; color:var(--orange);">' + escapeHtml(m.cancelReason) + '</div>' : '')
         + (m.staffNote ? '<div style="width:100%; font-size:0.74rem; color:var(--text-muted);">' + escapeHtml(m.staffNote) + '</div>' : '')
@@ -1744,7 +1744,7 @@
     const already = (memPopoverForEl === el);
     closeMemPopover();
     if(already) return;
-    const text = el.dataset.memInfo || el.textContent;
+    const text = el.textContent;
     const pop = document.createElement('div');
     pop.className = 'mem-info-pop';
     pop.textContent = text;
