@@ -1615,12 +1615,11 @@
       } else {
         right = '<button class="mini-btn danger" data-act="kick" data-idx="' + m.index + '">' + L('取消','Cancel') + '</button>';
       }
+      const infoParts = [ m.role, (countryFlagOnly(m.country) + ' ' + m.name).trim() ];
+      if(m.ig) infoParts.push(m.ig);
+      const infoText = infoParts.filter(Boolean).join('　·　');
       return '<div class="mem-row' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
-        + '<div class="mem-left">'
-          + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
-          + '<span class="mem-name">' + countryFlagOnly(m.country) + ' ' + escapeHtml(m.name) + '</span>'
-          + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
-        + '</div>'
+        + '<span class="mem-info">' + escapeHtml(infoText) + '</span>'
         + '<span class="mem-right">' + right + '</span>'
         + (m.cancelReason ? '<div style="width:100%; font-size:0.74rem; color:var(--orange);">' + escapeHtml(m.cancelReason) + '</div>' : '')
         + (m.staffNote ? '<div style="width:100%; font-size:0.74rem; color:var(--text-muted);">' + escapeHtml(m.staffNote) + '</div>' : '')
@@ -1745,13 +1744,10 @@
     const already = (memPopoverForEl === el);
     closeMemPopover();
     if(already) return;
-    const roleEl = el.querySelector('.mem-role');
-    const nameEl = el.querySelector('.mem-name');
-    const igEl = el.querySelector('.mem-ig');
-    const lines = [roleEl, nameEl, igEl].filter(Boolean).map(x=> x.textContent).filter(Boolean);
+    const text = el.textContent;
     const pop = document.createElement('div');
     pop.className = 'mem-info-pop';
-    pop.innerHTML = lines.map(t=> '<div>' + escapeHtml(t) + '</div>').join('');
+    pop.textContent = text;
     document.body.appendChild(pop);
     const r = el.getBoundingClientRect();
     const pr = pop.getBoundingClientRect();
@@ -1780,7 +1776,7 @@
       return;
     }
 
-    const infoEl = e.target.closest('.mem-left');
+    const infoEl = e.target.closest('.mem-info');
     if(infoEl){
       showMemInfoPopover(infoEl);
       return;
