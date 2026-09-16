@@ -1613,13 +1613,14 @@
         right = '<span class="st-badge st-void">' + L('已取消','Cancelled') + '</span>'
               + '<button class="mini-btn" data-act="restore" data-idx="' + m.index + '">' + L('恢復出席','Restore') + '</button>';
       } else {
-        right = '<button class="mini-btn danger" data-act="kick" data-idx="' + m.index + '">' + L('取消這位','Cancel') + '</button>';
+        right = '<button class="mini-btn danger" data-act="kick" data-idx="' + m.index + '">' + L('取消','Cancel') + '</button>';
       }
+      const infoParts = [ m.role, (countryFlagOnly(m.country) + ' ' + m.name).trim() ];
+      if(m.ig) infoParts.push(m.ig);
+      const infoText = infoParts.filter(Boolean).join('　·　');
       return '<div class="mem-row' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
-        + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
-        + '<span class="mem-name">' + countryFlagOnly(m.country) + ' ' + escapeHtml(m.name) + '</span>'
-        + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
-        + '<span class="adm-spacer"></span>' + right
+        + '<span class="mem-info" data-mem-info="' + escapeHtml(infoText) + '">' + escapeHtml(infoText) + '</span>'
+        + '<span class="mem-right">' + right + '</span>'
         + (m.cancelReason ? '<div style="width:100%; font-size:0.74rem; color:var(--orange);">' + escapeHtml(m.cancelReason) + '</div>' : '')
         + (m.staffNote ? '<div style="width:100%; font-size:0.74rem; color:var(--text-muted);">' + escapeHtml(m.staffNote) + '</div>' : '')
         + '</div>';
@@ -1728,6 +1729,43 @@
       + '</div>').join('');
   }
 
+  // ---- 成員資訊小框（點擊截斷文字時顯示完整內容）----
+  let memPopoverEl = null;
+  let memPopoverForEl = null;
+  function closeMemPopover(){
+    if(memPopoverEl){ memPopoverEl.remove(); memPopoverEl = null; memPopoverForEl = null; }
+    document.removeEventListener('click', onDocClickCloseMemPopover, true);
+    window.removeEventListener('scroll', closeMemPopover, true);
+  }
+  function onDocClickCloseMemPopover(e){
+    if(memPopoverEl && !memPopoverEl.contains(e.target)) closeMemPopover();
+  }
+  function showMemInfoPopover(el){
+    const already = (memPopoverForEl === el);
+    closeMemPopover();
+    if(already) return;
+    const text = el.dataset.memInfo || el.textContent;
+    const pop = document.createElement('div');
+    pop.className = 'mem-info-pop';
+    pop.textContent = text;
+    document.body.appendChild(pop);
+    const r = el.getBoundingClientRect();
+    const pr = pop.getBoundingClientRect();
+    let top = r.bottom + 6;
+    let left = r.left;
+    if(left + pr.width > window.innerWidth - 8) left = window.innerWidth - pr.width - 8;
+    if(left < 8) left = 8;
+    if(top + pr.height > window.innerHeight - 8) top = r.top - pr.height - 6;
+    pop.style.top = top + 'px';
+    pop.style.left = left + 'px';
+    memPopoverEl = pop;
+    memPopoverForEl = el;
+    setTimeout(function(){
+      document.addEventListener('click', onDocClickCloseMemPopover, true);
+      window.addEventListener('scroll', closeMemPopover, true);
+    }, 0);
+  }
+
   document.getElementById('admin-list').addEventListener('click', async (e)=>{
     const card = e.target.closest('.adm-card');
     if(!card) return;
@@ -1735,6 +1773,12 @@
 
     if(e.target.closest('.adm-head')){
       card.classList.toggle('is-open');
+      return;
+    }
+
+    const infoEl = e.target.closest('.mem-info');
+    if(infoEl){
+      showMemInfoPopover(infoEl);
       return;
     }
 
