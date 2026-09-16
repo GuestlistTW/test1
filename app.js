@@ -397,7 +397,13 @@
   document.getElementById('line-modal-ok').addEventListener('click', closeLineModal);
 
   // ---- Backend Communication ----
-  const REQUEST_TIMEOUT = 25000;
+  // 兩段逾時是串接的（POST 失敗才換 JSONP），所以使用者最久要等
+  // POST_TIMEOUT + JSONP_TIMEOUT。原本兩段都設 25 秒 = 最長要等 50 秒才看到錯誤訊息。
+  // POST 這段縮短：它在正常網路下 2 秒內就會回來，等到 25 秒幾乎必定是被擋掉了，
+  // 早點放棄改走 JSONP 反而更快拿到資料。
+  const POST_TIMEOUT  = 8000;
+  const JSONP_TIMEOUT = 20000;
+  const REQUEST_TIMEOUT = JSONP_TIMEOUT;   // 沿用舊名稱，jsonpRequest 仍在用
 
   function withTimeout(promise, ms){
     return new Promise((resolve, reject)=>{
@@ -448,17 +454,25 @@
   async function postToBackend(payload){
     if(!GAS_URL) return { ok:false, reason:'no-url' };
 
+    // AbortController：逾時後真的把請求中斷。
+    // 少了這個，逾時的 fetch 會繼續在背景跑並佔著後端執行資源，
+    // 等於接下來的 JSONP 要跟自己前一個沒死透的請求搶資源。
+    const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const killer = ctrl ? setTimeout(()=>{ try{ ctrl.abort(); }catch(e){} }, POST_TIMEOUT) : null;
     try{
       const res = await withTimeout(fetch(GAS_URL, {
         method:'POST',
         headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      }), REQUEST_TIMEOUT);
+        body: JSON.stringify(payload),
+        signal: ctrl ? ctrl.signal : undefined
+      }), POST_TIMEOUT);
       const raw = await res.text();
       const body = JSON.parse(raw);
       return { ok:true, via:'post', status:res.status, body:body };
     }catch(err){
       console.warn('POST 失敗，改走 JSONP：', err);
+    }finally{
+      if(killer) clearTimeout(killer);
     }
 
     try{
@@ -680,15 +694,34 @@
       amount: Number(document.getElementById('pay-amount').value) || 0,
       date: document.getElementById('pay-date').value
     };
-    await postToBackend(payload);
+    const payRes = await postToBackend(payload);
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = T('pay_submit');
+
+    // 匯款回報現在是直接更新該組報名資料，電話對不上就無處可寫，
+    // 後端會回報錯誤。這種情況一定要讓使用者知道，不能顯示成功後把資料丟掉。
+    const payBody = payRes.body || {};
+    if(!payRes.ok || payBody.result !== 'success'){
+      const errEl = document.getElementById('payment-error');
+      const text = !payRes.ok
+        ? (isEn() ? 'Could not reach the server — please check your connection and try again.'
+                  : '連線失敗，請確認網路後再送出一次')
+        : (payBody.message || (isEn() ? 'Submission failed.' : '回報失敗，請確認電話是否與報名時填寫的一致'));
+      if(errEl){
+        errEl.textContent = text;
+        errEl.style.display = 'block';
+        setTimeout(()=>{ errEl.style.display = 'none'; }, 8000);
+      } else {
+        showToast(text);
+      }
+      return;
+    }
 
     const msg = document.getElementById('payment-msg');
     msg.classList.add('show');
     setTimeout(()=> msg.classList.remove('show'), 6000);
     document.getElementById('payment-form').reset();
-
-    submitBtn.disabled = false;
-    submitBtn.textContent = T('pay_submit');
   });
 
   // ===================== Country Pickers Data =====================
@@ -1031,11 +1064,21 @@
     return String(v || '').trim().toLowerCase().replace(/^@/, '').replace(/[._\s-]/g, '');
   }
 
-  async function loadIgDirectory(){
-    const r = await postToBackend({ type:'igList' });
-    const body = r.body || {};
-    if(body.result !== 'success') return;
-    igDirectory = body.igs || [];
+  // 延後載入：只有使用者真的用到 IG 建議欄位時才去要這份清單。
+  // 原本是一開頁就無條件打一次，但網頁應用程式的執行身分是擁有者，
+  // 所有訪客的請求都排在同一個帳號底下輪流執行 ——
+  // 人一多，這支「沒人要用也照打」的請求就會把後台登入卡在隊伍後面。
+  let igLoaded = false;
+  let igLoading = null;
+  function loadIgDirectory(){
+    if(igLoaded) return Promise.resolve();
+    if(igLoading) return igLoading;
+    igLoading = postToBackend({ type:'igList' }).then(function(r){
+      const body = r.body || {};
+      if(body.result === 'success'){ igDirectory = body.igs || []; igLoaded = true; }
+      igLoading = null;
+    }).catch(function(){ igLoading = null; });
+    return igLoading;
   }
 
   function filterIgs(input){
@@ -1097,8 +1140,13 @@
       close();
     }
 
-    input.addEventListener('focus', render);
-    input.addEventListener('input', function(){ activeIdx = -1; render(); });
+    // 使用者第一次碰到這個欄位時才去載入 IG 清單，載完再重畫一次
+    function ensureIgs(){
+      if(igLoaded) return;
+      loadIgDirectory().then(function(){ if(document.activeElement === input) render(); });
+    }
+    input.addEventListener('focus', function(){ ensureIgs(); render(); });
+    input.addEventListener('input', function(){ ensureIgs(); activeIdx = -1; render(); });
 
     input.addEventListener('keydown', function(e){
       if(box.hidden || current.length === 0) return;
@@ -1384,7 +1432,9 @@
     btn.textContent = isEn() ? 'Signing in…' : '登入中…';
     errEl.style.display = 'none';
 
-    const r = await postToBackend({ type:'adminLogin', password: pw });
+    // 一次要回「驗證結果 + 名單」，少一趟往返。
+    // 分兩次呼叫等於兩次冷啟動風險相加，這是進後台最主要的等待來源。
+    const r = await postToBackend({ type:'adminBootstrap', password: pw });
     const body = r.body || {};
 
     btn.disabled = false;
@@ -1413,10 +1463,17 @@
 
     document.getElementById('admin-gate').style.display = 'none';
     document.getElementById('admin-content').style.display = 'block';
-    document.getElementById('admin-list').innerHTML =
-      '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
     showToast((isEn() ? 'Welcome, ' : '歡迎，') + adminOperator);
-    loadAdminList();
+
+    // 名單已經跟著登入一起回來了，直接畫，不用再打一次後端
+    if(Array.isArray(body.results)){
+      showWarnings(body);
+      applyAdminData(body.results);
+    } else {
+      document.getElementById('admin-list').innerHTML =
+        '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
+      loadAdminList();
+    }
   }
   document.getElementById('admin-unlock-btn').addEventListener('click', tryUnlockAdmin);
   document.getElementById('admin-pw').addEventListener('keydown', (e)=>{
@@ -1799,7 +1856,7 @@
     }
   });
 
-  loadIgDirectory().catch(function(){});
+  // （IG 清單改為使用者聚焦該欄位時才載入，見 loadIgDirectory）
 
   // ---- Countdown ----
   const EVENT_TIME = new Date('2026-10-30T19:00:00+08:00').getTime();
