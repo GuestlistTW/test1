@@ -395,6 +395,19 @@
         <button type="button" class="adm-viewtab" data-view="log" data-i18n="admin_view_log">🕓 異動紀錄</button>
       </div>
 
+      <details class="admin-logic admin-logic-top">
+        <summary data-i18n="admin_logic_title">操作說明</summary>
+        <ol>
+          <li data-i18n="admin_logic_1">款項狀態四種：<b>未收款</b> → <b>帳款確認中</b>（使用者回報匯款後自動變成這個）→ <b>已收款</b>，另有 <b>待補款</b>（報名後又加人）</li>
+          <li data-i18n="admin_logic_2">系統不比對金額。你在「匯款回報」分頁看到錢確實進來，直接按「已收款」即可，金額對不對由你判斷</li>
+          <li data-i18n="admin_logic_3">出席狀態（已報名／已取消）每個人各自獨立，主揪與攜伴都能單獨取消；取消後有效人數與應付金額會自動重算</li>
+          <li data-i18n="admin_logic_4">主揪取消後，這組仍然掛在他原本的電話底下，其他人照常用同一支電話查詢</li>
+          <li data-i18n="admin_logic_5">已收款的組別若事後加人，款項狀態會自動變成「待補款」，補款金額 = 新增人數 × NT$1,200</li>
+          <li data-i18n="admin_logic_6">退不退款、退多少由你決定，系統不會自動處理；決定後可寫在該組的「後台備註」留底</li>
+          <li data-i18n="admin_logic_7">後台不顯示完整電話。需要聯絡對方時請直接到試算表查看</li>
+        </ol>
+      </details>
+
       <div id="admin-view-list">
         <div class="admin-stats">
           <div class="stat-box"><div class="stat-num" id="stat-groups">0</div><div class="stat-label" data-i18n="stat_groups">有效報名組數</div></div>
@@ -442,18 +455,6 @@
         </div>
       </div>
 
-      <details class="admin-logic" style="margin-top:22px;">
-        <summary data-i18n="admin_logic_title">操作說明</summary>
-        <ol>
-          <li data-i18n="admin_logic_1">款項狀態四種：<b>未收款</b> → <b>帳款確認中</b>（使用者回報匯款後自動變成這個）→ <b>已收款</b>，另有 <b>待補款</b>（報名後又加人）</li>
-          <li data-i18n="admin_logic_2">系統不比對金額。你在「匯款回報」分頁看到錢確實進來，直接按「已收款」即可，金額對不對由你判斷</li>
-          <li data-i18n="admin_logic_3">出席狀態（已報名／已取消）每個人各自獨立，主揪與攜伴都能單獨取消；取消後有效人數與應付金額會自動重算</li>
-          <li data-i18n="admin_logic_4">主揪取消後，這組仍然掛在他原本的電話底下，其他人照常用同一支電話查詢</li>
-          <li data-i18n="admin_logic_5">已收款的組別若事後加人，款項狀態會自動變成「待補款」，補款金額 = 新增人數 × NT$1,200</li>
-          <li data-i18n="admin_logic_6">退不退款、退多少由你決定，系統不會自動處理；決定後可寫在該組的「後台備註」留底</li>
-          <li data-i18n="admin_logic_7">後台不顯示完整電話。需要聯絡對方時請直接到試算表查看</li>
-        </ol>
-      </details>
     </div>
   </section>
 

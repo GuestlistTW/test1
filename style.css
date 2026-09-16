@@ -418,6 +418,21 @@
   .admin-logic ol{margin:0; padding-left:18px;}
   .admin-logic li{margin-bottom:6px; color:var(--text-light);}
 
+  /* 操作說明移到清單上方，收合時維持低調、不佔版面 */
+  .admin-logic-top{
+    background:transparent; border:none; border-radius:0;
+    padding:0; margin-bottom:12px; font-size:0.82rem;
+  }
+  .admin-logic-top summary{
+    font-family:'Inter'; font-size:0.78rem; font-weight:600;
+    color:var(--text-muted); opacity:0.75;
+  }
+  .admin-logic-top summary:hover{opacity:1; color:var(--text-light);}
+  .admin-logic-top[open]{
+    background:var(--bg-surface); border:1px solid var(--line);
+    border-radius:var(--radius); padding:14px 16px;
+  }
+
   footer{
     border-top:1px solid var(--line); margin-top:40px; padding:30px 20px;
     text-align:center; color:var(--text-muted); font-size:0.85rem;
@@ -663,7 +678,7 @@
 
   .adm-list{display:flex; flex-direction:column; gap:5px;}
   .adm-card{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:10px;
+    background:var(--bg-surface); border:1px solid var(--line); border-radius:14px;
     overflow:hidden; transition:border-color .2s;
   }
   .adm-card.is-open{border-color:var(--purple);}
@@ -708,22 +723,33 @@
   }
   .mem-row.is-cancelled{opacity:0.5;}
   .mem-row.is-pending{border-color:var(--orange);}
+  .mem-left{
+    flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:8px;
+    overflow:hidden; cursor:pointer;
+  }
+  .mem-right{flex:0 0 auto; display:flex; align-items:center; gap:6px; white-space:nowrap;}
   .mem-role{
     font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:6px;
     background:var(--bg-surface-2); color:var(--text-muted); border:1px solid var(--line);
   }
   .mem-name{font-weight:600; font-size:0.88rem;}
   .mem-ig{font-size:0.76rem; color:var(--text-muted);}
-  .mem-info{
-    flex:1 1 auto; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
-    font-size:0.82rem; font-weight:600; cursor:pointer;
+  .mem-left .mem-role{flex:0 0 auto;}
+  .mem-left .mem-name,
+  .mem-left .mem-ig{
+    flex:0 1 auto; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
   }
-  .mem-right{flex:0 0 auto; display:flex; align-items:center; gap:6px; white-space:nowrap;}
-  .mem-info-pop{
-    position:fixed; z-index:999; max-width:280px; background:var(--bg-surface);
-    border:1px solid var(--purple); border-radius:10px; padding:8px 12px;
-    font-size:0.82rem; color:var(--text-light); line-height:1.5; white-space:normal;
-    word-break:break-word; box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  /* 輕點左側 → 展開成小框顯示完整資訊 */
+  .mem-row.is-expanded{align-items:flex-start;}
+  .mem-row.is-expanded .mem-left{
+    flex-wrap:wrap; overflow:visible; gap:6px;
+    background:var(--bg-surface-2); border:1px solid var(--purple);
+    border-radius:8px; padding:7px 9px;
+  }
+  .mem-row.is-expanded .mem-name,
+  .mem-row.is-expanded .mem-ig{
+    overflow:visible; white-space:normal; word-break:break-word; text-overflow:clip;
+    flex:1 1 100%;
   }
   .kv{display:grid; grid-template-columns:auto 1fr; gap:5px 14px; font-size:0.82rem;}
   .kv dt{color:var(--text-muted); white-space:nowrap;}
