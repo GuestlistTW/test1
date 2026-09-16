@@ -17,7 +17,7 @@
     notice_2:{en:'Only non-alcoholic drinks will be provided on-site; you\'re welcome to bring your own alcohol', ja:'会場ではノンアルコール飲料のみご用意しております。お酒はお持ち込みいただけます', ko:'현장에서는 무알코올 음료만 제공됩니다. 주류는 각자 가져오실 수 있습니다'},
     notice_3:{en:'If you can\'t make it on the day, please find your own replacement — no refunds', ja:'当日やむを得ずご欠席の場合は、代わりの方をご自身でお探しください。返金はいたしかねます', ko:'당일 부득이하게 참석하지 못하실 경우 대체 참가자를 직접 구해 주세요. 환불은 불가합니다'},
     notice_4:{en:'Guests bringing a plus-one must register and pay together, and will be seated at the same table', ja:'同伴者がいる場合は、お申込みとお支払いをまとめて行っていただき、同じテーブルにご案内します', ko:'동반자와 함께 한 번에 신청 및 결제를 완료해 주세요. 같은 테이블로 안내해 드립니다'},
-    notice_6:{en:'For table requests, please provide the person\'s name and IG handle — unclear details may not be accommodated', ja:'同席のご希望は、お相手のお名前と Instagram アカウントをご記入ください。情報が不明確な場合はご希望に添えないことがあります', ko:'동석 희망은 상대방의 이름과 Instagram 계정을 적어 주세요. 정보가 불명확할 경우 반영이 어려울 수 있습니다'},
+    notice_6:{en:'Your own guests are automatically seated with you — no need to list them. Use "Join another group\'s table" only if you want to sit with friends who registered separately, and give their name and IG; unclear details may not be accommodated', ja:'ご同行の方は自動的に同じテーブルになりますので、記入不要です。別々にお申し込みされたお友達と相席をご希望の場合のみ「他のグループとの相席」にお相手のお名前と Instagram アカウントをご記入ください。情報が不明確な場合はご希望に添えないことがあります', ko:'동행하시는 분은 자동으로 같은 테이블에 배정되므로 따로 적지 않으셔도 됩니다. 따로 신청한 친구와 합석을 원하시는 경우에만 "다른 그룹과 합석"에 상대방의 이름과 Instagram 계정을 적어 주세요. 정보가 불명확할 경우 반영이 어려울 수 있습니다'},
     notice_7:{en:'Please arrive before the event starts to help keep check-in smooth', ja:'会場の混雑を避けるため、開始時刻までにご入場ください', ko:'현장 혼잡을 피하기 위해 시작 시각 전까지 입장해 주세요'},
     notice_8:{en:'Please treat staff and other guests with respect — the organizer reserves the right to remove anyone behaving inappropriately', ja:'スタッフや他のお客様への配慮をお願いします。不適切な行為があった場合、主催者はご退場をお願いすることがあります', ko:'스태프와 다른 참가자를 존중해 주세요. 부적절한 행위가 있을 경우 주최 측이 퇴장을 요청할 수 있습니다'},
     notice_9:{en:'Photography may take place during the event — let staff know at check-in if you\'d prefer not to be photographed', ja:'当日は写真・動画の撮影を行う場合があります。写り込みを避けたい方は受付時にスタッフへお申し出ください', ko:'당일 사진 및 영상 촬영이 있을 수 있습니다. 사진이나 영상에 나오기를 원하지 않으시면 접수 시 스태프에게 말씀해 주세요'},
@@ -33,14 +33,14 @@
     guest_add_btn:{en:'+ Add plus-one', ja:'＋ 同伴者を追加', ko:'＋ 동반자 추가'},
     subtotal_label:{en:'Amount Due (Subtotal)', ja:'お支払い金額', ko:'결제 금액'},
     field_notes:{en:'Dietary restrictions or other notes (optional)', ja:'食物アレルギー・食事上の制限、その他ご要望（任意）', ko:'식사 제한 및 기타 요청 (선택)'},
-    field_tablewith:{en:'Table request (optional)', ja:'同席のご希望（任意）', ko:'동석 희망 (선택)'},
+    field_tablewith:{en:'Join another group\'s table (optional)', ja:'他のグループとの相席（任意）', ko:'다른 그룹과 합석 (선택)'},
     field_tablewith_name_ph:{en:'Name', ja:'お名前', ko:'이름'}, field_tablewith_ig_ph:{en:'IG', ja:'IG', ko:'IG'},
     time_value:{en:'Fri, Oct 30 · 7:00 PM', ja:'2026年10月30日（金）19:00', ko:'2026년 10월 30일(금) 19:00'},
     tablewith_country_ph:{en:'Country', ja:'国籍', ko:'국적'},
     tablewith_ig_required:{en:'Please also fill in that person\'s IG handle so we can identify them',
       ja:'ご本人を特定するため、お相手の Instagram アカウントもご記入ください',
       ko:'해당 인원을 확인할 수 있도록 상대방의 Instagram 계정도 입력해 주세요'},
-    field_tablewith_hint:{en:'※ Please give the other person\'s name and IG handle to avoid mix-ups with same names/nicknames — unclear info may not be accommodated', ja:'※同姓同名やニックネームの取り違えを防ぐため、お相手のお名前と Instagram アカウントを必ずご記入ください。情報が不明確な場合はご希望に添えかねます', ko:'※동명이인이나 닉네임 혼동을 막기 위해 상대방의 이름과 Instagram 계정을 반드시 적어 주세요. 정보가 불명확하면 반영이 어렵습니다'},
+    field_tablewith_hint:{en:'You and your guests are already seated together — no need to list them here. Use this only to sit with friends who registered separately: give their name and IG so we don\'t mix up similar names. Unclear info may not be accommodated', ja:'ご本人とご同行の方は元々同じテーブルですので、こちらへの記入は不要です。別々にお申し込みされたお友達と相席をご希望の場合のみ、同姓同名の取り違えを防ぐためお相手のお名前と Instagram アカウントをご記入ください。情報が不明確な場合はご希望に添えかねます', ko:'본인과 동행하시는 분은 원래 같은 테이블에 앉으므로 여기에 적지 않으셔도 됩니다. 따로 신청한 친구와 합석을 원하시는 경우에만, 동명이인 혼동을 막기 위해 상대방의 이름과 Instagram 계정을 적어 주세요. 정보가 불명확하면 반영이 어렵습니다'},
     paymethod_label:{en:'Payment Method', ja:'お支払い方法', ko:'결제 방법'}, paymethod_online:{en:'Pay Online', ja:'事前振込', ko:'사전 계좌이체'}, paymethod_onsite:{en:'Pay On-site', ja:'当日現地払い', ko:'현장 결제'},
     paymethod_warn:{en:'On-site payment is not available for guests in Taiwan', ja:'台湾在住の方は現地払いをご利用いただけません', ko:'대만에 계신 분은 현장 결제를 이용하실 수 없습니다'},
     notice_recap_summary:{en:'📋 Review the notes again', ja:'📋 注意事項をもう一度確認する', ko:'📋 유의사항 다시 보기'},
@@ -1724,9 +1724,9 @@
       + '</div>'
       + '<div><label>' + L('備註','Notes') + '</label><input data-edit="notes" value="' + escapeHtml(g.notes || '') + '"></div>'
       + '<div class="adm-edit-grid">'
-      + f(L('同桌姓名','With (name)'), 'tableWithName', g.tableWithName)
-      + f(L('同桌IG','With (IG)'), 'tableWithIg', g.tableWithIg)
-      + f(L('同桌國籍','With (country)'), 'tableWithCountry', g.tableWithCountry)
+      + f(L('併桌姓名','With (name)'), 'tableWithName', g.tableWithName)
+      + f(L('併桌IG','With (IG)'), 'tableWithIg', g.tableWithIg)
+      + f(L('併桌國籍','With (country)'), 'tableWithCountry', g.tableWithCountry)
       + '</div>'
       + '<div><label>' + L('後台備註（退款決定等，只有工作人員看得到）','Staff note') + '</label>'
       + '<input data-edit="staffNote" value="' + escapeHtml(g.staffNote || '') + '"></div>'
@@ -1758,14 +1758,12 @@
         + '<div class="adm-sec"><h5>' + L('匯款回報','Transfer reports') + '</h5>' + payHtml + '</div>'
         + '<div class="adm-sec"><h5>' + L('其他資料','Details') + '</h5><dl class="kv">'
           + '<dt>IG</dt><dd>' + escapeHtml(g.ig || '—') + '</dd>'
-          + '<dt>' + L('同桌需求','Table request') + '</dt><dd>' + escapeHtml(g.tableWith || '—') + '</dd>'
+          + '<dt>' + L('併桌對象','Join table') + '</dt><dd>' + escapeHtml(g.tableWith || '—') + '</dd>'
           + '<dt>' + L('備註','Notes') + '</dt><dd>' + escapeHtml(g.notes || '—') + '</dd>'
           + '<dt>' + L('最後修改','Last edited') + '</dt><dd>' + escapeHtml(g.lastEdited || '—') + '</dd>'
         + '</dl></div>'
         + '<div class="adm-sec"><h5>' + L('款項狀態','Payment status') + '</h5>'
-          + '<div class="adm-actions">'
-            + '<span class="adm-due-amount">NT$' + Number(g.due||0).toLocaleString() + '</span>'
-            + statusBtns + '</div></div>'
+          + '<div class="adm-actions">' + statusBtns + '</div></div>'
         + '<div class="adm-actions"><button class="mini-btn" data-act="open-edit">✏️ ' + L('編輯資料','Edit') + '</button></div>'
         + editHtml
       + '</div></div>';
