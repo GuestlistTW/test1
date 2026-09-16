@@ -661,16 +661,16 @@
   }
   .adm-viewtab.active{background:var(--purple); border-color:var(--purple); color:#fff;}
 
-  .adm-list{display:flex; flex-direction:column; gap:10px;}
+  .adm-list{display:flex; flex-direction:column; gap:5px;}
   .adm-card{
-    background:var(--bg-surface); border:1px solid var(--line); border-radius:14px;
+    background:var(--bg-surface); border:1px solid var(--line); border-radius:10px;
     overflow:hidden; transition:border-color .2s;
   }
   .adm-card.is-open{border-color:var(--purple);}
   .adm-card.is-void{opacity:0.5;}
   .adm-card.has-req{border-color:rgba(255,159,64,0.6);}
   .adm-head{
-    display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer;
+    display:flex; align-items:center; gap:10px; padding:6px 14px; cursor:pointer;
     flex-wrap:wrap;
   }
   .adm-head:hover{background:var(--bg-surface-2);}
@@ -678,7 +678,7 @@
     font-family:'Baloo 2'; font-weight:700; font-size:0.82rem; color:var(--text-muted);
     background:var(--bg-deep); border:1px solid var(--line); border-radius:7px; padding:2px 8px;
   }
-  .adm-name{font-weight:700; font-size:0.98rem;}
+  .adm-name{font-weight:700; font-size:0.78rem;}
   .adm-plus{
     font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px;
     background:var(--bg-surface-2); border:1px solid var(--purple); color:var(--text-light);

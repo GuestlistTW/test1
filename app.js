@@ -798,6 +798,13 @@
     return flagOf(c) + ' ' + c;
   }
 
+  // 後台清單只顯示國旗，不顯示國碼文字（如 TW / TH）
+  function countryFlagOnly(code){
+    const c = String(code || '').trim().toUpperCase();
+    if(!c) return '';
+    return flagOf(c);
+  }
+
   let cpickSeq = 0;
 
   function createCountryPicker(mount, hiddenInput, hintEl, placeholderText){
@@ -1610,7 +1617,7 @@
       }
       return '<div class="mem-row' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
         + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
-        + '<span class="mem-name">' + countryTag(m.country) + ' ' + escapeHtml(m.name) + '</span>'
+        + '<span class="mem-name">' + countryFlagOnly(m.country) + ' ' + escapeHtml(m.name) + '</span>'
         + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
         + '<span class="adm-spacer"></span>' + right
         + (m.cancelReason ? '<div style="width:100%; font-size:0.74rem; color:var(--orange);">' + escapeHtml(m.cancelReason) + '</div>' : '')
@@ -1667,7 +1674,7 @@
 
     return '<div class="adm-card' + (g.allCancelled?' is-void':'') + (req?' has-req':'') + '" data-id="' + escapeHtml(g.regId) + '">'
       + '<div class="adm-head">'
-        + '<span class="adm-name">' + countryTag(g.country) + ' ' + escapeHtml(g.name) + '</span>'
+        + '<span class="adm-name">' + countryFlagOnly(g.country) + ' ' + escapeHtml(g.name) + '</span>'
         + (extra ? '<span class="adm-plus">+' + extra + '</span>' : '')
         + '<span class="adm-spacer"></span>'
         + (req ? '<span class="adm-req">⚠ ' + req + '</span>' : '')
