@@ -11,7 +11,7 @@
     loc_addr:{en:'2F, No. 28, Sec. 2, Xinsheng N. Rd., Zhongshan Dist., Taipei', ja:'台北市中山区新生北路二段28号2階', ko:'타이베이시 중산구 신성베이루 2단 28호 2층'},
     loc_btn:{en:'📍 Open in Google Maps →', ja:'📍 Google マップで開く →', ko:'📍 Google 지도에서 열기 →'},
     time_label:{en:'Time', ja:'日時', ko:'일시'}, fee_label:{en:'Fee', ja:'参加費', ko:'참가비'}, fee_value:{en:'NT$1,200 / person', ja:'NT$1,200／人', ko:'1인당 NT$1,200'},
-    community_label:{en:'Community', ja:'コミュニティ', ko:'커뮤니티'}, community_value:{en:'After registering, we\'ll provide a QR code to join our LINE group', ja:'お申込み完了後、LINE グループ参加用の QR コードをお送りします', ko:'신청이 완료되면 LINE 그룹 참여용 QR 코드를 보내드립니다'},
+    community_label:{en:'Reminder', ja:'お知らせ', ko:'안내'}, community_value:{en:'To speed up on-site check-in and entry, we recommend having a friend based in Taiwan complete the payment in advance. If advance payment isn\'t convenient, you can also complete it on-site.', ja:'当日の受付・入場をスムーズにするため、台湾在住のお友達に事前決済をお願いいただくことをおすすめします。事前決済が難しい場合は、当日会場でのお手続きも可能です。', ko:'현장 체크인과 입장을 신속하게 진행할 수 있도록, 대만에 계신 지인에게 사전 결제를 부탁드리는 것을 권장합니다. 사전 결제가 어려우신 경우 현장에서도 진행하실 수 있습니다.'},
     notice_title:{en:'Notes', ja:'注意事項', ko:'유의사항'},
     notice_1:{en:'Seating at the restaurant is limited — please register early. If registration exceeds capacity, the organizer will process refunds', ja:'席数に限りがございますので、お早めにお申込みください。定員を超えた場合は主催者より返金のご案内をいたします', ko:'좌석이 한정되어 있으니 서둘러 신청해 주세요. 정원을 초과할 경우 주최 측에서 환불을 안내해 드립니다'},
     notice_2:{en:'Only non-alcoholic drinks will be provided on-site; you\'re welcome to bring your own alcohol', ja:'会場ではノンアルコール飲料のみご用意しております。お酒はお持ち込みいただけます', ko:'현장에서는 무알코올 음료만 제공됩니다. 주류는 각자 가져오실 수 있습니다'},
