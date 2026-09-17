@@ -92,11 +92,8 @@
     edit_cancel_btn:{en:'Discard changes', ja:'編集をやめる', ko:'수정 취소'},
     existing_hint:{en:'※ People already registered cannot be removed here. If someone can no longer attend, go back to your lookup result and submit a cancellation request for that person.', ja:'※ すでにお申込み済みの方はここでは削除できません。ご欠席の場合は照会画面に戻り、その方のキャンセル申請を送信してください。主催者が確認いたします。', ko:'※ 이미 신청된 분은 여기서 삭제할 수 없습니다. 참석이 어려우시면 조회 화면으로 돌아가 해당 인원의 취소를 신청해 주세요. 주최 측에서 확인합니다.'},
     footer_text:{en:'Taiwan Pride — Proud Together · Contact the organizer with any questions', ja:'Taiwan Pride — Proud Together ・ ご不明な点は主催者までお問い合わせください', ko:'Taiwan Pride — Proud Together ・ 문의 사항은 주최 측에 연락해 주세요'},
-    line_modal_title:{en:'Welcome to Taiwan Pride!', ja:'TAIWAN PRIDE へようこそ！', ko:'TAIWAN PRIDE에 오신 것을 환영합니다!'},
-    line_modal_desc:{en:'Scan the QR code below to join our LINE group and get event updates', ja:'下の QR コードから LINE コミュニティに参加して、最新情報を受け取ってください', ko:'아래 QR 코드로 LINE 커뮤니티에 참여해 최신 소식을 받아보세요'},
-    line_modal_ph:{en:'LINE group QR code placeholder — replace with the real image', ja:'LINE グループの QR コードエリア（実際の画像に差し替えてください）', ko:'LINE 그룹 QR 코드 영역 (실제 이미지로 교체해 주세요)'},
-    line_modal_note:{en:'Be sure to join the event group for the latest announcements or to ask questions', ja:'最新のお知らせやお問い合わせのため、必ずグループにご参加ください', ko:'최신 공지와 문의를 위해 반드시 그룹에 참여해 주세요'},
-    line_modal_regid_hint:{en:'Enter this number when you report your payment — it helps us match things up accurately', ja:'お振込みのご報告時にこの番号をご記入いただくと、照合がスムーズです', ko:'송금 보고 시 이 번호를 입력하시면 확인이 수월합니다'},
+    line_modal_title:{en:'Registration submitted!', ja:'お申込みを受け付けました！', ko:'신청이 접수되었습니다!'},
+    line_modal_desc:{en:'If you chose online payment, please complete the transfer on the Bank Transfer tab and report it there. We\'ll verify it and update your registration status as soon as we can.', ja:'オンライン決済をお選びの方は、「銀行振込」ページよりお振込みとご報告をお願いします。確認のうえ、お申込み状況を更新いたします。', ko:'온라인 결제를 선택하신 경우 ‘송금 안내’ 페이지에서 송금 후 보고해 주세요. 확인 후 신청 상태를 업데이트해 드리겠습니다.'},
     admin_view_list:{en:'📋 Registrations'}, admin_view_log:{en:'🕓 Change Log'},
     admin_log_refresh:{en:'🔄 Reload log'},
     admin_log_hint:{en:'Showing the latest 300 changes. Full details (including before/after JSON) are kept in the 異動紀錄 tab of the spreadsheet.'},
@@ -375,21 +372,9 @@
     document.body.removeChild(ta);
   }
 
-  // ---- LINE group QR modal ----
+  // ---- 報名成功提示 ----
   const lineModal = document.getElementById('line-modal');
-  function openLineModal(regId){
-    const regEl = document.getElementById('line-modal-regid');
-    const hintEl = document.getElementById('line-modal-regid-hint');
-    if(regId){
-      const label = T({ zh:'你的報名編號：', en:'Your registration number: ',
-                        ja:'お申込番号：', ko:'신청 번호: ' });
-      regEl.textContent = label + regId;
-      regEl.style.display = 'inline-block';
-      hintEl.style.display = 'block';
-    } else {
-      regEl.style.display = 'none';
-      hintEl.style.display = 'none';
-    }
+  function openLineModal(){
     lineModal.style.display = 'flex';
   }
   function closeLineModal(){ lineModal.style.display = 'none'; }
@@ -630,7 +615,7 @@
       const msg = document.getElementById('signup-msg');
       msg.classList.add('show');
       setTimeout(()=> msg.classList.remove('show'), 6000);
-      openLineModal(body.id || '');
+      openLineModal();
       signupForm.reset();
       mainCountryPicker.set('');
       guestRowsContainer.innerHTML = '';
