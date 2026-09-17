@@ -557,7 +557,6 @@
       email: document.getElementById('su-email').value.trim(),
       phone: document.getElementById('su-phone').value.trim(),
       ig: document.getElementById('su-ig').value.trim(),
-      igPublic: false,
       guests: guests,
       notes: document.getElementById('su-notes').value.trim(),
       tableWithName: document.getElementById('su-tablewith-name').value.trim(),
