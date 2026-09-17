@@ -1720,11 +1720,32 @@
     const box = document.getElementById('admin-list');
     const rows = adminData.filter(function(g){ return matchesFilter(g) && matchesCountry(g); });
 
+    // 重畫前先記住哪些卡片是展開的、哪些正在編輯。
+    // 少了這步，按一次按鈕整份名單重畫，展開中的卡片會突然收合，
+    // 連續處理多筆時每按一次就要重新點開，反而更難用。
+    const wasOpen = {};
+    const wasEditing = {};
+    box.querySelectorAll('.adm-card').forEach(function(c){
+      if(c.classList.contains('is-open')) wasOpen[c.dataset.id] = true;
+      const ed = c.querySelector('.adm-editor');
+      if(ed && ed.classList.contains('is-open')) wasEditing[c.dataset.id] = true;
+    });
+
     if(rows.length === 0){
       box.innerHTML = '<div class="adm-empty">' + L('沒有符合條件的資料','No matching records') + '</div>';
       return;
     }
     box.innerHTML = rows.map(cardHtml).join('');
+
+    // 還原展開狀態
+    box.querySelectorAll('.adm-card').forEach(function(c){
+      const id = c.dataset.id;
+      if(wasOpen[id]) c.classList.add('is-open');
+      if(wasEditing[id]){
+        const ed = c.querySelector('.adm-editor');
+        if(ed) ed.classList.add('is-open');
+      }
+    });
   }
 
   function cardHtml(g){
@@ -1922,10 +1943,31 @@
     // 沒帶這個旗標的舊前端，後端會自動回傳完整名單以維持相容。
     payload.clientVersion = 2;
 
+    // ── 樂觀更新 ──
+    // 改一格款項狀態要 6 次 Google API 往返（開檔、讀表、讀紀錄標題、寫 2 格、追加紀錄），
+    // 每次都是一趟網路來回，所以 2～4 秒是 Apps Script 的正常水準，跟資料多寡無關。
+    // 與其讓使用者乾等，先把畫面改掉、請求在背景送，失敗再退回原狀。
+    // 這樣可以連續快速處理多筆，不用一筆一筆等。
+    let undoSnapshot = null;
+    if(act === 'pay'){
+      const idx = adminData.findIndex(g=> g.regId === regId);
+      if(idx >= 0){
+        undoSnapshot = { idx: idx, group: JSON.parse(JSON.stringify(adminData[idx])) };
+        adminData[idx] = Object.assign({}, adminData[idx], { payStatus: btn.dataset.status });
+        refreshAdminView();
+      }
+    }
+
     card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = true);
     const r = await postToBackend(payload);
     const body = r.body || {};
     showWarnings(body);
+
+    // 後端不同意就把畫面還原，不能讓使用者以為已經改好了
+    if(undoSnapshot && (!r.ok || body.result !== 'success')){
+      adminData[undoSnapshot.idx] = undoSnapshot.group;
+      refreshAdminView();
+    }
 
     if(body.result === 'success'){
       // 後端現在只回傳被改動的那一組（約 1KB），不再回傳整份名單（約 231KB）。
