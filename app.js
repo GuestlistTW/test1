@@ -457,6 +457,7 @@
     // AbortController：逾時後真的把請求中斷。
     // 少了這個，逾時的 fetch 會繼續在背景跑並佔著後端執行資源，
     // 等於接下來的 JSONP 要跟自己前一個沒死透的請求搶資源。
+    let postSnippet = '';
     const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     const killer = ctrl ? setTimeout(()=>{ try{ ctrl.abort(); }catch(e){} }, POST_TIMEOUT) : null;
     try{
@@ -467,15 +468,15 @@
         signal: ctrl ? ctrl.signal : undefined
       }), POST_TIMEOUT);
       const raw = await res.text();
+      // 回應不是 JSON（多半是 Google 的錯誤頁或導向頁）時，不能就此放棄 ——
+      // GAS 的 POST 本來就常常這樣，JSONP 備援存在的目的正是為了接手。
+      // 這裡只把內容記到主控台供診斷，然後照常往下走 JSONP。
       try{
         const body = JSON.parse(raw);
         return { ok:true, via:'post', status:res.status, body:body };
       }catch(parseErr){
-        // 伺服器有回應，但回來的不是 JSON —— 幾乎一定是 Google 的錯誤頁或登入頁，
-        // 代表後端本身有問題（部署設定、程式碼錯誤），不是「網路不通」。
-        // 這種情況再走 JSONP 也一樣會失敗，直接把真正的原因講出來。
-        console.error('後端回應不是 JSON，前 300 字：', String(raw).slice(0, 300));
-        return { ok:false, reason:'bad-response', status:res.status, snippet:String(raw).slice(0, 300) };
+        postSnippet = String(raw).slice(0, 300);
+        console.warn('POST 回應不是 JSON，改走 JSONP。前 300 字：', postSnippet);
       }
     }catch(err){
       console.warn('POST 失敗，改走 JSONP：', err);
@@ -489,8 +490,11 @@
     }catch(err2){
       console.error('JSONP 也失敗：', err2);
       const msg = String(err2 && err2.message ? err2.message : err2);
-      const reason = /timeout/i.test(msg) ? 'timeout' : 'network';
-      return { ok:false, reason:reason, error:msg };
+      let reason = /timeout/i.test(msg) ? 'timeout' : 'network';
+      // 兩條路都失敗，而且 POST 當時收到的是網頁 —— 那就是後端部署有問題，
+      // 不是使用者的網路或瀏覽器問題，訊息要講對方向。
+      if(postSnippet && reason !== 'timeout') reason = 'bad-response';
+      return { ok:false, reason:reason, error:msg, snippet:postSnippet };
     }
   }
 
@@ -1523,9 +1527,13 @@
         ? (isEn()
             ? 'The server took too long to respond (large data or a cold start right after redeploying). Press "Refresh Data" again — the second try is usually much faster.'
             : '伺服器回應逾時：可能是資料較多，或剛重新部署造成「冷啟動」。請再按一次「更新資料」，通常第二次就會快很多。這不是網址或權限問題（登入已經成功，代表連線正常）。')
-        : (isEn()
-            ? 'The request did not complete (network, or an in-app browser such as LINE/Instagram blocking it). Try opening the page in a normal browser.'
-            : '請求沒有完成：可能是網路問題，或你正用 LINE／Instagram 內建瀏覽器（會擋掉部分連線）。請改用系統瀏覽器（Safari／Chrome）再試一次。');
+        : (r.reason === 'bad-response')
+          ? (isEn()
+              ? 'The server replied with a web page instead of data. The Apps Script is reachable but not returning JSON — check that it is deployed as a NEW VERSION with access set to "Anyone". (Details in the console, F12)'
+              : '後端回傳的是網頁而不是資料。連線是通的，但 Apps Script 沒有正常回應 —— 請確認已「部署新版本」且存取權限為「任何人」。詳細內容在主控台（F12）。')
+          : (isEn()
+              ? 'The request did not complete (network, or an in-app browser such as LINE/Instagram blocking it). Try opening the page in a normal browser.'
+              : '請求沒有完成：可能是網路問題，或你正用 LINE／Instagram 內建瀏覽器（會擋掉部分連線）。請改用系統瀏覽器（Safari／Chrome）再試一次。');
       document.getElementById('admin-list').innerHTML =
         '<div class="adm-empty">' + escapeHtml(reasonTxt) + '</div>';
     } else {
