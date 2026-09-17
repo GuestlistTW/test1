@@ -467,8 +467,16 @@
         signal: ctrl ? ctrl.signal : undefined
       }), POST_TIMEOUT);
       const raw = await res.text();
-      const body = JSON.parse(raw);
-      return { ok:true, via:'post', status:res.status, body:body };
+      try{
+        const body = JSON.parse(raw);
+        return { ok:true, via:'post', status:res.status, body:body };
+      }catch(parseErr){
+        // 伺服器有回應，但回來的不是 JSON —— 幾乎一定是 Google 的錯誤頁或登入頁，
+        // 代表後端本身有問題（部署設定、程式碼錯誤），不是「網路不通」。
+        // 這種情況再走 JSONP 也一樣會失敗，直接把真正的原因講出來。
+        console.error('後端回應不是 JSON，前 300 字：', String(raw).slice(0, 300));
+        return { ok:false, reason:'bad-response', status:res.status, snippet:String(raw).slice(0, 300) };
+      }
     }catch(err){
       console.warn('POST 失敗，改走 JSONP：', err);
     }finally{
@@ -1441,17 +1449,39 @@
     btn.textContent = isEn() ? 'Sign in' : '登入';
 
     if(!r.ok){
-      errEl.textContent = isEn()
-        ? 'Could not reach the server — please check your connection.'
-        : '連線失敗，請確認網路後再試一次';
+      // 分辨三種狀況，才知道要修哪裡：
+      //  bad-response = 後端有回應但不是 JSON（部署設定或程式碼有問題）
+      //  timeout      = 有連上但等太久（多半是 GAS 冷啟動，再按一次通常就好）
+      //  network      = 真的連不上
+      if(r.reason === 'bad-response'){
+        errEl.textContent = isEn()
+          ? 'The server replied with an error page. Check that the Apps Script is deployed as a new version and set to "Anyone" access. (Details in the browser console)'
+          : '後端回傳的不是資料而是錯誤頁。請檢查 Apps Script 是否已「部署新版本」，且存取權限設為「任何人」。詳細內容請看瀏覽器主控台（F12）';
+      } else if(r.reason === 'timeout'){
+        errEl.textContent = isEn()
+          ? 'The server took too long to respond. This is usually a cold start — please try once more.'
+          : '伺服器回應逾時，通常是第一次喚醒較慢，請再按一次登入';
+      } else {
+        errEl.textContent = isEn()
+          ? 'Could not reach the server — please check your connection.'
+          : '連線失敗，請確認網路後再試一次';
+      }
       errEl.style.display = 'block';
       return;
     }
 
     if(body.result !== 'success'){
-      errEl.textContent = body.reason === 'not-configured'
-        ? (body.message || '後台密碼尚未設定')
-        : (isEn() ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次');
+      // 後端不認得 adminBootstrap，代表 GAS 還是舊版沒更新
+      const em = String(body.message || '');
+      if(/不支援|不認得|unsupported|unknown/i.test(em) || body.reason === 'unknown-type'){
+        errEl.textContent = isEn()
+          ? 'The backend does not recognise this request — please deploy the updated Apps Script as a NEW VERSION.'
+          : '後端不認得這個請求，代表 Apps Script 還是舊版。請到「部署 → 管理部署作業 → 鉛筆 → 版本選『新版本』→ 部署」';
+      } else {
+        errEl.textContent = body.reason === 'not-configured'
+          ? (body.message || '後台密碼尚未設定')
+          : (em || (isEn() ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次'));
+      }
       errEl.style.display = 'block';
       input.select();
       return;
@@ -1754,6 +1784,9 @@
           + (g.seatNo ? '<span>' + L('桌次','Table') + ' <b>' + escapeHtml(String(g.seatNo)) + '</b></span>' : '')
           + (g.editCount ? '<span>' + L('已修改','Edited') + ' ' + g.editCount + ' ' + L('次','times') + '</span>' : '')
         + '</div>'
+        // 款項狀態的四個按鈕直接接在摘要列下面，不另外下標題 ——
+        // 按鈕本身已經標示目前狀態（● 那個），標題是多餘的。
+        + '<div class="adm-actions adm-pay-row">' + statusBtns + '</div>'
         + '<div class="adm-sec"><h5>' + L('成員','Members') + '</h5>' + memHtml + '</div>'
         + '<div class="adm-sec"><h5>' + L('匯款回報','Transfer reports') + '</h5>' + payHtml + '</div>'
         + '<div class="adm-sec"><h5>' + L('其他資料','Details') + '</h5><dl class="kv">'
@@ -1762,8 +1795,6 @@
           + '<dt>' + L('備註','Notes') + '</dt><dd>' + escapeHtml(g.notes || '—') + '</dd>'
           + '<dt>' + L('最後修改','Last edited') + '</dt><dd>' + escapeHtml(g.lastEdited || '—') + '</dd>'
         + '</dl></div>'
-        + '<div class="adm-sec"><h5>' + L('款項狀態','Payment status') + '</h5>'
-          + '<div class="adm-actions">' + statusBtns + '</div></div>'
         + '<div class="adm-actions"><button class="mini-btn" data-act="open-edit">✏️ ' + L('編輯資料','Edit') + '</button></div>'
         + editHtml
       + '</div></div>';
