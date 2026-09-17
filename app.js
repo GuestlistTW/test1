@@ -465,6 +465,12 @@
         method:'POST',
         headers:{ 'Content-Type':'text/plain;charset=utf-8' },
         body: JSON.stringify(payload),
+        // credentials:'omit' → 明確不帶 Google cookie。
+        // 帶了的話，登入多個 Google 帳號時 Google 會把請求導向 /u/<n>/，
+        // 而那個帳號多半沒有這個腳本的存取權，於是回傳沒有 CORS 標頭的錯誤頁。
+        // 這就是「同一台電腦昨天好好的、今天突然連不上」的原因 ——
+        // /u/ 後面的編號會隨帳號登入順序改變，跟程式無關。
+        credentials:'omit',
         signal: ctrl ? ctrl.signal : undefined
       }), POST_TIMEOUT);
       const raw = await res.text();
@@ -482,6 +488,32 @@
       console.warn('POST 失敗，改走 JSONP：', err);
     }finally{
       if(killer) clearTimeout(killer);
+    }
+
+    // ── 第二條路：GET + 不帶 cookie ──
+    // JSONP 是用 <script> 標籤載入的，而 script 標籤一定會帶上 cookie，
+    // 沒辦法關掉，所以多帳號時它一樣會被導向 /u/<n>/ 而失敗。
+    // 這裡改用 fetch 發 GET：可以明確 credentials:'omit'，Google 就當成匿名請求，
+    // 不做帳號導向。GET 又屬於簡單請求，不會觸發 CORS 預檢。
+    try{
+      const q = GAS_URL + '?p=' + encodeURIComponent(JSON.stringify(payload)) + '&_=' + Date.now();
+      if(q.length <= 7500){
+        const res2 = await withTimeout(fetch(q, {
+          method:'GET',
+          credentials:'omit',
+          redirect:'follow'
+        }), POST_TIMEOUT);
+        const raw2 = await res2.text();
+        try{
+          const body2 = JSON.parse(raw2);
+          return { ok:true, via:'get', status:res2.status, body:body2 };
+        }catch(pe2){
+          if(!postSnippet) postSnippet = String(raw2).slice(0, 300);
+          console.warn('GET 回應不是 JSON，改走 JSONP。前 300 字：', String(raw2).slice(0, 300));
+        }
+      }
+    }catch(errGet){
+      console.warn('GET 失敗，改走 JSONP：', errGet);
     }
 
     try{
@@ -1886,6 +1918,9 @@
 
     if(!payload) return;
     payload.password = adminPassword;
+    // 告訴後端「這個前端看得懂單組回應」，後端就不必回傳整份名單（231KB → 1KB）。
+    // 沒帶這個旗標的舊前端，後端會自動回傳完整名單以維持相容。
+    payload.clientVersion = 2;
 
     card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = true);
     const r = await postToBackend(payload);
