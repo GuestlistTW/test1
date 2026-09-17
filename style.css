@@ -107,12 +107,19 @@
   .tabbar{
     position:sticky; top:57px; z-index:40;
     display:flex; gap:8px; overflow-x:auto;
-    justify-content:center;
+    /* 不能用 justify-content:center —— 內容超出寬度時，置中會把溢出平均分到兩側，
+       而左側那段是捲不到的，結果最左和最右的按鈕都被切掉（手機上很明顯）。
+       改用頭尾的 auto margin：有空間時照樣置中，沒空間時自動收成 0，不會裁切。 */
+    justify-content:flex-start;
     padding:14px 20px; margin:0 0 8px;
     background:var(--bg-deep);
     border-bottom:1px solid var(--line);
+    scrollbar-width:none;
   }
+  .tabbar > :first-child{margin-left:auto;}
+  .tabbar > :last-child{margin-right:auto;}
   .tabbar::-webkit-scrollbar{display:none;}
+
   .tab-btn{
     flex:0 0 auto;
     padding:10px 18px;
@@ -130,6 +137,16 @@
     color:var(--bg-deep);
     background:var(--yellow);
     border-color:var(--yellow);
+  }
+
+  /* 窄螢幕：縮小間距與字級，讓四個分頁盡量一次排得下，不用左右捲 */
+  @media(max-width:520px){
+    .tabbar{gap:6px; padding:10px 12px;}
+    .tab-btn{padding:9px 12px; font-size:0.84rem;}
+  }
+  @media(max-width:380px){
+    .tabbar{gap:4px; padding:10px 8px;}
+    .tab-btn{padding:8px 9px; font-size:0.78rem;}
   }
   .tab-btn.admin-tab{border-style:dashed;}
 
