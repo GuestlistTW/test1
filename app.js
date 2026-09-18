@@ -587,8 +587,12 @@
       // 後端成功、只是回應在半路掉了。直接叫使用者「再試一次」正是重覆送出的來源。
       // 所以先用電話查一下：真的有就當成功、帶去查詢頁，避免他以為失敗又送一次。
       if(!editingGroup && payload.phone){
-        const check = await postToBackend({ type:'lookup', phone: payload.phone });
-        if(check.ok && check.body && check.body.found){
+        // 查證最多等 7 秒就放棄 —— 不然連線本來就不好時，這個查證會再跑一整輪
+        // (GET→JSONP→POST)，讓使用者等第二輪，反而更卡。問不到就直接給下面的提示。
+        let check = null;
+        try{ check = await withTimeout(postToBackend({ type:'lookup', phone: payload.phone }), 7000); }
+        catch(e){ check = null; }
+        if(check && check.ok && check.body && check.body.found){
           showToast(T({
             zh:'✅ 你其實已經報名成功了，不用再送一次',
             en:'✅ You are already registered — no need to submit again.',
