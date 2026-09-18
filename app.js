@@ -582,7 +582,41 @@
     const r = await postToBackend(payload);
     const body = r.body || {};
 
-    if(!r.ok || body.result !== 'success'){
+    if(!r.ok){
+      // 連線層失敗（沒收到後端的成功回應）。但報名很可能其實已經寫進去了 ——
+      // 後端成功、只是回應在半路掉了。直接叫使用者「再試一次」正是重覆送出的來源。
+      // 所以先用電話查一下：真的有就當成功、帶去查詢頁，避免他以為失敗又送一次。
+      if(!editingGroup && payload.phone){
+        const check = await postToBackend({ type:'lookup', phone: payload.phone });
+        if(check.ok && check.body && check.body.found){
+          showToast(T({
+            zh:'✅ 你其實已經報名成功了，不用再送一次',
+            en:'✅ You are already registered — no need to submit again.',
+            ja:'✅ すでにお申込みは完了しています。再送信は不要です。',
+            ko:'✅ 이미 신청이 완료되었습니다. 다시 보내지 않으셔도 됩니다.' }));
+          document.getElementById('lk-query').value = payload.phone;
+          await doLookup(payload.phone);
+          switchToLookupTab();
+          signupForm.reset();
+          mainCountryPicker.set('');
+          guestRowsContainer.innerHTML = '';
+          guestCount = 0;
+          updateGuestHint();
+          restoreBtn();
+          return;
+        }
+      }
+      // 查不到（或在編輯模式）才是真的沒成功。訊息也改成引導查詢，而不是催他重送。
+      showError(T({
+        zh:'連線不穩定。若你剛才是在報名，請先到「查詢報名」頁用電話查一下 —— 很可能已經成功了，先別急著重送。',
+        en:'Unstable connection. If you were registering, please check the "Look up" tab with your phone number first — it may already have gone through. Avoid resubmitting.',
+        ja:'接続が不安定です。お申込み中だった場合は、まず「照会」タブで電話番号を確認してください。すでに完了している可能性があります。すぐに再送信しないでください。',
+        ko:'연결이 불안정합니다. 신청 중이었다면 먼저 "조회" 탭에서 전화번호로 확인해 주세요. 이미 완료되었을 수 있습니다. 바로 다시 보내지 마세요.' }), 12000);
+      restoreBtn();
+      return;
+    }
+
+    if(body.result !== 'success'){
       showError(body.message || T({
         zh:'連線失敗，請確認網路後再試一次',
         en:'Could not reach the server — please check your connection and try again.',
