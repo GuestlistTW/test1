@@ -204,8 +204,10 @@
     tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
     panels.forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
     if(name === 'admin'){
-      warmUpBackend();        // 先偷偷喚醒後端，降低登入時的冷啟動等待
-      maybeAutoLoginAdmin();  // 這台裝置記住過密碼的話，自動帶入並登入
+      // 有記住密碼 → 直接自動登入（那一個請求本身就會喚醒後端）。
+      // 沒有記住 → 才另外發一個預熱，讓使用者打密碼的空檔把後端叫醒。
+      // 兩者擇一，避免以前「預熱 + 自動登入同時射出、冷啟動時互相排隊」造成登入更久。
+      if(!maybeAutoLoginAdmin()) warmUpBackend();
     }
   }
   tabButtons.forEach(btn=>{
@@ -1502,15 +1504,16 @@
 
   let __adminAutoTried = false;
   function maybeAutoLoginAdmin(){
-    if(__adminAutoTried || adminPassword) return;          // 已試過或已登入就不做
+    if(__adminAutoTried || adminPassword) return false;    // 已試過或已登入就不做
     const gate = document.getElementById('admin-gate');
-    if(!gate || gate.style.display === 'none') return;     // 已經在後台裡
+    if(!gate || gate.style.display === 'none') return false;// 已經在後台裡
     const saved = loadAdminCred();
-    if(!saved) return;
+    if(!saved) return false;
     __adminAutoTried = true;
     const input = document.getElementById('admin-pw');
     if(input) input.value = saved;
     tryUnlockAdmin();                                       // 自動送出（密碼變了會自動清掉重來）
+    return true;                                            // 已經發出登入請求，外面就別再多發預熱
   }
 
   async function tryUnlockAdmin(){
