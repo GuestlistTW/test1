@@ -203,6 +203,10 @@
   function setTab(name){
     tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
     panels.forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+    if(name === 'admin'){
+      warmUpBackend();        // 先偷偷喚醒後端，降低登入時的冷啟動等待
+      maybeAutoLoginAdmin();  // 這台裝置記住過密碼的話，自動帶入並登入
+    }
   }
   tabButtons.forEach(btn=>{
     btn.addEventListener('click', ()=> setTab(btn.dataset.tab));
@@ -382,11 +386,13 @@
   document.getElementById('line-modal-ok').addEventListener('click', closeLineModal);
 
   // ---- Backend Communication ----
-  // 兩段逾時是串接的（POST 失敗才換 JSONP），所以使用者最久要等
-  // POST_TIMEOUT + JSONP_TIMEOUT。原本兩段都設 25 秒 = 最長要等 50 秒才看到錯誤訊息。
-  // POST 這段縮短：它在正常網路下 2 秒內就會回來，等到 25 秒幾乎必定是被擋掉了，
-  // 早點放棄改走 JSONP 反而更快拿到資料。
-  const POST_TIMEOUT  = 8000;
+  // 逾時分開設，因為現在 GET 是小請求（登入、查詢）的主要路徑：
+  //   GET  給足時間撐過冷啟動（GAS 一陣子沒人用要重新喚醒，本來就要 10~15 秒），
+  //        一條路就把結果拿回來，不用像以前那樣三條路各等一輪湊成 30 秒。
+  //   POST 只在「網址塞不下的大請求」或最後保險時才用，給它一樣的餘裕。
+  //   JSONP 是最終保險。
+  const GET_TIMEOUT   = 18000;
+  const POST_TIMEOUT  = 15000;
   const JSONP_TIMEOUT = 20000;
   const REQUEST_TIMEOUT = JSONP_TIMEOUT;   // 沿用舊名稱，jsonpRequest 仍在用
 
@@ -450,80 +456,60 @@
       payload._rid = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
     }
 
-    // AbortController：逾時後真的把請求中斷。
-    // 少了這個，逾時的 fetch 會繼續在背景跑並佔著後端執行資源，
-    // 等於接下來的 JSONP 要跟自己前一個沒死透的請求搶資源。
-    let postSnippet = '';
-    const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    const killer = ctrl ? setTimeout(()=>{ try{ ctrl.abort(); }catch(e){} }, POST_TIMEOUT) : null;
-    try{
-      const res = await withTimeout(fetch(GAS_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        // credentials:'omit' → 明確不帶 Google cookie。
-        // 帶了的話，登入多個 Google 帳號時 Google 會把請求導向 /u/<n>/，
-        // 而那個帳號多半沒有這個腳本的存取權，於是回傳沒有 CORS 標頭的錯誤頁。
-        // 這就是「同一台電腦昨天好好的、今天突然連不上」的原因 ——
-        // /u/ 後面的編號會隨帳號登入順序改變，跟程式無關。
-        credentials:'omit',
-        signal: ctrl ? ctrl.signal : undefined
-      }), POST_TIMEOUT);
-      const raw = await res.text();
-      // 回應不是 JSON（多半是 Google 的錯誤頁或導向頁）時，不能就此放棄 ——
-      // GAS 的 POST 本來就常常這樣，JSONP 備援存在的目的正是為了接手。
-      // 這裡只把內容記到主控台供診斷，然後照常往下走 JSONP。
+    const reqBody = JSON.stringify(payload);
+    const urlGet = GAS_URL + '?p=' + encodeURIComponent(reqBody) + '&_=' + Date.now();
+    const canUseUrl = urlGet.length <= 7500;
+    let snippet = '';
+    let sawTimeout = false;
+
+    // 單一條路：逾時真的中斷連線，回應能解析成 JSON 才算成功，否則回 null 換下一條。
+    async function fetchLeg(kind, url, opts, ms){
+      const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      const killer = ctrl ? setTimeout(()=>{ sawTimeout = true; try{ ctrl.abort(); }catch(e){} }, ms) : null;
       try{
-        const body = JSON.parse(raw);
-        return { ok:true, via:'post', status:res.status, body:body };
-      }catch(parseErr){
-        postSnippet = String(raw).slice(0, 300);
-        console.warn('POST 回應不是 JSON，改走 JSONP。前 300 字：', postSnippet);
-      }
-    }catch(err){
-      console.warn('POST 失敗，改走 JSONP：', err);
-    }finally{
-      if(killer) clearTimeout(killer);
-    }
-
-    // ── 第二條路：GET + 不帶 cookie ──
-    // JSONP 是用 <script> 標籤載入的，而 script 標籤一定會帶上 cookie，
-    // 沒辦法關掉，所以多帳號時它一樣會被導向 /u/<n>/ 而失敗。
-    // 這裡改用 fetch 發 GET：可以明確 credentials:'omit'，Google 就當成匿名請求，
-    // 不做帳號導向。GET 又屬於簡單請求，不會觸發 CORS 預檢。
-    try{
-      const q = GAS_URL + '?p=' + encodeURIComponent(JSON.stringify(payload)) + '&_=' + Date.now();
-      if(q.length <= 7500){
-        const res2 = await withTimeout(fetch(q, {
-          method:'GET',
-          credentials:'omit',
-          redirect:'follow'
-        }), POST_TIMEOUT);
-        const raw2 = await res2.text();
+        const res = await withTimeout(fetch(url, Object.assign({ signal: ctrl ? ctrl.signal : undefined }, opts)), ms);
+        const raw = await res.text();
         try{
-          const body2 = JSON.parse(raw2);
-          return { ok:true, via:'get', status:res2.status, body:body2 };
-        }catch(pe2){
-          if(!postSnippet) postSnippet = String(raw2).slice(0, 300);
-          console.warn('GET 回應不是 JSON，改走 JSONP。前 300 字：', String(raw2).slice(0, 300));
+          return { ok:true, via:kind, status:res.status, body: JSON.parse(raw) };
+        }catch(pe){
+          if(!snippet) snippet = String(raw).slice(0, 300);
+          console.warn(kind.toUpperCase() + ' 回應不是 JSON，換下一條。前 300 字：', String(raw).slice(0, 300));
         }
+      }catch(err){
+        if(/timeout|abort/i.test(String(err && err.message ? err.message : err))) sawTimeout = true;
+        console.warn(kind.toUpperCase() + ' 失敗，換下一條：', err);
+      }finally{
+        if(killer) clearTimeout(killer);
       }
-    }catch(errGet){
-      console.warn('GET 失敗，改走 JSONP：', errGet);
+      return null;
     }
 
-    try{
-      const body = await jsonpRequest(payload);
-      return { ok:true, via:'jsonp', body:body };
-    }catch(err2){
-      console.error('JSONP 也失敗：', err2);
-      const msg = String(err2 && err2.message ? err2.message : err2);
-      let reason = /timeout/i.test(msg) ? 'timeout' : 'network';
-      // 兩條路都失敗，而且 POST 當時收到的是網頁 —— 那就是後端部署有問題，
-      // 不是使用者的網路或瀏覽器問題，訊息要講對方向。
-      if(postSnippet && reason !== 'timeout') reason = 'bad-response';
-      return { ok:false, reason:reason, error:msg, snippet:postSnippet };
+    // credentials:'omit' → 當成匿名請求。多帳號登入時 Google 才不會把請求導向
+    // /u/<n>/（那個帳號多半沒有這支腳本的存取權，會回沒有 CORS 標頭的錯誤頁）。
+    const getLeg = ()=> fetchLeg('get', urlGet,
+      { method:'GET', credentials:'omit', redirect:'follow' }, GET_TIMEOUT);
+    const postLeg = ()=> fetchLeg('post', GAS_URL,
+      { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: reqBody, credentials:'omit' }, POST_TIMEOUT);
+    async function jsonpLeg(){
+      try{ return { ok:true, via:'jsonp', body: await jsonpRequest(payload) }; }
+      catch(e){ if(/timeout/i.test(String(e && e.message))) sawTimeout = true; console.warn('JSONP 失敗：', e); return null; }
     }
+
+    // ── 傳輸順序（這是這次真正解掉「登入卡 30 秒」的地方）──
+    // 小請求（登入、查詢…網址塞得下）先走 GET：它用 credentials:'omit' 當匿名請求，
+    //   是 GAS 跨網域最穩、最快的路，而且能給它足夠時間撐過冷啟動、一條就拿到結果。
+    //   POST 因為 script.google → googleusercontent 的轉址常常讀不到回應，改放最後
+    //   當保險 —— 之前把 POST 放第一條又給 15 秒，才會冷啟動時白等一輪又一輪湊成 30 秒。
+    // 大請求（攜伴很多、網址超過 7500 字）只有 POST 扛得動，GET／JSONP 都有長度上限。
+    const legs = canUseUrl ? [getLeg, jsonpLeg, postLeg] : [postLeg];
+    for(let i = 0; i < legs.length; i++){
+      const r = await legs[i]();
+      if(r) return r;
+    }
+
+    // 全部失敗：有收到網頁 = 部署／權限問題；沒收到而是等太久 = 逾時（多半冷啟動）。
+    const reason = snippet ? 'bad-response' : (sawTimeout ? 'timeout' : 'network');
+    return { ok:false, reason:reason, snippet:snippet };
   }
 
   // ---- Form Submission ----
@@ -1455,6 +1441,40 @@
   let adminFilter = 'all';
   let adminView = 'list';
 
+  // ── 保溫（warm-up）──
+  // 一切到後台分頁就先偷偷發一個很輕的請求把後端喚醒，等使用者把密碼打完，
+  // 執行個體多半已經熱好，登入就不會再撞到冷啟動。射後不理、不看結果。
+  // adminLogin 不帶密碼：後端只回「請輸入密碼」，不讀試算表，是最便宜的喚醒方式。
+  let __lastWarm = 0;
+  function warmUpBackend(){
+    const now = Date.now();
+    if(now - __lastWarm < 60000) return;   // 最多每分鐘一次，避免重複打
+    __lastWarm = now;
+    try{ postToBackend({ type:'adminLogin' }); }catch(e){}
+  }
+
+  // ── 記住登入 ──
+  // 成功登入後，把密碼存在「這台裝置的瀏覽器」裡，下次自動帶入、自動登入。
+  // 這是綁在已驗證過的裝置上，跟「把密碼寫死在 HTML 給所有人下載」完全不同：
+  // 別人拿不到這台裝置的 localStorage。私密模式或被停用時，try/catch 會安靜略過。
+  const ADMIN_CRED_KEY = 'tp_admin_cred_v1';
+  function saveAdminCred(pw){ try{ localStorage.setItem(ADMIN_CRED_KEY, pw); }catch(e){} }
+  function loadAdminCred(){ try{ return localStorage.getItem(ADMIN_CRED_KEY) || ''; }catch(e){ return ''; } }
+  function clearAdminCred(){ try{ localStorage.removeItem(ADMIN_CRED_KEY); }catch(e){} }
+
+  let __adminAutoTried = false;
+  function maybeAutoLoginAdmin(){
+    if(__adminAutoTried || adminPassword) return;          // 已試過或已登入就不做
+    const gate = document.getElementById('admin-gate');
+    if(!gate || gate.style.display === 'none') return;     // 已經在後台裡
+    const saved = loadAdminCred();
+    if(!saved) return;
+    __adminAutoTried = true;
+    const input = document.getElementById('admin-pw');
+    if(input) input.value = saved;
+    tryUnlockAdmin();                                       // 自動送出（密碼變了會自動清掉重來）
+  }
+
   async function tryUnlockAdmin(){
     const input = document.getElementById('admin-pw');
     const errEl = document.getElementById('admin-gate-error');
@@ -1471,9 +1491,10 @@
     btn.textContent = isEn() ? 'Signing in…' : '登入中…';
     errEl.style.display = 'none';
 
-    // 一次要回「驗證結果 + 名單」，少一趟往返。
-    // 分兩次呼叫等於兩次冷啟動風險相加，這是進後台最主要的等待來源。
-    const r = await postToBackend({ type:'adminBootstrap', password: pw });
+    // 只驗密碼（adminLogin 不讀表，很快）。密碼對了就先進後台，
+    // 名單另外用 loadAdminList() 讀 —— 這樣「進得去」只等密碼驗證，
+    // 不會被讀整張表卡在門外。
+    const r = await postToBackend({ type:'adminLogin', password: pw });
     const body = r.body || {};
 
     btn.disabled = false;
@@ -1509,6 +1530,7 @@
           ? 'The backend does not recognise this request — please deploy the updated Apps Script as a NEW VERSION.'
           : '後端不認得這個請求，代表 Apps Script 還是舊版。請到「部署 → 管理部署作業 → 鉛筆 → 版本選『新版本』→ 部署」';
       } else {
+        clearAdminCred();   // 記住的密碼已失效（改過了），清掉讓使用者重打
         errEl.textContent = body.reason === 'not-configured'
           ? (body.message || '後台密碼尚未設定')
           : (em || (isEn() ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次'));
@@ -1521,18 +1543,22 @@
     adminPassword = pw;
     adminOperator = body.operator || '';
     input.value = '';
+    saveAdminCred(pw);   // 記住這台裝置，下次自動登入
 
+    // 密碼對了 → 立刻進後台。名單改成進來之後才讀：
+    // 讀表慢（或冷啟動）時，人已經在後台看著「載入中」，而不是卡在登入頁外面。
+    // 就算名單讀失敗，也只是名單區顯示重試訊息，不會把人踢回門外。
     document.getElementById('admin-gate').style.display = 'none';
     document.getElementById('admin-content').style.display = 'block';
     showToast((isEn() ? 'Welcome, ' : '歡迎，') + adminOperator);
 
-    // 名單已經跟著登入一起回來了，直接畫，不用再打一次後端
     if(Array.isArray(body.results)){
+      // 相容舊的 adminBootstrap：名單若真的跟著回來就直接畫，省一趟
       showWarnings(body);
       applyAdminData(body.results);
     } else {
       document.getElementById('admin-list').innerHTML =
-        '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
+        '<div class="adm-empty">' + (isEn() ? 'Loading list…' : '名單載入中…') + '</div>';
       loadAdminList();
     }
   }
