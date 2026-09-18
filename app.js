@@ -1,4 +1,4 @@
-  // ===================== i18n =====================
+// ===================== i18n =====================
   const I18N = {
     nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'}, nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
     nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},
@@ -438,6 +438,17 @@
 
   async function postToBackend(payload){
     if(!GAS_URL) return { ok:false, reason:'no-url' };
+
+    // ── 冪等鍵（idempotency key）──
+    // 一次「送出」在底下會嘗試三條路：POST → GET → JSONP。只要第一條在後端已經
+    // 寫進去、但回應逾時或不是 JSON，就會往下再送一次 —— 攜伴人多、寫入較慢時
+    // 特別容易發生，於是同一筆報名被寫兩次（本人那組已存在→第二次走「修改」把攜伴
+    // 又補一遍，看起來就是攜伴重覆）。
+    // 這裡讓同一次送出的三條路共用同一個 _rid，後端看到重覆的 _rid 就直接回傳
+    // 第一次的結果、不再寫入。這樣不管逾時或備援，都只會成立一筆。
+    if(payload && typeof payload === 'object' && !payload._rid){
+      payload._rid = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    }
 
     // AbortController：逾時後真的把請求中斷。
     // 少了這個，逾時的 fetch 會繼續在背景跑並佔著後端執行資源，
