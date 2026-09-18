@@ -204,10 +204,10 @@
     tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
     panels.forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
     if(name === 'admin'){
-      // 有記住密碼 → 直接自動登入（那一個請求本身就會喚醒後端）。
-      // 沒有記住 → 才另外發一個預熱，讓使用者打密碼的空檔把後端叫醒。
-      // 兩者擇一，避免以前「預熱 + 自動登入同時射出、冷啟動時互相排隊」造成登入更久。
-      if(!maybeAutoLoginAdmin()) warmUpBackend();
+      // 不再預熱。預熱會在你打開後台時先送一個請求，你按登入時它可能還沒跑完，
+      // 登入就得排在它後面 → 卡門口。拿掉之後，「按登入」是唯一的請求，乾淨直達，
+      // 跟你那個從來不卡的網站一樣。記住的密碼還是幫你帶入欄位（不送出）。
+      prefillAdminPw();
     }
   }
   tabButtons.forEach(btn=>{
@@ -388,13 +388,9 @@
   document.getElementById('line-modal-ok').addEventListener('click', closeLineModal);
 
   // ---- Backend Communication ----
-  // 逾時分開設，因為現在 GET 是小請求（登入、查詢）的主要路徑：
-  //   GET  給足時間撐過冷啟動（GAS 一陣子沒人用要重新喚醒，本來就要 10~15 秒），
-  //        一條路就把結果拿回來，不用像以前那樣三條路各等一輪湊成 30 秒。
-  //   POST 只在「網址塞不下的大請求」或最後保險時才用，給它一樣的餘裕。
-  //   JSONP 是最終保險。
-  const GET_TIMEOUT   = 18000;
-  const POST_TIMEOUT  = 15000;
+  // 現在只走一個 POST（對照那個很快的網站），所以只需要一個寬鬆逾時當安全網：
+  // 正常 1~2 秒就回，萬一冷啟動慢也給到 20 秒，超過才收尾顯示錯誤。
+  const POST_TIMEOUT  = 20000;
   const JSONP_TIMEOUT = 20000;
   const REQUEST_TIMEOUT = JSONP_TIMEOUT;   // 沿用舊名稱，jsonpRequest 仍在用
 
@@ -447,71 +443,29 @@
   async function postToBackend(payload){
     if(!GAS_URL) return { ok:false, reason:'no-url' };
 
-    // ── 冪等鍵（idempotency key）──
-    // 一次「送出」在底下會嘗試三條路：POST → GET → JSONP。只要第一條在後端已經
-    // 寫進去、但回應逾時或不是 JSON，就會往下再送一次 —— 攜伴人多、寫入較慢時
-    // 特別容易發生，於是同一筆報名被寫兩次（本人那組已存在→第二次走「修改」把攜伴
-    // 又補一遍，看起來就是攜伴重覆）。
-    // 這裡讓同一次送出的三條路共用同一個 _rid，後端看到重覆的 _rid 就直接回傳
-    // 第一次的結果、不再寫入。這樣不管逾時或備援，都只會成立一筆。
+    // 冪等鍵：萬一同一筆因逾時被送了兩次，後端用同一個 _rid 只認第一次、不重覆寫入。
     if(payload && typeof payload === 'object' && !payload._rid){
       payload._rid = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
     }
 
-    const reqBody = JSON.stringify(payload);
-    const urlGet = GAS_URL + '?p=' + encodeURIComponent(reqBody) + '&_=' + Date.now();
-    const canUseUrl = urlGet.length <= 7500;
-    let snippet = '';
-    let sawTimeout = false;
-
-    // 單一條路：逾時真的中斷連線，回應能解析成 JSON 才算成功，否則回 null 換下一條。
-    async function fetchLeg(kind, url, opts, ms){
-      const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      const killer = ctrl ? setTimeout(()=>{ sawTimeout = true; try{ ctrl.abort(); }catch(e){} }, ms) : null;
-      try{
-        const res = await withTimeout(fetch(url, Object.assign({ signal: ctrl ? ctrl.signal : undefined }, opts)), ms);
-        const raw = await res.text();
-        try{
-          return { ok:true, via:kind, status:res.status, body: JSON.parse(raw) };
-        }catch(pe){
-          if(!snippet) snippet = String(raw).slice(0, 300);
-          console.warn(kind.toUpperCase() + ' 回應不是 JSON，換下一條。前 300 字：', String(raw).slice(0, 300));
-        }
-      }catch(err){
-        if(/timeout|abort/i.test(String(err && err.message ? err.message : err))) sawTimeout = true;
-        console.warn(kind.toUpperCase() + ' 失敗，換下一條：', err);
-      }finally{
-        if(killer) clearTimeout(killer);
-      }
-      return null;
+    // ── 就跟另一個「很快」的網站一模一樣：單純一個 POST，直接讀 JSON。──
+    // 之前那套「GET→JSONP→POST 三層備援 + 18 秒逾時」才是登入/讀取慢的元兇。
+    // 對照組證明：在這個環境，單純 POST 到 GAS 就能又快又穩地拿到回應，不需要備援。
+    // 只保留一個寬鬆逾時（20 秒）當安全網 —— 萬一真的卡住才收尾顯示錯誤，
+    // 正常情況 1~2 秒就回來，完全不受影響。
+    try{
+      const res = await withTimeout(fetch(GAS_URL, {
+        method:'POST',
+        body: JSON.stringify(payload)
+      }), POST_TIMEOUT);
+      const body = await res.json();
+      return { ok:true, via:'post', status:res.status, body:body };
+    }catch(err){
+      const msg = String(err && err.message ? err.message : err);
+      const reason = /timeout|abort/i.test(msg) ? 'timeout' : 'network';
+      console.warn('POST 失敗：', err);
+      return { ok:false, reason:reason, error:msg };
     }
-
-    // credentials:'omit' → 當成匿名請求。多帳號登入時 Google 才不會把請求導向
-    // /u/<n>/（那個帳號多半沒有這支腳本的存取權，會回沒有 CORS 標頭的錯誤頁）。
-    const getLeg = ()=> fetchLeg('get', urlGet,
-      { method:'GET', credentials:'omit', redirect:'follow' }, GET_TIMEOUT);
-    const postLeg = ()=> fetchLeg('post', GAS_URL,
-      { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: reqBody, credentials:'omit' }, POST_TIMEOUT);
-    async function jsonpLeg(){
-      try{ return { ok:true, via:'jsonp', body: await jsonpRequest(payload) }; }
-      catch(e){ if(/timeout/i.test(String(e && e.message))) sawTimeout = true; console.warn('JSONP 失敗：', e); return null; }
-    }
-
-    // ── 傳輸順序（這是這次真正解掉「登入卡 30 秒」的地方）──
-    // 小請求（登入、查詢…網址塞得下）先走 GET：它用 credentials:'omit' 當匿名請求，
-    //   是 GAS 跨網域最穩、最快的路，而且能給它足夠時間撐過冷啟動、一條就拿到結果。
-    //   POST 因為 script.google → googleusercontent 的轉址常常讀不到回應，改放最後
-    //   當保險 —— 之前把 POST 放第一條又給 15 秒，才會冷啟動時白等一輪又一輪湊成 30 秒。
-    // 大請求（攜伴很多、網址超過 7500 字）只有 POST 扛得動，GET／JSONP 都有長度上限。
-    const legs = canUseUrl ? [getLeg, jsonpLeg, postLeg] : [postLeg];
-    for(let i = 0; i < legs.length; i++){
-      const r = await legs[i]();
-      if(r) return r;
-    }
-
-    // 全部失敗：有收到網頁 = 部署／權限問題；沒收到而是等太久 = 逾時（多半冷啟動）。
-    const reason = snippet ? 'bad-response' : (sawTimeout ? 'timeout' : 'network');
-    return { ok:false, reason:reason, snippet:snippet };
   }
 
   // ---- Form Submission ----
@@ -1502,18 +1456,14 @@
   function loadAdminCred(){ try{ return localStorage.getItem(ADMIN_CRED_KEY) || ''; }catch(e){ return ''; } }
   function clearAdminCred(){ try{ localStorage.removeItem(ADMIN_CRED_KEY); }catch(e){} }
 
-  let __adminAutoTried = false;
-  function maybeAutoLoginAdmin(){
-    if(__adminAutoTried || adminPassword) return false;    // 已試過或已登入就不做
-    const gate = document.getElementById('admin-gate');
-    if(!gate || gate.style.display === 'none') return false;// 已經在後台裡
-    const saved = loadAdminCred();
-    if(!saved) return false;
-    __adminAutoTried = true;
+  // 只把記住的密碼「帶入欄位」，不自動送出。
+  // 自動送出會在打開後台的瞬間就發登入請求，和預熱撞在一起搶資源、時好時壞；
+  // 改成你按一下登入才送 —— 只有一個請求，而且預熱已經先把後端叫醒 → 秒進。
+  function prefillAdminPw(){
+    if(adminPassword) return;                                // 已登入就不用
     const input = document.getElementById('admin-pw');
-    if(input) input.value = saved;
-    tryUnlockAdmin();                                       // 自動送出（密碼變了會自動清掉重來）
-    return true;                                            // 已經發出登入請求，外面就別再多發預熱
+    const saved = loadAdminCred();
+    if(input && saved && !input.value) input.value = saved;  // 幫你帶入，省得重打；送不送由你按
   }
 
   async function tryUnlockAdmin(){
@@ -1532,10 +1482,10 @@
     btn.textContent = isEn() ? 'Signing in…' : '登入中…';
     errEl.style.display = 'none';
 
-    // 只驗密碼（adminLogin 不讀表，很快）。密碼對了就先進後台，
-    // 名單另外用 loadAdminList() 讀 —— 這樣「進得去」只等密碼驗證，
-    // 不會被讀整張表卡在門外。
-    const r = await postToBackend({ type:'adminLogin', password: pw });
+    // 驗密碼 + 讀名單「一次往返」完成（adminBootstrap）。
+    // 名單已清乾淨、日期函式也加速了，讀名單很快，所以合併成一趟最省 ——
+    // 跟你另一個「一個請求」的快網站同一個結構，比拆兩趟少一次來回。
+    const r = await postToBackend({ type:'adminBootstrap', password: pw });
     const body = r.body || {};
 
     btn.disabled = false;
@@ -1571,7 +1521,10 @@
           ? 'The backend does not recognise this request — please deploy the updated Apps Script as a NEW VERSION.'
           : '後端不認得這個請求，代表 Apps Script 還是舊版。請到「部署 → 管理部署作業 → 鉛筆 → 版本選『新版本』→ 部署」';
       } else {
-        clearAdminCred();   // 記住的密碼已失效（改過了），清掉讓使用者重打
+        // 只有「明確密碼錯」才清掉記住的密碼。逾時/網路波動走的是上面 !r.ok，
+        // 不會到這裡；但保險起見這裡也只在 wrong-password/no-password 才清，
+        // 免得偶發狀況把好好的記住密碼洗掉。
+        if(body.reason === 'wrong-password' || body.reason === 'no-password') clearAdminCred();
         errEl.textContent = body.reason === 'not-configured'
           ? (body.message || '後台密碼尚未設定')
           : (em || (isEn() ? 'Incorrect password — please try again' : '密碼錯誤，請再試一次'));
@@ -1841,11 +1794,15 @@
         + '</div>';
     }).join('');
 
-    const payHtml = (g.payments || []).length
-      ? g.payments.map(p=> '<div class="pay-line"><b>' + escapeHtml(p.date || '—') + '</b>'
-          + '<span>NT$' + Number(p.amount||0).toLocaleString() + '</span>'
-          + '<span>' + L('後五碼','Last 5') + ' ' + escapeHtml(p.last5 || '—') + '</span></div>').join('')
-      : '<div class="adm-sub" style="padding:0;">' + L('尚無匯款回報','No transfer reported yet') + '</div>';
+    // 匯款回報：精簡成一行式（重用摘要列 adm-sub 的樣式，會自動換行、不占大空間）
+    const payHtml = '<div class="adm-sub" style="padding:0 0 8px;">'
+      + '<span style="opacity:.7;">' + L('匯款回報','Reported') + '：</span>'
+      + ((g.payments || []).length
+          ? g.payments.map(p=> '<span><b>' + escapeHtml(p.date || '—') + '</b> NT$'
+              + Number(p.amount||0).toLocaleString() + ' · ' + L('後五碼','L5') + ' '
+              + escapeHtml(p.last5 || '—') + '</span>').join('')
+          : '<span>' + L('尚無回報','None yet') + '</span>')
+      + '</div>';
 
     const CUR_CLS = {
       [PS.NONE]:'cur-none', [PS.CHECKING]:'cur-checking',
@@ -1907,11 +1864,11 @@
           + (g.seatNo ? '<span>' + L('桌次','Table') + ' <b>' + escapeHtml(String(g.seatNo)) + '</b></span>' : '')
           + (g.editCount ? '<span>' + L('已修改','Edited') + ' ' + g.editCount + ' ' + L('次','times') + '</span>' : '')
         + '</div>'
-        // 款項狀態的四個按鈕直接接在摘要列下面，不另外下標題 ——
-        // 按鈕本身已經標示目前狀態（● 那個），標題是多餘的。
+        // 匯款回報放在狀態按鈕正上方，方便對照「收到多少」再按狀態
+        + payHtml
+        // 款項狀態四個按鈕，緊接在匯款回報下面
         + '<div class="adm-actions adm-pay-row">' + statusBtns + '</div>'
         + '<div class="adm-sec"><h5>' + L('成員','Members') + '</h5>' + memHtml + '</div>'
-        + '<div class="adm-sec"><h5>' + L('匯款回報','Transfer reports') + '</h5>' + payHtml + '</div>'
         + '<div class="adm-sec"><h5>' + L('其他資料','Details') + '</h5><dl class="kv">'
           + '<dt>IG</dt><dd>' + escapeHtml(g.ig || '—') + '</dd>'
           + '<dt>' + L('併桌對象','Join table') + '</dt><dd>' + escapeHtml(g.tableWith || '—') + '</dd>'
