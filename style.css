@@ -584,22 +584,28 @@
     background:var(--bg-surface-2); border-color:var(--line); color:var(--text-muted);
   }
 
+  /* 併桌 IG 的建議選單。樣式刻意與國籍選單（.cpick-list）一致：
+     同樣是深色卡片 + 紫色外框，兩個欄位並排時看起來才是同一套元件。
+     原本是白底深字，在深色版面上會很突兀。 */
   .ig-wrap{position:relative;}
   .ig-suggest{
     position:absolute; z-index:60; left:0; right:0; top:calc(100% + 6px);
-    background:#fff; border:1px solid #d9d2ea; border-radius:10px;
-    max-height:230px; overflow-y:auto; overscroll-behavior:contain;
-    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+    background:var(--bg-surface); border:1px solid var(--purple); border-radius:10px;
+    max-height:260px; overflow-y:auto; overscroll-behavior:contain;
+    box-shadow:0 10px 30px rgba(0,0,0,0.45);
     padding:4px;
   }
   .ig-suggest[hidden]{display:none;}
   .ig-opt{
+    display:flex; align-items:center; gap:8px;
     padding:9px 11px; border-radius:7px;
-    font-size:0.86rem; cursor:pointer; color:#2A1B3D;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:0.86rem; cursor:pointer; color:var(--text-light);
+    white-space:nowrap; overflow:hidden;
   }
+  .ig-opt-flag{flex:0 0 auto;}
+  .ig-opt-ig{flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis;}
   .ig-opt:hover, .ig-opt.active{background:var(--purple); color:#fff;}
-  .ig-empty{padding:11px; font-size:0.79rem; color:#6b6280; text-align:center;}
+  .ig-empty{padding:11px; font-size:0.79rem; color:var(--text-muted); text-align:center;}
 
   .cpick{position:relative;}
   .cpick-toggle{
@@ -685,6 +691,20 @@
   .existing-mem.is-cancelled{opacity:0.45;}
 
   .adm-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+  /* 讀取對帳數字：平常低調，數字對不上（有列被略過）時轉成橘色 */
+  .read-stats{font-variant-numeric:tabular-nums;}
+  .read-stats.is-warn{color:var(--orange); font-weight:600;}
+
+  /* 診斷輸出：等寬字、可捲動、可整段選取複製 */
+  .diag-box{
+    background:var(--bg-deep); border:1px solid var(--purple); border-radius:12px;
+    padding:14px 16px; margin:0 0 14px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:0.74rem; line-height:1.55; color:var(--text-light);
+    max-height:420px; overflow:auto;
+    white-space:pre-wrap; word-break:break-word;
+    user-select:text; -webkit-user-select:text;
+  }
   .adm-viewtabs{display:flex; gap:6px; margin-bottom:16px;}
   .adm-viewtab{
     padding:9px 18px; border-radius:10px; border:1px solid var(--line);
@@ -716,8 +736,7 @@
     background:var(--bg-surface-2); border:1px solid var(--purple); color:var(--text-light);
   }
   .adm-spacer{flex:1 1 auto;}
-  .adm-caret{color:var(--text-muted); font-size:0.8rem; transition:transform .2s;}
-  .adm-card.is-open .adm-caret{transform:rotate(90deg);}
+  /* 展開箭頭已移除（整列本來就可以點），.adm-caret 相關樣式一併拿掉 */
   .adm-sub{
     padding:0 16px 12px; display:flex; gap:10px; flex-wrap:wrap;
     font-size:0.78rem; color:var(--text-muted);

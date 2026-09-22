@@ -100,7 +100,7 @@
     line_modal_close_btn:{en:'Got it', ja:'閉じる', ko:'확인'}
   };
 
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbwSiXOtHJEtzvmmgqTRoNXPLfwNFa_MZ1mnFjZzRf0XwphOG86BSwTj3QcaHhB__VR0Og/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyttgZjMRFh6KEANIy-cd2MIt8H98mCLbb5LVSzYXqMiv-mcSRXKN0JAO-6ZErnr_pt/exec';
 
   let currentLang = 'zh';
 
@@ -390,53 +390,15 @@
   // ---- Backend Communication ----
   // 現在只走一個 POST（對照那個很快的網站），所以只需要一個寬鬆逾時當安全網：
   // 正常 1~2 秒就回，萬一冷啟動慢也給到 20 秒，超過才收尾顯示錯誤。
-  const POST_TIMEOUT  = 20000;
-  const JSONP_TIMEOUT = 20000;
-  const REQUEST_TIMEOUT = JSONP_TIMEOUT;   // 沿用舊名稱，jsonpRequest 仍在用
+  // 只剩單純一個 POST，所以只需要一個寬鬆逾時當安全網。
+  // 後端拿掉全域鎖之後，正常 1～2 秒就回；20 秒是留給冷啟動的餘裕。
+  const POST_TIMEOUT = 20000;
 
   function withTimeout(promise, ms){
     return new Promise((resolve, reject)=>{
       const timer = setTimeout(()=> reject(new Error('timeout')), ms);
       promise.then(v=>{ clearTimeout(timer); resolve(v); },
                     e=>{ clearTimeout(timer); reject(e); });
-    });
-  }
-
-  let jsonpSeq = 0;
-  function jsonpRequest(payload){
-    return new Promise((resolve, reject)=>{
-      const cbName = '__tpcb' + (++jsonpSeq) + '_' + Date.now();
-      const script = document.createElement('script');
-      let done = false;
-
-      const cleanup = ()=>{
-        done = true;
-        try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
-        if(script.parentNode) script.parentNode.removeChild(script);
-      };
-
-      window[cbName] = (data)=>{ if(done) return; cleanup(); resolve(data); };
-
-      const timer = setTimeout(()=>{
-        if(done) return;
-        cleanup();
-        reject(new Error('jsonp-timeout'));
-      }, REQUEST_TIMEOUT);
-
-      script.onerror = ()=>{
-        if(done) return;
-        clearTimeout(timer); cleanup();
-        reject(new Error('jsonp-error'));
-      };
-
-      const url = GAS_URL + '?callback=' + cbName
-                + '&p=' + encodeURIComponent(JSON.stringify(payload))
-                + '&_=' + Date.now();
-
-      if(url.length > 7500){ clearTimeout(timer); cleanup(); reject(new Error('payload-too-large')); return; }
-
-      script.src = url;
-      document.head.appendChild(script);
     });
   }
 
@@ -453,18 +415,46 @@
     // 對照組證明：在這個環境，單純 POST 到 GAS 就能又快又穩地拿到回應，不需要備援。
     // 只保留一個寬鬆逾時（20 秒）當安全網 —— 萬一真的卡住才收尾顯示錯誤，
     // 正常情況 1~2 秒就回來，完全不受影響。
+    // ── 先當純文字收下來，再自己 JSON.parse ──
+    //
+    // 原本是直接 await res.json()。問題是：當後端回的不是資料而是一頁 HTML
+    //（Google 的錯誤頁、登入頁、或 Apps Script 執行失敗的畫面），
+    // res.json() 會拋出 SyntaxError，被下面的 catch 接住之後標成 'network'，
+    // 於是畫面顯示「可能是網路問題，或你正用 LINE 內建瀏覽器」——
+    // 完全不是真正的原因，而真正的原因（那頁 HTML 說了什麼）被整個丟掉。
+    //
+    // 改成文字優先之後，parse 失敗時我們手上還留著原始內容，
+    // 可以據此分辨到底是哪一種狀況，並且把前 300 字帶回去顯示。
+    let res, raw;
     try{
-      const res = await withTimeout(fetch(GAS_URL, {
+      res = await withTimeout(fetch(GAS_URL, {
         method:'POST',
         body: JSON.stringify(payload)
       }), POST_TIMEOUT);
-      const body = await res.json();
-      return { ok:true, via:'post', status:res.status, body:body };
+      raw = await res.text();
     }catch(err){
       const msg = String(err && err.message ? err.message : err);
       const reason = /timeout|abort/i.test(msg) ? 'timeout' : 'network';
-      console.warn('POST 失敗：', err);
+      console.warn('POST 連線失敗：', err);
       return { ok:false, reason:reason, error:msg };
+    }
+
+    try{
+      return { ok:true, via:'post', status:res.status, body: JSON.parse(raw) };
+    }catch(err){
+      // 連線是通的（拿得到回應），只是內容不是 JSON。
+      const snippet = String(raw || '')
+        .replace(/<[^>]*>/g, ' ')       // 去標籤，留下人看得懂的文字
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 300);
+      console.error('後端回的不是 JSON。HTTP ' + res.status + '：', raw);
+      return {
+        ok:false, reason:'bad-response',
+        status: res.status,
+        snippet: snippet,
+        error:'non-json-response'
+      };
     }
   }
 
@@ -1094,7 +1084,14 @@
     if(igLoading) return igLoading;
     igLoading = postToBackend({ type:'igList' }).then(function(r){
       const body = r.body || {};
-      if(body.result === 'success'){ igDirectory = body.igs || []; igLoaded = true; }
+      if(body.result === 'success'){
+        // 後端送 people: [{ig, country}]，不含姓名（刻意的，見 gas.gs 的 handleIgList）。
+        // 萬一後端還是舊版只回 igs，補成同樣形狀，就只是少了國旗而已。
+        igDirectory = Array.isArray(body.people)
+          ? body.people
+          : (body.igs || []).map(function(ig){ return { ig:ig, country:'' }; });
+        igLoaded = true;
+      }
       igLoading = null;
     }).catch(function(){ igLoading = null; });
     return igLoading;
@@ -1102,9 +1099,12 @@
 
   function filterIgs(input){
     const k = igKey(input);
+    // 沒打字就先列出前 80 筆，方便直接翻找。
+    // 清單裡只有 IG 與國碼、沒有姓名，攤開來也指認不到特定個人。
     if(!k) return igDirectory.slice(0, 80);
-    return igDirectory.filter(function(ig){
-      const t = igKey(ig);
+
+    return igDirectory.filter(function(p){
+      const t = igKey(p.ig);
       return t.indexOf(k) >= 0 || k.indexOf(t) >= 0;
     }).slice(0, 80);
   }
@@ -1146,16 +1146,23 @@
         return;
       }
 
-      box.innerHTML = current.map(function(ig, i){
+      // 顯示「國旗 + IG 帳號」。不顯示姓名 —— 而且後端也不會送姓名過來，
+      // 所以就算有人去翻開發者工具也看不到別人的姓名。
+      box.innerHTML = current.map(function(p, i){
         return '<div class="ig-opt' + (i === activeIdx ? ' active' : '') + '"'
           + ' role="option" aria-selected="' + (i === activeIdx) + '"'
-          + ' data-ig="' + escapeHtml(ig) + '">' + escapeHtml(ig) + '</div>';
+          + ' data-idx="' + i + '">'
+          + (p.country ? '<span class="ig-opt-flag">' + flagOf(p.country) + '</span>' : '')
+          + '<span class="ig-opt-ig">' + escapeHtml(p.ig) + '</span>'
+          + '</div>';
       }).join('');
       openBox();
     }
 
-    function choose(ig){
-      input.value = ig;
+    function choose(p){
+      if(!p) return;
+      // 只填 IG 這一欄，不去動旁邊的姓名與國籍
+      input.value = p.ig;
       close();
     }
 
@@ -1179,7 +1186,7 @@
       const opt = e.target.closest('.ig-opt');
       if(!opt) return;
       e.preventDefault();
-      choose(opt.dataset.ig);
+      choose(current[Number(opt.dataset.idx)]);
     });
 
     document.addEventListener('click', function(e){
@@ -1435,18 +1442,6 @@
   let adminFilter = 'all';
   let adminView = 'list';
 
-  // ── 保溫（warm-up）──
-  // 一切到後台分頁就先偷偷發一個很輕的請求把後端喚醒，等使用者把密碼打完，
-  // 執行個體多半已經熱好，登入就不會再撞到冷啟動。射後不理、不看結果。
-  // adminLogin 不帶密碼：後端只回「請輸入密碼」，不讀試算表，是最便宜的喚醒方式。
-  let __lastWarm = 0;
-  function warmUpBackend(){
-    const now = Date.now();
-    if(now - __lastWarm < 60000) return;   // 最多每分鐘一次，避免重複打
-    __lastWarm = now;
-    try{ postToBackend({ type:'adminLogin' }); }catch(e){}
-  }
-
   // ── 記住登入 ──
   // 成功登入後，把密碼存在「這台裝置的瀏覽器」裡，下次自動帶入、自動登入。
   // 這是綁在已驗證過的裝置上，跟「把密碼寫死在 HTML 給所有人下載」完全不同：
@@ -1482,9 +1477,12 @@
     btn.textContent = isEn() ? 'Signing in…' : '登入中…';
     errEl.style.display = 'none';
 
-    // 驗密碼 + 讀名單「一次往返」完成（adminBootstrap）。
-    // 名單已清乾淨、日期函式也加速了，讀名單很快，所以合併成一趟最省 ——
-    // 跟你另一個「一個請求」的快網站同一個結構，比拆兩趟少一次來回。
+    // 登入只驗密碼，後端完全不碰試算表，1 秒內就回得來。
+    //
+    // 原本 adminBootstrap 會順便把整份名單一起算好回傳（「合併成一次往返比較省」），
+    // 但那趟要讀整張報名表、每組重新組裝，冷啟動時很容易超過 20 秒逾時 ——
+    // 結果就是連後台的門都進不去。現在名單改成進去之後才載（見下方），
+    // 名單慢是名單的事，不會再把人擋在登入頁外面。
     const r = await postToBackend({ type:'adminBootstrap', password: pw });
     const body = r.body || {};
 
@@ -1547,7 +1545,7 @@
     showToast((isEn() ? 'Welcome, ' : '歡迎，') + adminOperator);
 
     if(Array.isArray(body.results)){
-      // 相容舊的 adminBootstrap：名單若真的跟著回來就直接畫，省一趟
+      // 相容：萬一後端還是舊版、名單跟著回來了，就直接畫，省一趟
       showWarnings(body);
       applyAdminData(body.results);
     } else {
@@ -1569,15 +1567,24 @@
     showWarnings(body);
     if(body.result === 'success'){
       applyAdminData(body.results || []);
+      showReadStats(body.stats);
     } else if(!r.ok){
       const reasonTxt = (r.reason === 'timeout')
         ? (isEn()
             ? 'The server took too long to respond (large data or a cold start right after redeploying). Press "Refresh Data" again — the second try is usually much faster.'
             : '伺服器回應逾時：可能是資料較多，或剛重新部署造成「冷啟動」。請再按一次「更新資料」，通常第二次就會快很多。這不是網址或權限問題（登入已經成功，代表連線正常）。')
         : (r.reason === 'bad-response')
+          // 把後端「真正回了什麼」原封不動顯示出來。
+          // 這是整段診斷最關鍵的一行：Google 的錯誤頁通常會明講原因
+          //（沒有權限、指令碼發生錯誤、要求登入…），有這段文字就不必再猜。
           ? (isEn()
-              ? 'The server replied with a web page instead of data. The Apps Script is reachable but not returning JSON — check that it is deployed as a NEW VERSION with access set to "Anyone". (Details in the console, F12)'
-              : '後端回傳的是網頁而不是資料。連線是通的，但 Apps Script 沒有正常回應 —— 請確認已「部署新版本」且存取權限為「任何人」。詳細內容在主控台（F12）。')
+              ? ('The server replied with a web page instead of data (HTTP ' + r.status + ').\n'
+                 + 'What it actually said: 「' + (r.snippet || '(empty)') + '」\n'
+                 + 'Usually: not deployed as a NEW VERSION, or access is not set to "Anyone".')
+              : ('後端回傳的是網頁而不是資料（HTTP ' + r.status + '）。\n'
+                 + '它實際回的內容是：「' + (r.snippet || '(空白)') + '」\n'
+                 + '最常見的兩個原因：一是沒有「部署新版本」（只存檔不算），'
+                 + '二是存取權限不是「任何人」。請把上面這段內容一起回報。'))
           : (isEn()
               ? 'The request did not complete (network, or an in-app browser such as LINE/Instagram blocking it). Try opening the page in a normal browser.'
               : '請求沒有完成：可能是網路問題，或你正用 LINE／Instagram 內建瀏覽器（會擋掉部分連線）。請改用系統瀏覽器（Safari／Chrome）再試一次。');
@@ -1610,6 +1617,37 @@
   });
   document.getElementById('admin-log-refresh-btn').addEventListener('click', loadAdminLog);
 
+  // ---- 診斷 ----
+  // 讀名單失敗時，錯誤訊息只說得出症狀（逾時／回的不是資料）。
+  // 這顆按鈕會去問後端「你那邊看到的環境長什麼樣」：試算表打不打得開、
+  // 分頁叫什麼、標題缺不缺、各有幾列、組名單會不會炸。
+  // 結果直接印在畫面上，可以整段複製回報，不必再去記錯誤訊息。
+  document.getElementById('admin-diagnose-btn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('admin-diagnose-btn');
+    const box = document.getElementById('admin-diag');
+    btn.disabled = true;
+    box.style.display = 'block';
+    box.textContent = isEn() ? 'Running diagnostics…' : '診斷中…';
+
+    const r = await postToBackend({ type:'diagnose', password: adminPassword });
+
+    if(!r.ok){
+      // 連診斷都打不通 → 問題在傳輸層，不在試算表。這個結論本身就很有用。
+      box.textContent =
+        (isEn() ? 'Could not reach the backend at all.\n' : '連診斷請求都打不到後端。\n')
+        + 'reason: ' + r.reason + '\n'
+        + (r.status ? 'HTTP: ' + r.status + '\n' : '')
+        + (r.snippet ? (isEn() ? 'Server said: ' : '後端實際回的內容：') + r.snippet + '\n' : '')
+        + (r.error ? 'error: ' + r.error + '\n' : '')
+        + (isEn()
+            ? '\n→ This is a transport/deployment problem, not a spreadsheet problem.'
+            : '\n→ 這代表問題在部署或連線，不在試算表。請檢查：是否已「部署新版本」、存取權限是否為「任何人」。');
+    } else {
+      box.textContent = JSON.stringify(r.body, null, 2);
+    }
+    btn.disabled = false;
+  });
+
   document.querySelectorAll('.adm-viewtab').forEach(b=>{
     b.addEventListener('click', ()=>{
       document.querySelectorAll('.adm-viewtab').forEach(x=> x.classList.remove('active'));
@@ -1631,6 +1669,23 @@
   });
 
   document.getElementById('admin-country-filter').addEventListener('change', renderAdminList);
+
+  // 顯示「試算表幾列 → 認到幾組幾人」的對帳數字。
+  // 有這一行，資料被吃掉的時候看得出來 —— 沒有的話，畫面只會少幾個人，
+  // 而你完全不會知道少了。數字對不上時會轉成橘色示警。
+  function showReadStats(stats){
+    const el = document.getElementById('admin-read-stats');
+    if(!el) return;
+    if(!stats){ el.textContent = ''; el.classList.remove('is-warn'); return; }
+
+    const skipped = Number(stats.skippedNoRegId) || 0;
+    el.textContent = isEn()
+      ? ('Sheet rows: ' + stats.sheetRows + ' → ' + stats.groups + ' groups / ' + stats.people + ' people'
+         + (skipped ? '  ⚠ ' + skipped + ' rows skipped (no registration ID)' : ''))
+      : ('試算表 ' + stats.sheetRows + ' 列 → 認到 ' + stats.groups + ' 組 / ' + stats.people + ' 人'
+         + (skipped ? '　⚠ 有 ' + skipped + ' 列沒有報名編號，未顯示' : ''));
+    el.classList.toggle('is-warn', skipped > 0);
+  }
 
   function showWarnings(body){
     const box = document.getElementById('warn-banner');
@@ -1886,7 +1941,6 @@
           + (req ? '<span class="adm-req">⚠ ' + req + '</span>' : '')
           + '<span class="adm-head-amount">NT$' + Number(g.due||0).toLocaleString() + '</span>'
           + '<span class="st-badge ' + meta.cls + '">' + psText(g) + '</span>'
-          + '<span class="adm-caret">▶</span>'
         + '</div>';
 
     return '<div class="adm-card' + (g.allCancelled?' is-void':'') + (req?' has-req':'') + '" data-id="' + escapeHtml(g.regId) + '">'
@@ -1905,11 +1959,12 @@
         // 款項狀態四個按鈕，緊接在匯款回報下面
         + '<div class="adm-actions adm-pay-row">' + statusBtns + '</div>'
         + '<div class="adm-sec"><h5>' + L('成員','Members') + '</h5>' + memHtml + '</div>'
+        // IG 拿掉了：上面「成員」區塊每一位（含本人）本來就會顯示自己的 IG，
+        // 這裡再列一次是重複的。「最後修改」也拿掉，需要追查改了什麼
+        // 請看「異動紀錄」分頁，那裡有完整的前後對照。
         + '<div class="adm-sec"><h5>' + L('其他資料','Details') + '</h5><dl class="kv">'
-          + '<dt>IG</dt><dd>' + escapeHtml(g.ig || '—') + '</dd>'
           + '<dt>' + L('併桌對象','Join table') + '</dt><dd>' + escapeHtml(g.tableWith || '—') + '</dd>'
           + '<dt>' + L('備註','Notes') + '</dt><dd>' + escapeHtml(g.notes || '—') + '</dd>'
-          + '<dt>' + L('最後修改','Last edited') + '</dt><dd>' + escapeHtml(g.lastEdited || '—') + '</dd>'
         + '</dl></div>'
         + '<div class="adm-actions"><button class="mini-btn" data-act="open-edit">✏️ ' + L('編輯資料','Edit') + '</button></div>'
         + editHtml

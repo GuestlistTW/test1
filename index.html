@@ -340,7 +340,6 @@
       <div class="form-msg" id="payment-msg" data-i18n="pay_msg">✅ 已收到你的轉帳回報，我們會盡快核對並更新報名狀態。</div>
     </form>
   </section>
-  </section>
 
   <!-- ============ 花絮 ============ -->
   <section class="panel" id="panel-gallery">
@@ -421,8 +420,11 @@
 
         <div class="adm-toolbar">
           <button type="button" class="btn-secondary" id="admin-refresh-btn" data-i18n="admin_refresh_btn">🔄 更新資料</button>
+          <button type="button" class="btn-secondary" id="admin-diagnose-btn">🔧 診斷</button>
           <span class="hint" id="admin-last-updated"></span>
+          <span class="hint read-stats" id="admin-read-stats"></span>
         </div>
+        <pre class="diag-box" id="admin-diag" style="display:none;"></pre>
 
         <div class="admin-filters" id="admin-filters">
           <button type="button" class="filter-btn active" data-filter="all" data-i18n="filter_all">全部</button>
