@@ -100,7 +100,7 @@
     line_modal_close_btn:{en:'Got it', ja:'閉じる', ko:'확인'}
   };
 
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyttgZjMRFh6KEANIy-cd2MIt8H98mCLbb5LVSzYXqMiv-mcSRXKN0JAO-6ZErnr_pt/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbwSiXOtHJEtzvmmgqTRoNXPLfwNFa_MZ1mnFjZzRf0XwphOG86BSwTj3QcaHhB__VR0Og/exec';
 
   let currentLang = 'zh';
 
