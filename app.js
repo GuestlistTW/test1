@@ -100,6 +100,79 @@
     line_modal_close_btn:{en:'Got it', ja:'閉じる', ko:'확인'}
   };
 
+  // ===================== 主頁公告 =====================
+  //
+  // 存成結構化資料而不是塞進 I18N 的字串，原因是這裡有條列、有標題，
+  // 而 applyLang() 走的是 el.textContent = ... ——
+  // textContent 不會解析 HTML，條列符號會變成一串純文字擠在一起。
+  // 所以改由 renderAnnouncements() 自己畫，並在切換語言時重新呼叫一次。
+  //
+  // 每則公告：title（標題）、intro（開場，選填）、bullets（條列，選填）、body（段落，選填）
+  // 缺某個語言時會自動退回英文，再退回中文（見 pickText），不會開天窗。
+  const ANNOUNCEMENTS = [
+    {
+      id: 'pay',
+      icon: '💳',
+      title: {
+        zh:'匯款提醒',
+        en:'Payment Reminder',
+        ja:'お振込みのお願い',
+        ko:'송금 안내'
+      },
+      body: {
+        zh:'已完成匯款的朋友，請至「匯款轉帳」分頁填寫轉帳資訊，謝謝！',
+        en:'If you’ve completed your bank transfer, please submit your payment details on the Payment page. Thank you!',
+        ja:'お振込みが完了しましたら、「銀行振込」ページより振込情報をご入力ください。ありがとうございます。',
+        ko:'송금을 완료하신 분은 ‘송금 안내’ 페이지에서 송금 정보를 입력해 주세요. 감사합니다!'
+      }
+    },
+    {
+      id: 'seating',
+      icon: '🪑',
+      title: {
+        zh:'活動座位安排通知',
+        en:'Seating Arrangements Update',
+        ja:'お座席のご案内',
+        ko:'좌석 안내'
+      },
+      intro: {
+        zh:'大家好，跟大家說明一下活動的座位與桌次安排細節：',
+        en:'Hi everyone, here are the details regarding the seating arrangements for the event:',
+        ja:'皆さまへ、当日のお座席とテーブルについてご案内いたします。',
+        ko:'행사 당일 좌석 및 테이블 배치에 대해 안내드립니다.'
+      },
+      bullets: [
+        {
+          label:{ zh:'座位方式', en:'Seating Type', ja:'座席方式', ko:'좌석 방식' },
+          text:{
+            zh:'採預先排位制（非先到先選）。',
+            en:'Pre-arranged seating (not first-come, first-served).',
+            ja:'事前指定制です（当日先着順ではありません）。',
+            ko:'사전 배정제입니다 (선착순이 아닙니다).'
+          }
+        },
+        {
+          label:{ zh:'每桌人數', en:'Table Capacity', ja:'1テーブルの人数', ko:'테이블당 인원' },
+          text:{
+            zh:'一桌上限為 10 人。',
+            en:'Up to 10 pax max per table.',
+            ja:'最大 10 名までです。',
+            ko:'한 테이블 최대 10명입니다.'
+          }
+        },
+        {
+          label:{ zh:'同桌或附近安排', en:'Seating Preference', ja:'同席・近隣席のご希望', ko:'합석 및 인근 배치' },
+          text:{
+            zh:'填寫報名表時可註明希望同桌的朋友名單。若同行人數超過 10 人（例如 16 人），一樣可以在同一張表單上填寫，主辦方會協助安排坐在相鄰或附近的桌次；若無特別指定，將由主辦方統一協助排位。',
+            en:'You can specify who you would like to sit with on the entry form. If your group exceeds 10 people (e.g., 16 people), you can still list everyone on the same form, and the host will arrange for your tables to be next to or near each other. If no preferences are specified, seats will be assigned by the host.',
+            ja:'お申込みフォームにご一緒したい方のお名前をご記入いただけます。ご同行が 10 名を超える場合（例：16 名）も、同じフォームにまとめてご記入ください。主催側で隣接または近くのテーブルになるよう手配いたします。特にご指定がない場合は、主催側で調整させていただきます。',
+            ko:'신청서에 함께 앉고 싶은 분의 명단을 적어 주실 수 있습니다. 동행 인원이 10명을 넘는 경우(예: 16명)에도 같은 신청서에 모두 적어 주시면, 주최 측에서 인접하거나 가까운 테이블로 배치해 드립니다. 별도의 요청이 없으시면 주최 측에서 배정합니다.'
+          }
+        }
+      ]
+    }
+  ];
+
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbyttgZjMRFh6KEANIy-cd2MIt8H98mCLbb5LVSzYXqMiv-mcSRXKN0JAO-6ZErnr_pt/exec';
 
   let currentLang = 'zh';
@@ -159,6 +232,8 @@
     renumberGuests();
     updateGuestHint();
     refreshCountryPickers();
+    // 公告是自己畫的（不走 data-i18n），切語言時要跟著重畫
+    if(typeof renderAnnouncements === 'function') renderAnnouncements();
     if(typeof adminData !== 'undefined' && adminData.length){
       populateAdminCountryFilter();
       renderAdminStats();
@@ -208,6 +283,16 @@
       // 登入就得排在它後面 → 卡門口。拿掉之後，「按登入」是唯一的請求，乾淨直達，
       // 跟你那個從來不卡的網站一樣。記住的密碼還是幫你帶入欄位（不送出）。
       prefillAdminPw();
+    }
+    if(name === 'register'){
+      // 切到報名分頁就開始預載 IG 清單。使用者還要填姓名、國籍、Email、電話，
+      // 等他捲到「與其他組併桌」那欄時，清單早就準備好了 ——
+      // 原本是碰到那個欄位才開始載，所以每次都要乾等一趟往返。
+      //
+      // 請求次數沒有增加（一樣是每位有意報名的訪客一次），只是時間點提前；
+      // 而且有 localStorage 快取，多數情況根本不會真的送出請求。
+      // loadIgDirectory 內部會擋重複呼叫，切來切去也只會載一次。
+      loadIgDirectory();
     }
   }
   tabButtons.forEach(btn=>{
@@ -378,6 +463,77 @@
     document.body.removeChild(ta);
   }
 
+  // ---- 主頁公告 ----
+  //
+  // 只畫「目前語言」那一版，不是四種語言疊在一起 ——
+  // 四種疊起來會讓公告長四倍，而網站本來就有語言切換器，
+  // 使用者選了哪個語言就該只看到哪個語言，跟站上其他文字一致。
+  function pickText(map){
+    if(!map) return '';
+    return map[currentLang] || map.en || map.zh || '';
+  }
+
+  function renderAnnouncements(){
+    const box = document.getElementById('announce-body');
+    if(!box) return;
+
+    box.innerHTML = ANNOUNCEMENTS.map(function(a){
+      let html = '<section class="announce-item">'
+        + '<h4 class="announce-title"><span class="announce-icon">' + a.icon + '</span>'
+        + escapeHtml(pickText(a.title)) + '</h4>';
+
+      if(a.intro) html += '<p class="announce-intro">' + escapeHtml(pickText(a.intro)) + '</p>';
+      if(a.body)  html += '<p class="announce-text">' + escapeHtml(pickText(a.body)) + '</p>';
+
+      if(a.bullets && a.bullets.length){
+        html += '<ul class="announce-list">' + a.bullets.map(function(b){
+          return '<li><b>' + escapeHtml(pickText(b.label)) + '</b>'
+               + '<span>' + escapeHtml(pickText(b.text)) + '</span></li>';
+        }).join('') + '</ul>';
+      }
+      return html + '</section>';
+    }).join('');
+
+    const closeBtn = document.getElementById('announce-close-btn');
+    if(closeBtn){
+      closeBtn.textContent = T({ zh:'我知道了', en:'Got it', ja:'閉じる', ko:'확인' });
+    }
+    const head = document.getElementById('announce-head');
+    if(head){
+      head.textContent = T({ zh:'公告', en:'Announcements', ja:'お知らせ', ko:'공지사항' });
+    }
+    const openBtn = document.getElementById('announce-open-btn');
+    if(openBtn){
+      openBtn.setAttribute('aria-label', T({ zh:'查看公告', en:'View announcements',
+                                             ja:'お知らせを見る', ko:'공지사항 보기' }));
+    }
+  }
+
+  const announceModal = document.getElementById('announce-modal');
+  function openAnnounce(){
+    if(!announceModal) return;
+    renderAnnouncements();
+    announceModal.style.display = 'flex';
+  }
+  function closeAnnounce(){
+    if(announceModal) announceModal.style.display = 'none';
+  }
+
+  if(announceModal){
+    document.getElementById('announce-close-btn').addEventListener('click', closeAnnounce);
+    document.getElementById('announce-x').addEventListener('click', closeAnnounce);
+    document.getElementById('announce-open-btn').addEventListener('click', openAnnounce);
+    // 點灰色背景也能關（點內容區不會關）
+    announceModal.addEventListener('click', function(e){
+      if(e.target === announceModal) closeAnnounce();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && announceModal.style.display === 'flex') closeAnnounce();
+    });
+    // 每次進站都自動跳出
+    openAnnounce();
+  }
+
   // ---- 報名成功提示 ----
   const lineModal = document.getElementById('line-modal');
   function openLineModal(){
@@ -416,9 +572,17 @@
     });
   }
 
+  function sleep(ms){ return new Promise(r=> setTimeout(r, ms)); }
+
   /**
    * opts.timeoutMs —— 這一次要等多久（預設 POST_TIMEOUT）
    * opts.retries   —— 逾時後自動再試幾次（只有讀取類該用，寫入類一律 0）
+   * opts.badRetries —— 收到「不是 JSON 的回應」時自動再試幾次（預設 2）
+   *
+   * 為什麼 badRetries 連寫入類也預設開著：
+   * 這種失敗是 Google 的轉址在半路掉了，通常一兩百毫秒後重送就成功。
+   * 而且同一次呼叫會沿用同一個 _rid，後端的冪等檢查認得出是同一筆，
+   * 不會重複寫入 —— _rid 存在的意義就是讓重送變成安全的事。
    */
   async function postToBackend(payload, opts){
     if(!GAS_URL) return { ok:false, reason:'no-url' };
@@ -426,6 +590,7 @@
     opts = opts || {};
     const timeoutMs = opts.timeoutMs || POST_TIMEOUT;
     const retries = opts.retries || 0;
+    const badRetries = (opts.badRetries == null) ? 2 : opts.badRetries;
 
     // 冪等鍵：萬一同一筆因逾時被送了兩次，後端用同一個 _rid 只認第一次、不重覆寫入。
     if(payload && typeof payload === 'object' && !payload._rid){
@@ -464,7 +629,8 @@
       // 帶著同一個 _rid 重送，就算是寫入類也不會被寫成兩筆。
       if(retries > 0){
         console.warn('逾時，自動重試（剩餘 ' + retries + ' 次）');
-        return postToBackend(payload, { timeoutMs: timeoutMs, retries: retries - 1 });
+        return postToBackend(payload, {
+          timeoutMs: timeoutMs, retries: retries - 1, badRetries: badRetries });
       }
       return { ok:false, reason:reason, error:msg };
     }
@@ -479,6 +645,28 @@
         .trim()
         .slice(0, 300);
       console.error('後端回的不是 JSON。HTTP ' + res.status + '：', raw);
+
+      // ── 自動重送 ──
+      //
+      // GAS 的 POST 實際上要走兩段：
+      //   /exec → 302 轉址到 googleusercontent.com/...?user_content_key=xxx → 真正的回應
+      // 這個錯誤是第二段掉了，回來的是 Google Drive 的 404 錯誤頁
+      //（內容裡會看到 ppConfig、drive-log 這些字）。
+      //
+      // 關鍵是：請求根本沒送到 Apps Script，所以後端什麼都沒做，重送絕對安全。
+      // 而且這種失敗是瞬間的、隨機的，隔幾百毫秒再送通常就成功了。
+      // 先前這裡直接放棄，等於把一個「再試一次就好」的小問題，
+      // 變成使用者眼中的「名單跑不出來」。
+      //
+      // 間隔逐次拉長（400ms、800ms），給轉址那一層一點喘息時間。
+      if(badRetries > 0){
+        const waitMs = 400 * (3 - badRetries);
+        console.warn('收到非 JSON 回應（HTTP ' + res.status + '），' + waitMs + 'ms 後重送（剩餘 ' + badRetries + ' 次）');
+        await sleep(waitMs);
+        return postToBackend(payload, {
+          timeoutMs: timeoutMs, retries: retries, badRetries: badRetries - 1 });
+      }
+
       return {
         ok:false, reason:'bad-response',
         status: res.status,
@@ -842,6 +1030,21 @@
     ['NZ','紐西蘭','New Zealand','NZL','新西蘭','AOTEAROA']
   ];
 
+  // 這場活動的主要客群，一律排在所有國籍清單的最前面。
+  // 排序時只看這裡，不必去動 COUNTRIES 陣列本身（那份是資料，順序有其他用途）。
+  const COUNTRY_PRIORITY = ['TW', 'JP', 'KR'];
+
+  function countryRank(code){
+    const i = COUNTRY_PRIORITY.indexOf(String(code || '').toUpperCase());
+    return i >= 0 ? i : COUNTRY_PRIORITY.length;   // 不在優先清單的一律排後面
+  }
+
+  // 依「優先國家 → 其餘照原本順序」排好的完整清單，給下拉選單用
+  const COUNTRIES_SORTED = COUNTRIES.slice().sort(function(a, b){
+    const d = countryRank(a[0]) - countryRank(b[0]);
+    return d !== 0 ? d : 0;   // 同一層的維持原本相對順序（sort 是穩定的）
+  });
+
   const COUNTRY_LOOKUP = {};
   const COUNTRY_NAME = {};
   function countryKey(s){
@@ -924,7 +1127,8 @@
 
     function renderList(){
       const kw = countryKey(search.value || '');
-      filtered = COUNTRIES.filter(function(row){
+      // 用 COUNTRIES_SORTED 而非 COUNTRIES：台灣、日本、韓國排最前面
+      filtered = COUNTRIES_SORTED.filter(function(row){
         if(!kw) return true;
         return countryKey(row.join('')).indexOf(kw) >= 0;
       });
@@ -1103,16 +1307,54 @@
     return String(v || '').trim().toLowerCase().replace(/^@/, '').replace(/[._\s-]/g, '');
   }
 
-  // 延後載入：只有使用者真的用到 IG 建議欄位時才去要這份清單。
-  // 原本是一開頁就無條件打一次，但網頁應用程式的執行身分是擁有者，
-  // 所有訪客的請求都排在同一個帳號底下輪流執行 ——
-  // 人一多，這支「沒人要用也照打」的請求就會把後台登入卡在隊伍後面。
+  // ── IG 建議清單的載入策略 ──
+  //
+  // 這份清單是「讓大家用選的、不要用打的」的關鍵。只要有人手打成
+  // @wang_ming、@wangming、wang.ming，排桌時就會被當成三個不同的人。
+  // 所以清單必須在使用者碰到那個欄位之前就準備好，晚一秒都是風險。
+  //
+  // 但也不能一開頁就無條件去要：網頁應用程式的執行身分是擁有者，
+  // 所有訪客的請求都排在同一個帳號底下輪流跑，「沒人要用也照打」
+  // 會白白佔用那 30 個同時執行的名額。
+  //
+  // 折衷成三層，後端負擔不增反減：
+  //   1. localStorage 快取（10 分鐘）—— 重新整理、回頭再填，都是 0 次請求、瞬間顯示
+  //   2. 切到「報名及查詢」分頁時就開始預載 —— 比原本「碰到 IG 欄位才載」早好幾秒，
+  //      而且請求次數完全一樣（都是每位有意報名的訪客一次）
+  //   3. 真的還沒好時，下拉選單顯示「載入中…」，不會看起來像壞掉
+  const IG_CACHE_KEY = 'tp_ig_cache_v1';
+  const IG_CACHE_TTL = 10 * 60 * 1000;
+
+  function readIgCache(){
+    try{
+      const raw = localStorage.getItem(IG_CACHE_KEY);
+      if(!raw) return null;
+      const o = JSON.parse(raw);
+      if(!o || !Array.isArray(o.list)) return null;
+      if(Date.now() - (o.t || 0) > IG_CACHE_TTL) return null;   // 過期就當沒有
+      return o.list;
+    }catch(e){ return null; }   // 私密模式／關閉儲存時會拋錯，安靜略過
+  }
+
+  function writeIgCache(list){
+    try{
+      localStorage.setItem(IG_CACHE_KEY, JSON.stringify({ t: Date.now(), list: list }));
+    }catch(e){}
+  }
+
   let igLoaded = false;
   let igLoading = null;
+
+  // 先試快取：有的話這一頁就完全不必打後端
+  (function primeIgFromCache(){
+    const cached = readIgCache();
+    if(cached){ igDirectory = cached; igLoaded = true; }
+  })();
+
   function loadIgDirectory(){
     if(igLoaded) return Promise.resolve();
     if(igLoading) return igLoading;
-    igLoading = postToBackend({ type:'igList' }).then(function(r){
+    igLoading = postToBackend({ type:'igList' }, { badRetries: 1 }).then(function(r){
       const body = r.body || {};
       if(body.result === 'success'){
         // 後端送 people: [{ig, country}]，不含姓名（刻意的，見 gas.gs 的 handleIgList）。
@@ -1121,6 +1363,7 @@
           ? body.people
           : (body.igs || []).map(function(ig){ return { ig:ig, country:'' }; });
         igLoaded = true;
+        writeIgCache(igDirectory);
       }
       igLoading = null;
     }).catch(function(){ igLoading = null; });
@@ -1162,7 +1405,21 @@
     function render(){
       current = filterIgs(input.value);
 
-      if(igDirectory.length === 0){ close(); return; }
+      // 清單還在路上：明確顯示「載入中」，不要靜悄悄什麼都不出現 ——
+      // 那會讓人以為這個欄位沒有選單，轉而自己手打（正是我們要避免的事）。
+      if(igDirectory.length === 0){
+        if(igLoading){
+          box.innerHTML = '<div class="ig-empty">'
+            + T({ zh:'正在載入已報名的帳號清單…', en:'Loading registered accounts…',
+                  ja:'登録済みアカウントを読み込み中…', ko:'등록된 계정을 불러오는 중…' })
+            + '</div>';
+          openBox();
+          activeIdx = -1;
+          return;
+        }
+        close();
+        return;
+      }
 
       if(current.length === 0){
         box.innerHTML = '<div class="ig-empty">'
@@ -1196,7 +1453,9 @@
       close();
     }
 
-    // 使用者第一次碰到這個欄位時才去載入 IG 清單，載完再重畫一次
+    // 保底：切到報名分頁時通常已經預載過了，這裡只處理「直接連到這個欄位」
+    // 之類的少數情況。載完之後若游標還在欄位上就重畫一次，
+    // 讓「載入中…」自動換成真正的清單，不必使用者再點一次。
     function ensureIgs(){
       if(igLoaded) return;
       loadIgDirectory().then(function(){ if(document.activeElement === input) render(); });
@@ -1238,6 +1497,42 @@
     const div = document.createElement('div');
     div.textContent = str == null ? '' : String(str);
     return div.innerHTML;
+  }
+
+  /**
+   * 把 IG 欄位變成可以點的連結（只在後台用）。
+   *
+   * 使用者填進來的格式五花八門：@name、name、instagram.com/name、
+   * https://www.instagram.com/name/?hl=zh-tw… 都要能還原成帳號本身。
+   *
+   * 安全考量：href 只用「通過白名單檢查的帳號字串」組出來，
+   * 不直接拼接使用者輸入。IG 帳號合法字元只有英數、底線、句點，
+   * 只要有一個字元不在這個範圍（空白、引號、冒號…），就不做成連結、
+   * 原樣顯示純文字。這樣就不可能被塞進 javascript: 之類的東西。
+   */
+  function igHandle(raw){
+    let s = String(raw == null ? '' : raw).trim();
+    if(!s) return '';
+    s = s.replace(/^https?:\/\//i, '')
+         .replace(/^(www\.)?instagram\.com\//i, '')
+         .split(/[/?#]/)[0]        // 去掉路徑與查詢字串
+         .replace(/^@+/, '')       // 開頭的 @ 一律忽略（可能不只一個）
+         .trim();
+    return /^[A-Za-z0-9._]{1,30}$/.test(s) ? s : '';
+  }
+
+  function igCellHtml(raw, cls){
+    const shown = String(raw == null ? '' : raw).trim();
+    if(!shown) return '';
+    const handle = igHandle(shown);
+    if(!handle){
+      // 格式不認得就原樣顯示，不做連結（寧可不能點，也不要產生怪連結）
+      return '<span class="' + cls + '">' + escapeHtml(shown) + '</span>';
+    }
+    return '<a class="' + cls + ' ig-link" href="https://www.instagram.com/' + handle + '/"'
+      + ' target="_blank" rel="noopener noreferrer"'
+      + ' title="' + escapeHtml('在 Instagram 開啟 @' + handle) + '">'
+      + escapeHtml(shown) + '</a>';
   }
 
   // ---- Status Definitions ----
@@ -1599,7 +1894,9 @@
     showWarnings(body);
     if(body.result === 'success'){
       applyAdminData(body.results || []);
-      showReadStats(body.stats, body.serverMs);
+      // 統計數字不再常駐在工具列上（版面太吵），改成存下來，
+      // 按「🔧 診斷」時才連同診斷結果一起顯示。
+      lastReadInfo = { stats: body.stats, serverMs: body.serverMs, at: new Date() };
     } else if(!r.ok){
       const reasonTxt = (r.reason === 'timeout')
         // 走到這裡代表「等了 90 秒、而且自動重試過一次」都還沒回來。
@@ -1613,14 +1910,23 @@
           // 把後端「真正回了什麼」原封不動顯示出來。
           // 這是整段診斷最關鍵的一行：Google 的錯誤頁通常會明講原因
           //（沒有權限、指令碼發生錯誤、要求登入…），有這段文字就不必再猜。
+          // 走到這裡代表「已經自動重送兩次」都還是拿到錯誤頁。
+          // 回應內容若含 ppConfig／drive-log，那是 Google Drive 的錯誤頁，
+          // 代表請求卡在 GAS 的轉址那一段，根本沒進到 Apps Script。
           ? (isEn()
-              ? ('The server replied with a web page instead of data (HTTP ' + r.status + ').\n'
-                 + 'What it actually said: 「' + (r.snippet || '(empty)') + '」\n'
-                 + 'Usually: not deployed as a NEW VERSION, or access is not set to "Anyone".')
-              : ('後端回傳的是網頁而不是資料（HTTP ' + r.status + '）。\n'
+              ? ('Google returned an error page instead of data (HTTP ' + r.status + '), '
+                 + 'even after two automatic retries.\n'
+                 + 'What it said: 「' + (r.snippet || '(empty)') + '」\n'
+                 + 'This fails in Google\'s redirect layer, before reaching the script. '
+                 + 'The usual cause is being signed into several Google accounts in this browser — '
+                 + 'try an incognito window, or sign in with only one account.')
+              : ('Google 回傳的是錯誤頁而不是資料（HTTP ' + r.status + '），'
+                 + '而且已經自動重送兩次都一樣。\n'
                  + '它實際回的內容是：「' + (r.snippet || '(空白)') + '」\n'
-                 + '最常見的兩個原因：一是沒有「部署新版本」（只存檔不算），'
-                 + '二是存取權限不是「任何人」。請把上面這段內容一起回報。'))
+                 + '這個錯誤發生在 Google 的轉址層，請求根本沒進到你的 Apps Script，'
+                 + '所以跟部署版本、存取權限都無關。\n'
+                 + '最常見的原因是：這個瀏覽器同時登入了多個 Google 帳號。'
+                 + '請開一個無痕視窗試試，或只保留一個 Google 帳號登入。'))
           : (isEn()
               ? 'The request did not complete (network, or an in-app browser such as LINE/Instagram blocking it). Try opening the page in a normal browser.'
               : '請求沒有完成：可能是網路問題，或你正用 LINE／Instagram 內建瀏覽器（會擋掉部分連線）。請改用系統瀏覽器（Safari／Chrome）再試一次。');
@@ -1679,7 +1985,9 @@
             ? '\n→ This is a transport/deployment problem, not a spreadsheet problem.'
             : '\n→ 這代表問題在部署或連線，不在試算表。請檢查：是否已「部署新版本」、存取權限是否為「任何人」。');
     } else {
-      box.textContent = JSON.stringify(r.body, null, 2);
+      const head = readStatsText();
+      box.textContent = (head ? head + '\n\n' + '─'.repeat(40) + '\n\n' : '')
+        + JSON.stringify(r.body, null, 2);
     }
     btn.disabled = false;
   });
@@ -1704,27 +2012,64 @@
     });
   });
 
-  document.getElementById('admin-country-filter').addEventListener('change', renderAdminList);
+  // 國籍下拉與快速鍵是同一個篩選的兩個入口，任一邊改動都要讓另一邊跟上，
+  // 否則畫面會出現「下拉寫著 US、但 TW 按鈕還亮著」這種互相矛盾的狀態。
+  const countrySelect = document.getElementById('admin-country-filter');
+
+  function syncCountryQuick(){
+    const v = (countrySelect && countrySelect.value) || 'all';
+    document.querySelectorAll('#country-quick .cq-btn').forEach(function(b){
+      b.classList.toggle('active', b.dataset.cq === v);
+    });
+  }
+
+  countrySelect.addEventListener('change', function(){
+    syncCountryQuick();
+    renderAdminList();
+  });
+
+  document.querySelectorAll('#country-quick .cq-btn').forEach(function(b){
+    b.addEventListener('click', function(){
+      const want = b.dataset.cq;
+      // 名單裡沒有這個國籍時，下拉裡不會有這個選項，直接設值會無效。
+      // 這種情況就照樣切成「全部」，並讓按鈕狀態反映真實結果。
+      const has = Array.prototype.some.call(countrySelect.options, function(o){ return o.value === want; });
+      countrySelect.value = has ? want : 'all';
+      syncCountryQuick();
+      renderAdminList();
+    });
+  });
 
   // 顯示「試算表幾列 → 認到幾組幾人」的對帳數字。
   // 有這一行，資料被吃掉的時候看得出來 —— 沒有的話，畫面只會少幾個人，
   // 而你完全不會知道少了。數字對不上時會轉成橘色示警。
-  function showReadStats(stats, serverMs){
-    const el = document.getElementById('admin-read-stats');
-    if(!el) return;
-    if(!stats){ el.textContent = ''; el.classList.remove('is-warn'); return; }
+  // 最近一次讀取名單的統計（列數、組數、人數、後端耗時）。
+  // 先收著，按診斷時才拿出來用 —— 平常工具列保持乾淨。
+  let lastReadInfo = null;
 
-    const skipped = Number(stats.skippedNoRegId) || 0;
-    // 後端耗時也印出來。哪天又變慢，看這個數字就知道該往後端還是傳輸去查。
-    const ms = (serverMs == null) ? '' : ('　後端 ' + (serverMs / 1000).toFixed(1) + ' 秒');
-    el.textContent = isEn()
-      ? ('Sheet rows: ' + stats.sheetRows + ' → ' + stats.groups + ' groups / ' + stats.people + ' people'
-         + (skipped ? '  ⚠ ' + skipped + ' rows skipped (no registration ID)' : '')
-         + (ms ? '  server ' + (serverMs / 1000).toFixed(1) + 's' : ''))
-      : ('試算表 ' + stats.sheetRows + ' 列 → 認到 ' + stats.groups + ' 組 / ' + stats.people + ' 人'
-         + (skipped ? '　⚠ 有 ' + skipped + ' 列沒有報名編號，未顯示' : '')
-         + ms);
-    el.classList.toggle('is-warn', skipped > 0);
+  function readStatsText(){
+    if(!lastReadInfo || !lastReadInfo.stats) return '';
+    const st = lastReadInfo.stats;
+    const skipped = Number(st.skippedNoRegId) || 0;
+    const dup = Number(st.duplicateRegIds) || 0;
+    const t = lastReadInfo.at
+      ? lastReadInfo.at.toLocaleTimeString(isEn() ? 'en-US' : 'zh-TW',
+          { hour:'2-digit', minute:'2-digit', second:'2-digit' })
+      : '';
+    return (isEn() ? 'Last loaded: ' : '最後讀取：') + t + '\n'
+      + (isEn()
+          ? ('Sheet rows ' + st.sheetRows + ' -> ' + st.groups + ' groups / ' + st.people + ' people')
+          : ('試算表 ' + st.sheetRows + ' 列 → 認到 ' + st.groups + ' 組 / ' + st.people + ' 人'))
+      + (lastReadInfo.serverMs != null
+          ? ((isEn() ? '   server ' : '　後端 ') + (lastReadInfo.serverMs / 1000).toFixed(1)
+             + (isEn() ? 's' : ' 秒'))
+          : '')
+      + (skipped ? (isEn()
+            ? ('\n!! ' + skipped + ' rows skipped (no registration ID)')
+            : ('\n⚠ 有 ' + skipped + ' 列沒有報名編號，未顯示')) : '')
+      + (dup ? (isEn()
+            ? ('\n!! ' + dup + ' duplicate registration IDs')
+            : ('\n⚠ 有 ' + dup + ' 個重複的報名編號')) : '');
   }
 
   function showWarnings(body){
@@ -1746,8 +2091,8 @@
     renderAdminList();
     const t = new Date().toLocaleTimeString(isEn() ? 'en-US' : 'zh-TW',
       { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    document.getElementById('admin-last-updated').textContent =
-      (isEn() ? 'Last updated: ' : '最後更新：') + t;
+    const upd = document.getElementById('admin-last-updated');
+    if(upd) upd.textContent = (isEn() ? 'Last updated: ' : '最後更新：') + t;
   }
 
   // 用目前的本機資料重畫統計與名單（不碰後端）
@@ -1757,8 +2102,8 @@
     renderAdminList();
     const t = new Date().toLocaleTimeString(isEn() ? 'en-US' : 'zh-TW',
       { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    document.getElementById('admin-last-updated').textContent =
-      (isEn() ? 'Last updated: ' : '最後更新：') + t;
+    const upd = document.getElementById('admin-last-updated');
+    if(upd) upd.textContent = (isEn() ? 'Last updated: ' : '最後更新：') + t;
   }
 
   function renderAdminStats(){
@@ -1774,8 +2119,46 @@
     document.getElementById('stat-people').textContent = people;
     document.getElementById('stat-paid').textContent = done.length;
     document.getElementById('stat-outstanding').textContent = 'NT$' + outstanding.toLocaleString();
-    document.getElementById('stat-topup').textContent = topup.length;
-    document.getElementById('stat-pending').textContent = pending;
+    // 「待補款組數」與「待處理取消申請」兩個方塊已移除。
+    // 這兩件事在篩選列還看得到：「待補款」「⚠ 取消申請」兩顆按鈕，
+    // 以及卡片標題列上的 ⚠ 標記，所以不會因此漏掉待辦。
+    renderCountryStats(active);
+  }
+
+  /**
+   * 各國人數統計。資料來自已經載入的 adminData，
+   * 不會多打任何一次後端請求 —— 純粹是把手上的資料再數一遍。
+   *
+   * 只算「仍出席」的人（已取消的不列入），因為這個數字的用途是
+   * 抓餐點與桌次的規模。台日韓固定排前面，其餘依人數由多到少。
+   */
+  function renderCountryStats(activeGroups){
+    const box = document.getElementById('country-stats');
+    if(!box) return;
+
+    const count = {};
+    activeGroups.forEach(function(g){
+      (g.members || []).forEach(function(m){
+        if(m.cancelled) return;
+        const c = String(m.country || '').trim().toUpperCase();
+        count[c || '??'] = (count[c || '??'] || 0) + 1;
+      });
+    });
+
+    const codes = Object.keys(count).sort(function(a, b){
+      const d = countryRank(a) - countryRank(b);
+      if(d !== 0) return d;
+      return count[b] - count[a];        // 同一層的，人多的排前面
+    });
+
+    if(codes.length === 0){ box.innerHTML = ''; return; }
+
+    box.innerHTML = codes.map(function(c){
+      return '<span class="cs-item" title="' + escapeHtml(c) + '">'
+        + '<span class="cs-flag">' + (c === '??' ? '🏳️' : flagOf(c)) + '</span>'
+        + '<span class="cs-num">' + count[c] + '</span>'
+        + '</span>';
+    }).join('');
   }
 
   function populateAdminCountryFilter(){
@@ -1789,7 +2172,11 @@
         if(m.country) codes.add(String(m.country).trim().toUpperCase());
       });
     });
-    const sorted = Array.from(codes).filter(Boolean).sort();
+    // 台灣、日本、韓國排最前面，其餘維持字母序
+    const sorted = Array.from(codes).filter(Boolean).sort(function(a, b){
+      const d = countryRank(a) - countryRank(b);
+      return d !== 0 ? d : (a < b ? -1 : (a > b ? 1 : 0));
+    });
     const allLabel = isEn() ? 'All countries' : '全部國籍';
     let html = '<option value="all">' + allLabel + '</option>';
     html += sorted.map(function(code){
@@ -1799,6 +2186,7 @@
     }).join('');
     sel.innerHTML = html;
     sel.value = (prev === 'all' || sorted.indexOf(prev) >= 0) ? prev : 'all';
+    if(typeof syncCountryQuick === 'function') syncCountryQuick();
   }
 
   function matchesCountry(g){
@@ -1853,10 +2241,57 @@
       const id = c.dataset.id;
       if(wasOpen[id]) c.classList.add('is-open');
       if(wasEditing[id]){
+        // 編輯區現在是「點開才產生」，重畫後是空的 ——
+        // 還原展開狀態時要一併把內容補回去，否則會變成一片空白。
         const ed = c.querySelector('.adm-editor');
-        if(ed) ed.classList.add('is-open');
+        if(ed){
+          if(!ed.innerHTML.trim()){
+            const g = adminData.filter(function(x){ return x.regId === id; })[0];
+            if(g) ed.innerHTML = buildEditorHtml(g);
+          }
+          ed.classList.add('is-open');
+        }
       }
     });
+  }
+
+  /**
+   * 產生某一組的編輯區 HTML。只有在按下「編輯資料」時才會被呼叫。
+   *
+   * 從 cardHtml 裡拆出來的原因：編輯區是整張卡片最重的部分
+   *（每組約 8 個輸入框，再加每位成員 3 個），但使用者極少打開它。
+   * 放在 cardHtml 裡等於每次重畫名單、每次切換篩選、每按一次狀態按鈕，
+   * 都要把所有組別的編輯區重建一遍。
+   */
+  function buildEditorHtml(g){
+    const members = g.members || [];
+    const f = (label, key, val)=>
+      '<div><label>' + label + '</label><input data-edit="' + key + '" value="' + escapeHtml(val || '') + '"></div>';
+    const memEdit = members.map(m=>
+      '<div class="adm-edit-grid" data-member="' + m.index + '">'
+      + f(L('姓名','Name'), 'name', m.name)
+      + f(L('國籍','Country'), 'country', m.country)
+      + f('IG', 'ig', m.ig)
+      + '</div>').join('');
+
+    return '<div class="adm-edit-grid">'
+      + f(L('姓名','Name'), 'name', g.name)
+      + f(L('國籍','Country'), 'country', g.country)
+      + f('IG', 'ig', g.ig)
+      + f(L('付款方式','Method'), 'paymethod', g.paymethod)
+      + f(L('桌次','Table'), 'seatNo', g.seatNo)
+      + '</div>'
+      + '<div><label>' + L('備註','Notes') + '</label><input data-edit="notes" value="' + escapeHtml(g.notes || '') + '"></div>'
+      + '<div class="adm-edit-grid">'
+      + f(L('併桌姓名','With (name)'), 'tableWithName', g.tableWithName)
+      + f(L('併桌IG','With (IG)'), 'tableWithIg', g.tableWithIg)
+      + f(L('併桌國籍','With (country)'), 'tableWithCountry', g.tableWithCountry)
+      + '</div>'
+      + '<div><label>' + L('後台備註（退款決定等，只有工作人員看得到）','Staff note') + '</label>'
+      + '<input data-edit="staffNote" value="' + escapeHtml(g.staffNote || '') + '"></div>'
+      + '<h5 style="margin-top:12px;">' + L('成員資料','Members') + '</h5>' + memEdit
+      + '<div class="adm-actions"><button class="mini-btn ok" data-act="save-edit">' + L('儲存修改','Save') + '</button>'
+      + '<button class="mini-btn" data-act="close-edit">' + L('取消','Discard') + '</button></div>';
   }
 
   function cardHtml(g){
@@ -1877,15 +2312,18 @@
       } else {
         right = '<button class="mini-btn danger" data-act="kick" data-idx="' + m.index + '">' + L('取消','Cancel') + '</button>';
       }
+      // staffNote 不再顯示。它的內容是「[時間] 操作者 核准取消：備註」，
+      // 也就是「誰按的」—— 對現場作業沒有幫助，卻會把整列撐高、
+      // 把真正要看的姓名往旁邊擠。要追查誰操作的，異動紀錄分頁有完整紀錄。
+      // cancelReason（使用者自己填的取消原因）保留，那個是有用的。
       return '<div class="mem-row' + (m.cancelled?' is-cancelled':'') + (m.cancelPending?' is-pending':'') + '">'
         + '<div class="mem-left">'
           + '<span class="mem-role">' + escapeHtml(m.role) + '</span>'
           + '<span class="mem-name">' + (m.country ? flagOf(m.country) : '') + ' ' + escapeHtml(m.name) + '</span>'
-          + (m.ig ? '<span class="mem-ig">' + escapeHtml(m.ig) + '</span>' : '')
+          + igCellHtml(m.ig, 'mem-ig')
         + '</div>'
         + '<span class="mem-right">' + right + '</span>'
         + (m.cancelReason ? '<div style="width:100%; font-size:0.74rem; color:var(--orange);">' + escapeHtml(m.cancelReason) + '</div>' : '')
-        + (m.staffNote ? '<div style="width:100%; font-size:0.74rem; color:var(--text-muted);">' + escapeHtml(m.staffNote) + '</div>' : '')
         + '</div>';
     }).join('');
 
@@ -1931,35 +2369,11 @@
       + 'font-weight:600;background:#2e9e5b;color:#fff;white-space:nowrap;flex:none;">'
       + L('確認收款','Mark paid') + '</button>';
 
-    const f = (label, key, val)=>
-      '<div><label>' + label + '</label><input data-edit="' + key + '" value="' + escapeHtml(val || '') + '"></div>';
-    const memEdit = members.map(m=>
-      '<div class="adm-edit-grid" data-member="' + m.index + '">'
-      + f(L('姓名','Name'), 'name', m.name)
-      + f(L('國籍','Country'), 'country', m.country)
-      + f('IG', 'ig', m.ig)
-      + '</div>').join('');
-
-    const editHtml = '<div class="adm-editor">'
-      + '<div class="adm-edit-grid">'
-      + f(L('姓名','Name'), 'name', g.name)
-      + f(L('國籍','Country'), 'country', g.country)
-      + f('IG', 'ig', g.ig)
-      + f(L('付款方式','Method'), 'paymethod', g.paymethod)
-      + f(L('桌次','Table'), 'seatNo', g.seatNo)
-      + '</div>'
-      + '<div><label>' + L('備註','Notes') + '</label><input data-edit="notes" value="' + escapeHtml(g.notes || '') + '"></div>'
-      + '<div class="adm-edit-grid">'
-      + f(L('併桌姓名','With (name)'), 'tableWithName', g.tableWithName)
-      + f(L('併桌IG','With (IG)'), 'tableWithIg', g.tableWithIg)
-      + f(L('併桌國籍','With (country)'), 'tableWithCountry', g.tableWithCountry)
-      + '</div>'
-      + '<div><label>' + L('後台備註（退款決定等，只有工作人員看得到）','Staff note') + '</label>'
-      + '<input data-edit="staffNote" value="' + escapeHtml(g.staffNote || '') + '"></div>'
-      + '<h5 style="margin-top:12px;">' + L('成員資料','Members') + '</h5>' + memEdit
-      + '<div class="adm-actions"><button class="mini-btn ok" data-act="save-edit">' + L('儲存修改','Save') + '</button>'
-      + '<button class="mini-btn" data-act="close-edit">' + L('取消','Discard') + '</button></div>'
-      + '</div>';
+    // 編輯區改成「點開才產生」，見 buildEditorHtml()。
+    // 這裡只留一個空殼子。以你目前 63 組 / 168 人的規模，
+    // 原本每次重畫名單都要建大約 1008 個編輯用的輸入框（佔全部元素的七成），
+    // 而它們幾乎不會被打開 —— 那是「更新資料」比舊站慢的主因之一。
+    const editHtml = '<div class="adm-editor"></div>';
 
     const headHtml = checkingView
       // 篩選「帳款確認中」：左邊資訊(點展開) + 右邊小按鈕(點確認收款)，不放展開箭頭
@@ -2051,7 +2465,16 @@
     if(!btn) return;
     const act = btn.dataset.act;
 
-    if(act === 'open-edit'){ card.querySelector('.adm-editor').classList.add('is-open'); return; }
+    if(act === 'open-edit'){
+      const ed = card.querySelector('.adm-editor');
+      // 第一次打開才產生內容；已經產生過就直接顯示，保留使用者打到一半的輸入
+      if(!ed.innerHTML.trim()){
+        const g = adminData.filter(function(x){ return x.regId === regId; })[0];
+        if(g) ed.innerHTML = buildEditorHtml(g);
+      }
+      ed.classList.add('is-open');
+      return;
+    }
     if(act === 'close-edit'){ card.querySelector('.adm-editor').classList.remove('is-open'); return; }
 
     let payload = null;

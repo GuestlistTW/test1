@@ -376,7 +376,6 @@
   <!-- ============ 後台 ============ -->
   <section class="panel" id="panel-admin">
     <h2 class="section-title" data-i18n="admin_title">後台</h2>
-    <p class="section-desc" data-i18n="admin_desc">工作人員專用，查看報名與匯款資料。</p>
 
     <div class="admin-gate" id="admin-gate">
       <div class="admin-gate-icon">🔒</div>
@@ -393,6 +392,9 @@
       <div class="adm-viewtabs">
         <button type="button" class="adm-viewtab active" data-view="list" data-i18n="admin_view_list">📋 報名名單</button>
         <button type="button" class="adm-viewtab" data-view="log" data-i18n="admin_view_log">🕓 異動紀錄</button>
+        <span class="adm-spacer"></span>
+        <button type="button" class="icon-btn" id="admin-refresh-btn" title="更新資料" aria-label="更新資料">🔄</button>
+        <button type="button" class="icon-btn" id="admin-diagnose-btn" title="診斷" aria-label="診斷">🔧</button>
       </div>
 
       <details class="admin-logic admin-logic-top">
@@ -414,16 +416,11 @@
           <div class="stat-box"><div class="stat-num" id="stat-people">0</div><div class="stat-label" data-i18n="stat_people">總人數</div></div>
           <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">已收款組數</div></div>
           <div class="stat-box"><div class="stat-num" style="color:var(--orange);" id="stat-outstanding">NT$0</div><div class="stat-label" data-i18n="stat_outstanding">未收金額</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--yellow);" id="stat-topup">0</div><div class="stat-label" data-i18n="stat_topup">待補款組數</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--red);" id="stat-pending">0</div><div class="stat-label" data-i18n="stat_pending">待處理取消申請</div></div>
         </div>
 
-        <div class="adm-toolbar">
-          <button type="button" class="btn-secondary" id="admin-refresh-btn" data-i18n="admin_refresh_btn">🔄 更新資料</button>
-          <button type="button" class="btn-secondary" id="admin-diagnose-btn">🔧 診斷</button>
-          <span class="hint" id="admin-last-updated"></span>
-          <span class="hint read-stats" id="admin-read-stats"></span>
-        </div>
+        <!-- 各國人數：從已載入的名單算出來，不會多打任何後端請求 -->
+        <div class="country-stats" id="country-stats"></div>
+
         <pre class="diag-box" id="admin-diag" style="display:none;"></pre>
 
         <div class="admin-filters" id="admin-filters">
@@ -437,10 +434,16 @@
         </div>
 
         <div class="admin-country-row">
-          <span class="admin-country-label">🌍 <span data-i18n="filter_country_label">依國籍篩選</span></span>
           <select id="admin-country-filter" class="admin-country-select">
             <option value="all">全部國籍</option>
           </select>
+          <!-- 快速鍵與上面的下拉是同一個篩選，點任一邊另一邊會同步 -->
+          <div class="country-quick" id="country-quick">
+            <button type="button" class="filter-btn cq-btn active" data-cq="all">ALL</button>
+            <button type="button" class="filter-btn cq-btn" data-cq="TW">🇹🇼 TW</button>
+            <button type="button" class="filter-btn cq-btn" data-cq="JP">🇯🇵 JP</button>
+            <button type="button" class="filter-btn cq-btn" data-cq="KR">🇰🇷 KR</button>
+          </div>
         </div>
 
         <div class="adm-list" id="admin-list">
@@ -466,6 +469,19 @@
 <footer data-i18n="footer_text">
   Taiwan Pride — Proud Together ・ 如有問題請聯繫主辦單位
 </footer>
+
+<!-- 公告彈窗：每次進站自動跳出，右下角按鈕可隨時再開 -->
+<div class="modal-overlay" id="announce-modal" style="display:none;">
+  <div class="modal-card announce-card">
+    <button class="modal-close" id="announce-x" aria-label="Close">✕</button>
+    <div class="announce-bar"></div>
+    <h3 class="announce-head" id="announce-head">公告</h3>
+    <div class="announce-body" id="announce-body"></div>
+    <button class="btn-primary" id="announce-close-btn">我知道了</button>
+  </div>
+</div>
+
+<button class="announce-fab" id="announce-open-btn" aria-label="查看公告">📢</button>
 
 <div class="modal-overlay" id="line-modal" style="display:none;">
   <div class="modal-card">
