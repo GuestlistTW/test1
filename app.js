@@ -177,6 +177,69 @@
 
   let currentLang = 'zh';
 
+  // ===================== 自動判斷語言 =====================
+  //
+  // 使用者的手機／瀏覽器語言設定會透過 navigator.languages 傳給網頁，
+  // 直接拿來決定預設顯示哪一種語言 —— 日本朋友點開連結就是日文，
+  // 不必先找到右上角的地球圖示。
+  //
+  // 優先順序：
+  //   1. 使用者自己選過的語言（記在這台裝置上）—— 明確的選擇永遠優先
+  //   2. 裝置語言
+  //   3. 中文（本地活動，預設中文最合理）
+  const LANG_PREF_KEY = 'tp_lang_v1';
+
+  // 支援的語言。這裡刻意用字面陣列，而不是引用底下的 LANG_LABEL ——
+  // LANG_LABEL 宣告在這支函式的呼叫點「之後」，提前存取會拋 TDZ 錯誤，
+  // 而這段外面包著 try/catch（為了應付私密模式），錯誤會被安靜吃掉，
+  // 結果就是「記住的語言偏好永遠讀不到」而且完全看不出哪裡壞了。
+  const SUPPORTED_LANGS = ['zh', 'en', 'ja', 'ko'];
+
+  function detectLang(){
+    // 使用者選過就照他的意思，不要每次重新猜
+    try{
+      const saved = localStorage.getItem(LANG_PREF_KEY);
+      if(saved && SUPPORTED_LANGS.indexOf(saved) >= 0) return saved;
+    }catch(e){}   // 私密模式會拋錯，安靜略過往下猜
+
+    // navigator.languages 是照偏好排序的陣列（例如 ['ja','en-US','en']），
+    // 依序比對，第一個支援的就用它。舊瀏覽器只有 navigator.language，一併涵蓋。
+    let list = [];
+    try{
+      list = (navigator.languages && navigator.languages.length)
+        ? navigator.languages
+        : [navigator.language || navigator.userLanguage || ''];
+    }catch(e){ list = []; }
+
+    for(let i = 0; i < list.length; i++){
+      const tag = String(list[i] || '').toLowerCase();
+      if(!tag) continue;
+      // 只看主要語言代碼：zh-TW / zh-Hant / zh-HK 都算中文。
+      // 簡體（zh-CN）也給繁體 —— 內容看得懂，比丟英文給他好。
+      if(tag.indexOf('zh') === 0) return 'zh';
+      if(tag.indexOf('ja') === 0) return 'ja';
+      if(tag.indexOf('ko') === 0) return 'ko';
+      if(tag.indexOf('en') === 0) return 'en';
+    }
+
+    // 讀得到語言、但不是我們支援的四種（法文、德文、泰文…）→ 給英文。
+    // 對這些人來說英文一定比繁體中文好讀。
+    if(list.length && String(list[0] || '').trim()) return 'en';
+
+    // 完全讀不到語言資訊才回到中文（在地活動，預設中文最合理）
+    return 'zh';
+  }
+
+  function saveLangPref(lang){
+    try{ localStorage.setItem(LANG_PREF_KEY, lang); }catch(e){}
+  }
+
+  // 這裡只設定變數、不呼叫 applyLang ——
+  // applyLang 會用到國籍選擇器等等在檔案後面才建立的東西，太早呼叫會直接拋錯。
+  // 真正套用到畫面上是在檔案最後面（見「初始語言套用」）。
+  // 先設好 currentLang 的好處是：中途自動跳出的公告就已經是正確語言了。
+  currentLang = detectLang();
+
   function T(keyOrMap){
     const m = (typeof keyOrMap === 'string') ? I18N[keyOrMap] : keyOrMap;
     if(!m) return (typeof keyOrMap === 'string') ? keyOrMap : '';
@@ -260,6 +323,9 @@
       if(!opt) return;
       const changed = (opt.dataset.lang !== currentLang);
       applyLang(opt.dataset.lang);
+      // 記住這次的選擇。下次進站就直接用它，不再去猜裝置語言 ——
+      // 使用者明確選過的，永遠比自動判斷優先。
+      saveLangPref(opt.dataset.lang);
       menu.hidden = true;
       btn.setAttribute('aria-expanded', 'false');
 
@@ -2681,3 +2747,13 @@
   }
   updateCountdown();
   setInterval(updateCountdown, 1000);
+
+  // ---- 初始語言套用 ----
+  //
+  // 放在整支檔案的最後執行。applyLang 會去碰國籍選擇器、攜伴列等等，
+  // 那些都在上面才建立好；提前呼叫會踩到「變數還沒初始化」而整頁掛掉。
+  //
+  // currentLang 在最前面就依裝置語言設定好了，所以這裡是把「已經決定好的語言」
+  // 真正套到畫面上：翻譯文字、語言按鈕、html lang 屬性、公告內容。
+  // 即使結果是中文也照樣呼叫一次，確保語言選單上的勾選狀態正確。
+  applyLang(currentLang);
