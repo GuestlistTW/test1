@@ -1926,6 +1926,12 @@
     // 使用者無法分辨是還在跑還是已經當掉，只能一直等。
     const listBox = document.getElementById('admin-list');
     let tryNo = 1;
+    // 從按下去到資料到手的實際牆鐘時間。
+    // serverMs（GAS 執行）只是其中一段，剩下的是 Google 的轉址往返與傳輸 ——
+    // 兩個數字差多少，直接決定該往哪裡查：
+    //   差距小 → 就是 GAS 固定開銷，沒得再快
+    //   差距大 → 請求在半路掉過，時間花在逾時重送
+    const tStart = Date.now();
     const showLoading = ()=>{
       listBox.innerHTML = '<div class="adm-empty">'
         + (isEn() ? 'Loading…' : '名單載入中…')
@@ -1945,7 +1951,8 @@
       applyAdminData(body.results || []);
       // 統計數字不再常駐在工具列上（版面太吵），改成存下來，
       // 按「🔧 診斷」時才連同診斷結果一起顯示。
-      lastReadInfo = { stats: body.stats, serverMs: body.serverMs, at: new Date() };
+      lastReadInfo = { stats: body.stats, serverMs: body.serverMs, at: new Date(),
+                       clientMs: Date.now() - tStart, attempts: tryNo };
     } else if(!r.ok){
       const reasonTxt = (r.reason === 'timeout')
         // 走到這裡代表「等了 90 秒、而且自動重試過一次」都還沒回來。
@@ -2113,6 +2120,17 @@
           ? ((isEn() ? '   server ' : '　後端 ') + (lastReadInfo.serverMs / 1000).toFixed(1)
              + (isEn() ? 's' : ' 秒'))
           : '')
+      + (lastReadInfo.clientMs != null
+          ? ((isEn() ? '   total ' : '　前端總計 ') + (lastReadInfo.clientMs / 1000).toFixed(1)
+             + (isEn() ? 's' : ' 秒')
+             + '（' + (isEn() ? 'attempts ' : '嘗試 ') + lastReadInfo.attempts
+             + (isEn() ? '' : ' 次') + '）'
+             + ((lastReadInfo.serverMs != null)
+                 ? ('　' + (isEn() ? 'network ' : '傳輸／轉址 ')
+                    + ((lastReadInfo.clientMs - lastReadInfo.serverMs) / 1000).toFixed(1)
+                    + (isEn() ? 's' : ' 秒'))
+                 : ''))
+          : '')
       + (skipped ? (isEn()
             ? ('\n!! ' + skipped + ' rows skipped (no registration ID)')
             : ('\n⚠ 有 ' + skipped + ' 列沒有報名編號，未顯示')) : '')
@@ -2202,13 +2220,32 @@
 
     if(codes.length === 0){ box.innerHTML = ''; return; }
 
-    box.innerHTML = codes.map(function(c){
+    // 預設只露一排，其餘收起來 —— 國家一多就會佔掉好幾行，
+    // 把真正要看的名單一路擠到畫面下方。點一下才展開全部。
+    const items = codes.map(function(c){
       return '<span class="cs-item" title="' + escapeHtml(c) + '">'
         + '<span class="cs-flag">' + (c === '??' ? '🏳️' : flagOf(c)) + '</span>'
         + '<span class="cs-num">' + count[c] + '</span>'
         + '</span>';
     }).join('');
+
+    box.innerHTML = '<div class="cs-row' + (countryStatsOpen ? ' is-open' : '') + '">' + items + '</div>'
+      + '<button type="button" class="cs-toggle" id="cs-toggle">'
+      + (countryStatsOpen
+          ? (isEn() ? 'Show less ▲' : '收合 ▲')
+          : (isEn() ? 'All ' + codes.length + ' ▼' : '全部 ' + codes.length + ' 國 ▼'))
+      + '</button>';
+
+    const tg = document.getElementById('cs-toggle');
+    if(tg) tg.addEventListener('click', function(){
+      countryStatsOpen = !countryStatsOpen;
+      renderCountryStats(activeGroups);
+    });
   }
+
+  // 國旗統計是否展開。放在外層是為了在重畫名單時維持狀態 ——
+  // 否則每按一次篩選或更新，展開的清單就會自己收回去。
+  let countryStatsOpen = false;
 
   function populateAdminCountryFilter(){
     const sel = document.getElementById('admin-country-filter');

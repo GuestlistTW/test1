@@ -975,16 +975,24 @@
   }
   .announce-fab:hover{transform:translateY(-2px); border-color:var(--yellow);}
 
-  /* 各國人數：國旗 + 數字，一眼掃過去就知道各國規模 */
-  .country-stats{
-    display:flex; flex-wrap:wrap; gap:6px;
-    margin:-6px 0 16px;
+  /* 各國人數：國旗 + 數字，沒有外框，盡量不佔版面。
+     預設只露一排（超出的裁掉），點「全部」才展開。 */
+  .country-stats{margin:-4px 0 12px;}
+  .cs-row{
+    display:flex; flex-wrap:wrap; gap:4px 14px;
+    max-height:24px; overflow:hidden;        /* 一排的高度 */
+    transition:max-height .2s ease;
   }
+  .cs-row.is-open{max-height:400px; overflow:visible;}
   .cs-item{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:5px 11px; border-radius:999px;
-    background:var(--bg-surface); border:1px solid var(--line);
-    font-size:0.82rem; line-height:1.2;
+    display:inline-flex; align-items:baseline; gap:5px;
+    font-size:0.82rem; line-height:24px; white-space:nowrap;
   }
-  .cs-flag{font-size:1rem;}
+  .cs-flag{font-size:0.95rem;}
   .cs-num{font-family:'Baloo 2'; font-weight:700; color:var(--text-light); font-variant-numeric:tabular-nums;}
+  .cs-toggle{
+    margin-top:2px; padding:0;
+    background:none; border:none; cursor:pointer;
+    color:var(--text-muted); font-family:'Inter'; font-size:0.72rem; font-weight:600;
+  }
+  .cs-toggle:hover{color:var(--purple);}
