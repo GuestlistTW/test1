@@ -258,9 +258,18 @@
     menu.addEventListener('click', function(e){
       const opt = e.target.closest('.lang-opt');
       if(!opt) return;
+      const changed = (opt.dataset.lang !== currentLang);
       applyLang(opt.dataset.lang);
       menu.hidden = true;
       btn.setAttribute('aria-expanded', 'false');
+
+      // 切換語言之後把公告重新打開。
+      //
+      // 會切語言，代表這個人想用那個語言讀內容 —— 公告當然也包含在內。
+      // 原本關掉公告之後再切語言，公告就不會再出現，使用者會以為
+      // 「這個語言沒有公告」，其實只是沒有再打開而已。
+      // （語言沒變就不動，避免重複點同一個語言時視窗一直跳出來。）
+      if(changed && typeof openAnnounce === 'function') openAnnounce();
     });
 
     document.addEventListener('click', function(e){
@@ -559,10 +568,20 @@
   // 現在分成兩種：
   //   寫入類 —— 20 秒。送出報名／匯款回報這種，等太久不如讓使用者知道，
   //             而且有 _rid 冪等鍵保護，重送不會寫成兩筆。
-  //   讀取類 —— 90 秒，而且逾時會自動再試一次。讀取沒有副作用，
-  //             重試完全安全；寧可讓人多等，也不要把快到的資料丟掉。
+  //   讀取類 —— 18 秒，逾時自動再試，每次逾時拉長 1.4 倍（18 → 25 → 35 秒）。
+  //
+  // ── 為什麼不是「一次等 90 秒」──
+  //
+  // 上一版把讀取類設成 90 秒 + 重試一次，結果是災難：
+  // 第一次請求卡住時要乾等滿 90 秒才放棄，第二次 1 秒就拿到資料，
+  // 使用者體感是「按下去兩分鐘完全沒反應」。逾時和重試的時間會相加，
+  // 設得越寬容、卡住時越久 —— 這是當初沒想到的組合效應。
+  //
+  // 實際觀察到的後端耗時是 1～2 秒。卡到 18 秒幾乎可以斷定這一趟已經掉了
+  //（多半是 GAS 轉址那層丟包），繼續等沒有意義，早點重送才是對的。
+  // 後面幾次逐步拉長，是留給真的冷啟動的餘裕。
   const POST_TIMEOUT = 20000;
-  const READ_TIMEOUT = 90000;
+  const READ_TIMEOUT = 18000;
 
   function withTimeout(promise, ms){
     return new Promise((resolve, reject)=>{
@@ -629,8 +648,16 @@
       // 帶著同一個 _rid 重送，就算是寫入類也不會被寫成兩筆。
       if(retries > 0){
         console.warn('逾時，自動重試（剩餘 ' + retries + ' 次）');
+        // 讓呼叫端可以把「第幾次嘗試」顯示出來。少了這個，
+        // 使用者看到的就是一片「載入中…」不動，無法分辨是還在跑還是當掉了。
+        if(typeof opts.onRetry === 'function'){
+          try{ opts.onRetry(); }catch(e){}
+        }
         return postToBackend(payload, {
-          timeoutMs: timeoutMs, retries: retries - 1, badRetries: badRetries });
+          timeoutMs: Math.round(timeoutMs * 1.4),   // 逐次放寬，留給真的冷啟動
+          retries: retries - 1,
+          badRetries: badRetries,
+          onRetry: opts.onRetry });
       }
       return { ok:false, reason:reason, error:msg };
     }
@@ -663,8 +690,12 @@
         const waitMs = 400 * (3 - badRetries);
         console.warn('收到非 JSON 回應（HTTP ' + res.status + '），' + waitMs + 'ms 後重送（剩餘 ' + badRetries + ' 次）');
         await sleep(waitMs);
+        if(typeof opts.onRetry === 'function'){
+          try{ opts.onRetry(); }catch(e){}
+        }
         return postToBackend(payload, {
-          timeoutMs: timeoutMs, retries: retries, badRetries: badRetries - 1 });
+          timeoutMs: timeoutMs, retries: retries, badRetries: badRetries - 1,
+          onRetry: opts.onRetry });
       }
 
       return {
@@ -1581,7 +1612,7 @@
       setTimeout(()=> msg.classList.remove('show'), 8000);
     };
 
-    const r = await postToBackend({ type:'lookup', phone: phone }, { timeoutMs: READ_TIMEOUT, retries: 1 });
+    const r = await postToBackend({ type:'lookup', phone: phone }, { timeoutMs: READ_TIMEOUT, retries: 2 });
     const data = r.body || {};
 
     if(!r.ok){
@@ -1808,7 +1839,7 @@
     // 但那趟要讀整張報名表、每組重新組裝，冷啟動時很容易超過 20 秒逾時 ——
     // 結果就是連後台的門都進不去。現在名單改成進去之後才載（見下方），
     // 名單慢是名單的事，不會再把人擋在登入頁外面。
-    const r = await postToBackend({ type:'adminBootstrap', password: pw }, { timeoutMs: READ_TIMEOUT, retries: 1 });
+    const r = await postToBackend({ type:'adminBootstrap', password: pw }, { timeoutMs: READ_TIMEOUT, retries: 2 });
     const body = r.body || {};
 
     btn.disabled = false;
@@ -1889,7 +1920,25 @@
   async function loadAdminList(){
     const btn = document.getElementById('admin-refresh-btn');
     btn.disabled = true;
-    const r = await postToBackend({ type:'adminList', password: adminPassword }, { timeoutMs: READ_TIMEOUT, retries: 1 });
+
+    // 載入過程中把狀態寫在名單區。重點是「第幾次嘗試」——
+    // 沒有這個資訊，一旦第一趟卡住，畫面就只是一片不動的「載入中」，
+    // 使用者無法分辨是還在跑還是已經當掉，只能一直等。
+    const listBox = document.getElementById('admin-list');
+    let tryNo = 1;
+    const showLoading = ()=>{
+      listBox.innerHTML = '<div class="adm-empty">'
+        + (isEn() ? 'Loading…' : '名單載入中…')
+        + (tryNo > 1
+            ? ('　' + (isEn() ? '(attempt ' + tryNo + ')' : '（第 ' + tryNo + ' 次嘗試）'))
+            : '')
+        + '</div>';
+    };
+    showLoading();
+
+    const r = await postToBackend(
+      { type:'adminList', password: adminPassword },
+      { timeoutMs: READ_TIMEOUT, retries: 2, onRetry: ()=>{ tryNo++; showLoading(); } });
     const body = r.body || {};
     showWarnings(body);
     if(body.result === 'success'){
@@ -1946,7 +1995,7 @@
     btn.disabled = true;
     document.getElementById('admin-log-list').innerHTML =
       '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
-    const r = await postToBackend({ type:'adminLog', password: adminPassword, limit: 300 }, { timeoutMs: READ_TIMEOUT, retries: 1 });
+    const r = await postToBackend({ type:'adminLog', password: adminPassword, limit: 300 }, { timeoutMs: READ_TIMEOUT, retries: 2 });
     const body = r.body || {};
     adminLogs = (body.result === 'success') ? (body.logs || []) : [];
     renderAdminLog();
@@ -1971,7 +2020,7 @@
     box.style.display = 'block';
     box.textContent = isEn() ? 'Running diagnostics…' : '診斷中…';
 
-    const r = await postToBackend({ type:'diagnose', password: adminPassword }, { timeoutMs: READ_TIMEOUT, retries: 1 });
+    const r = await postToBackend({ type:'diagnose', password: adminPassword }, { timeoutMs: READ_TIMEOUT, retries: 2 });
 
     if(!r.ok){
       // 連診斷都打不通 → 問題在傳輸層，不在試算表。這個結論本身就很有用。
