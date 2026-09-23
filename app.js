@@ -773,6 +773,91 @@
     }
   }
 
+  // ===================== 讀取：並行發送（hedged request）=====================
+  //
+  // ── 為什麼需要這個 ──
+  //
+  // 實測數據（後台診斷）：
+  //     後端 0.7 秒　前端總計 19.9 秒（嘗試 2 次）　傳輸／轉址 19.2 秒
+  //
+  // 也就是 18 秒（第一趟等滿逾時）+ 1.9 秒（第二趟順利完成）。
+  // 第一趟請求會卡死不回應，第二趟卻一兩秒就好 —— 而且會重複發生。
+  //
+  // 既然第一趟靠不住，就不該把時間全押在它身上。原本「等它逾時再重送」
+  // 等於每次都先白白丟掉 18 秒。
+  //
+  // ── 做法 ──
+  //
+  // 先發第一趟；HEDGE_MS 之後若還沒有回應，就「同時」再發一趟，
+  // 不取消前一趟，誰先回來就用誰的。這是標準的 hedged request：
+  // 用一點額外流量，換掉最慢那條路徑造成的等待。
+  //
+  // 只給讀取用。讀取沒有副作用，多發幾次完全安全；
+  // 而且同一次呼叫共用同一個 _rid，就算後端真的收到兩次也認得是同一筆。
+  const HEDGE_MS = 4000;        // 多久沒回應就補發下一趟
+  const HEDGE_MAX = 3;          // 最多同時幾趟在飛
+  const HEDGE_DEADLINE = 30000; // 全部加起來的上限
+
+  function hedgedRead(payload, opts){
+    opts = opts || {};
+    const hedgeMs = opts.hedgeMs || HEDGE_MS;
+    const maxTries = opts.maxTries || HEDGE_MAX;
+    const deadline = opts.deadlineMs || HEDGE_DEADLINE;
+
+    return new Promise(function(resolve){
+      let settled = false;
+      let launched = 0;
+      let finished = 0;
+      let lastFail = null;
+      const timers = [];
+
+      function done(result){
+        if(settled) return;
+        settled = true;
+        timers.forEach(clearTimeout);
+        result.attempts = launched;
+        resolve(result);
+      }
+
+      function launch(){
+        if(settled || launched >= maxTries) return;
+        launched++;
+        const myNo = launched;
+
+        // 每一趟自己的逾時就設成總期限，真正的「早點放棄」是靠補發下一趟，
+        // 而不是靠掐掉這一趟 —— 萬一它其實只是慢一點，晚到也還能用。
+        postToBackend(payload, { timeoutMs: deadline, retries: 0, badRetries: 1 })
+          .then(function(r){
+            finished++;
+            if(r.ok){
+              if(myNo > 1) console.warn('第 ' + myNo + ' 趟先回來，採用它的結果');
+              done(r);
+            } else {
+              lastFail = r;
+              // 全部都跑完而且都失敗了，才算真的失敗
+              if(finished >= maxTries) done(lastFail);
+              else if(typeof opts.onRetry === 'function'){ try{ opts.onRetry(launched); }catch(e){} }
+            }
+          });
+
+        if(launched < maxTries){
+          timers.push(setTimeout(function(){
+            if(settled) return;
+            console.warn(hedgeMs + 'ms 內沒有回應，並行補發第 ' + (launched + 1) + ' 趟');
+            if(typeof opts.onRetry === 'function'){ try{ opts.onRetry(launched + 1); }catch(e){} }
+            launch();
+          }, hedgeMs));
+        }
+      }
+
+      timers.push(setTimeout(function(){
+        done(lastFail || { ok:false, reason:'timeout', error:'hedge-deadline' });
+      }, deadline));
+
+      launch();
+    });
+  }
+
   // ---- Form Submission ----
   document.getElementById('signup-form').addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -1678,7 +1763,7 @@
       setTimeout(()=> msg.classList.remove('show'), 8000);
     };
 
-    const r = await postToBackend({ type:'lookup', phone: phone }, { timeoutMs: READ_TIMEOUT, retries: 2 });
+    const r = await hedgedRead({ type:'lookup', phone: phone });
     const data = r.body || {};
 
     if(!r.ok){
@@ -1905,7 +1990,7 @@
     // 但那趟要讀整張報名表、每組重新組裝，冷啟動時很容易超過 20 秒逾時 ——
     // 結果就是連後台的門都進不去。現在名單改成進去之後才載（見下方），
     // 名單慢是名單的事，不會再把人擋在登入頁外面。
-    const r = await postToBackend({ type:'adminBootstrap', password: pw }, { timeoutMs: READ_TIMEOUT, retries: 2 });
+    const r = await hedgedRead({ type:'adminBootstrap', password: pw });
     const body = r.body || {};
 
     btn.disabled = false;
@@ -2008,9 +2093,9 @@
     };
     showLoading();
 
-    const r = await postToBackend(
+    const r = await hedgedRead(
       { type:'adminList', password: adminPassword },
-      { timeoutMs: READ_TIMEOUT, retries: 2, onRetry: ()=>{ tryNo++; showLoading(); } });
+      { onRetry: (n)=>{ tryNo = n; showLoading(); } });
     const body = r.body || {};
     showWarnings(body);
     if(body.result === 'success'){
@@ -2018,7 +2103,7 @@
       // 統計數字不再常駐在工具列上（版面太吵），改成存下來，
       // 按「🔧 診斷」時才連同診斷結果一起顯示。
       lastReadInfo = { stats: body.stats, serverMs: body.serverMs, at: new Date(),
-                       clientMs: Date.now() - tStart, attempts: tryNo };
+                       clientMs: Date.now() - tStart, attempts: r.attempts || tryNo };
     } else if(!r.ok){
       const reasonTxt = (r.reason === 'timeout')
         // 走到這裡代表「等了 90 秒、而且自動重試過一次」都還沒回來。
@@ -2068,7 +2153,7 @@
     btn.disabled = true;
     document.getElementById('admin-log-list').innerHTML =
       '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
-    const r = await postToBackend({ type:'adminLog', password: adminPassword, limit: 300 }, { timeoutMs: READ_TIMEOUT, retries: 2 });
+    const r = await hedgedRead({ type:'adminLog', password: adminPassword, limit: 300 });
     const body = r.body || {};
     adminLogs = (body.result === 'success') ? (body.logs || []) : [];
     renderAdminLog();
@@ -2093,7 +2178,7 @@
     box.style.display = 'block';
     box.textContent = isEn() ? 'Running diagnostics…' : '診斷中…';
 
-    const r = await postToBackend({ type:'diagnose', password: adminPassword }, { timeoutMs: READ_TIMEOUT, retries: 2 });
+    const r = await hedgedRead({ type:'diagnose', password: adminPassword });
 
     if(!r.ok){
       // 連診斷都打不通 → 問題在傳輸層，不在試算表。這個結論本身就很有用。
