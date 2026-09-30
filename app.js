@@ -36,7 +36,6 @@
     field_tablewith:{en:'Join another group\'s table (optional)', ja:'他のグループとの相席（任意）', ko:'다른 그룹과 합석 (선택)'},
     field_tablewith_name_ph:{en:'Name', ja:'お名前', ko:'이름'}, field_tablewith_ig_ph:{en:'IG', ja:'IG', ko:'IG'},
     time_value:{en:'Fri, Oct 30 · 7:00 PM', ja:'2026年10月30日（金）19:00', ko:'2026년 10월 30일(금) 19:00'},
-    tablewith_country_ph:{en:'Country', ja:'国籍', ko:'국적'},
     tablewith_ig_required:{en:'Please also fill in that person\'s IG handle so we can identify them',
       ja:'ご本人を特定するため、お相手の Instagram アカウントもご記入ください',
       ko:'해당 인원을 확인할 수 있도록 상대방의 Instagram 계정도 입력해 주세요'},
@@ -54,9 +53,8 @@
     lookup_submitting:{en:'Checking…'},
     lookup_msg:{en:'No record found — please double check your phone number, or contact the organizer for help.', ja:'データが見つかりません。電話番号をご確認いただくか、主催者までお問い合わせください。', ko:'조회된 정보가 없습니다. 전화번호를 확인하시거나 주최 측에 문의해 주세요.'},
     payment_title:{en:'Payment', ja:'銀行振込', ko:'송금 안내'}, payment_desc:{en:'After registering, please transfer using the details below and report your transfer for verification.', ja:'お申込み後、下記の口座へお振込みのうえ、振込内容をご報告ください。照合に使用します。', ko:'신청 후 아래 계좌로 송금하시고, 송금 내용을 보고해 주세요. 확인에 사용됩니다.'},
-    qr_caption:{en:'Sample payment QR code — replace with your actual receiving QR code', ja:'決済コードのサンプルです。実際の QR コードに差し替えてください', ko:'결제 코드 예시입니다. 실제 QR 코드로 교체해 주세요'},
     bank_name_label:{en:'Bank', ja:'銀行名', ko:'은행'}, bank_branch_label:{en:'Branch', ja:'支店', ko:'지점'}, bank_branch_value:{en:'Head Office', ja:'本店', ko:'본점'},
-    bank_holder_label:{en:'Account Name', ja:'口座名義', ko:'예금주'}, bank_acct_label:{en:'Account No.', ja:'口座番号', ko:'계좌번호'}, copy_btn:{en:'Copy', ja:'口座番号をコピー', ko:'계좌번호 복사'},
+    bank_acct_label:{en:'Account No.', ja:'口座番号', ko:'계좌번호'}, copy_btn:{en:'Copy', ja:'口座番号をコピー', ko:'계좌번호 복사'},
     pay_name_label:{en:'Payer Name', ja:'振込人のお名前', ko:'송금인 이름'}, pay_phone_label:{en:'Phone', ja:'電話番号', ko:'연락처'},
     pay_phone_hint:{en:'※ Please use the same phone number you registered with', ja:'※お申込み時と同じ電話番号をご入力ください', ko:'※신청 시 사용한 전화번호를 입력해 주세요'},
     pay_last5_label:{en:'Last 5 Digits', ja:'振込元口座番号の下5桁', ko:'계좌번호 뒤 5자리'}, pay_amount_label:{en:'Amount', ja:'振込金額', ko:'송금 금액'}, pay_date_label:{en:'Transfer Date', ja:'振込日', ko:'송금일'},
@@ -67,13 +65,11 @@
     gallery_empty:{en:'The event hasn\'t happened yet — photo slots are reserved here for later', ja:'イベントはまだ開催前です。写真はこちらに掲載予定です', ko:'행사는 아직 시작 전입니다. 사진은 이곳에 게시될 예정입니다'},
     countdown_label:{en:'Countdown to Taiwan Pride', ja:'TAIWAN PRIDE まであと', ko:'TAIWAN PRIDE까지'},
     countdown_days:{en:'Days', ja:'日', ko:'일'}, countdown_hours:{en:'Hours', ja:'時間', ko:'시간'}, countdown_mins:{en:'Minutes', ja:'分', ko:'분'}, countdown_secs:{en:'Seconds', ja:'秒', ko:'초'},
-    admin_title:{en:'Admin'}, admin_desc:{en:'Staff only — view and manage registrations, payments and change history.'},
+    admin_title:{en:'Admin'},
     admin_gate_title:{en:'Staff Login'}, admin_gate_desc:{en:'Enter the password to view backend data'},
     admin_gate_ph:{en:'Enter password', ja:'パスワードを入力', ko:'비밀번호 입력'}, admin_gate_btn:{en:'Log In'},
     admin_gate_error:{en:'Incorrect password — please try again'},
-    admin_refresh_btn:{en:'🔄 Refresh Data'},
     admin_loading:{en:'Loading…'},
-    admin_banner_text:{en:'The payment status column is the single source of truth — the system never compares amounts. A transfer report automatically moves a group to \"Verifying\"; once you see the money in the bank, press \"Paid\". Every change is recorded in the 異動紀錄 tab with the operator name. One phone number always maps to exactly one registration.'},
     admin_logic_title:{en:'Reconciliation & Actions'},
     admin_logic_1:{en:'Four payment statuses: Unpaid → Verifying (set automatically when the guest reports a transfer) → Paid, plus Top-up due (people added after payment)'},
     admin_logic_2:{en:'The system does not compare amounts. When you see the money in the 匯款回報 tab, press \"Paid\" — whether the amount is right is your call'},
@@ -82,11 +78,10 @@
     admin_logic_5:{en:'If a paid group adds people later, the status automatically becomes Top-up due; the amount owed is (new people) × NT$1,200'},
     admin_logic_6:{en:'Refund decisions are yours — the system never processes them automatically. Record what you decided in that group\'s staff note'},
     admin_logic_7:{en:'Full phone numbers are not shown in the admin panel. Check the spreadsheet directly when you need to contact someone'},
-    stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Paid Groups'},
-    stat_outstanding:{en:'Outstanding'}, stat_topup:{en:'Top-up Due'}, stat_pending:{en:'Cancel Requests'},
+    stat_groups:{en:'Active Groups'}, stat_people:{en:'Total People'}, stat_paid:{en:'Paid amount (groups)', ja:'入金済み金額（組数）', ko:'입금 완료 금액 (그룹 수)'},
+    stat_outstanding:{en:'Outstanding'},
     filter_all:{en:'All'}, filter_cancelreq:{en:'⚠ Cancel Requests'}, filter_unpaid:{en:'Unpaid'},
     filter_checking:{en:'Verifying'}, filter_topup:{en:'Top-up Due'}, filter_success:{en:'Paid'}, filter_cancelled:{en:'Cancelled'},
-    filter_country_label:{en:'Filter by country'},
     lr_regid:{en:'Registration No.', ja:'申込番号', ko:'신청 번호'}, lr_count:{en:'Attending', ja:'参加人数', ko:'참석 인원'}, lr_due:{en:'Amount Due', ja:'お支払い金額', ko:'결제 금액'}, lr_method:{en:'Payment Method', ja:'お支払い方法', ko:'결제 方法'},
     lr_edit_btn:{en:'✏️ Edit registration / add people', ja:'✏️ 申込内容の変更 / 同伴者の追加', ko:'✏️ 신청 내용 수정 / 인원 추가'},
     edit_cancel_btn:{en:'Discard changes', ja:'編集をやめる', ko:'수정 취소'},
@@ -354,9 +349,7 @@
     tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
     panels.forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
     if(name === 'admin'){
-      // 不再預熱。預熱會在你打開後台時先送一個請求，你按登入時它可能還沒跑完，
-      // 登入就得排在它後面 → 卡門口。拿掉之後，「按登入」是唯一的請求，乾淨直達，
-      // 跟你那個從來不卡的網站一樣。記住的密碼還是幫你帶入欄位（不送出）。
+      // 只把記住的密碼帶入欄位，不自動送出 —— 「按登入」是唯一的請求。
       prefillAdminPw();
     }
     if(name === 'register'){
@@ -620,247 +613,150 @@
 
   // ---- Backend Communication ----
   //
-  // ── 關於逾時：舊站根本沒有設 ──
+  // ── 名單常常要「第 3 次嘗試」才出來的原因 ──
   //
-  // 舊站的寫法是 fetch(...).then(r => r.json())，沒有任何逾時。
-  // 所以 GAS 冷啟動花 25 秒時，舊站就等 25 秒，然後正常顯示資料 ——
-  // 使用者覺得「這次有點慢」，但它成功了。
+  // 舊版的讀取是「hedged request」：第一趟送出後每 4 秒就再補發一趟、最多 3 趟，
+  // 而且已經送出去的舊請求永遠不會被取消。問題在於：
   //
-  // 新版一開始每個請求都包 20 秒逾時，時間一到就放棄並顯示錯誤，
-  // 即使回應下一秒就要到了。同一件事，舊站叫「慢」，新站叫「錯誤」。
-  // 「另一個表從來沒遇過冷啟動問題」的真正原因就在這裡：
-  // 不是它不會冷啟動，是它從來不會放棄。
+  //  1. 4 秒比 Apps Script 平常的回應時間還短（讀整張表 + 冷啟動常常 5～15 秒），
+  //     所以幾乎每次讀名單都會變成「同時 3 趟完整讀表」。畫面上的「第 3 次嘗試」
+  //     其實只是計時器到了，不代表前兩趟失敗 —— 它們都還在跑。
+  //  2. Apps Script 所有訪客都以擁有者身分執行、共用同一個試算表，
+  //     同時跑 3 份「讀整張表 + 組 231KB 回應」只會互相拖慢，每一趟都更晚回來。
+  //  3. 登入（adminBootstrap）也走同一套，登入稍慢就留下 1～2 趟「孤兒請求」
+  //     還在後端跑，緊接著的讀名單就排在它們後面 —— 雪上加霜。
+  //  4. 同一次呼叫的 3 趟共用同一個 _rid。若後端用 _rid 做重複請求檢查，
+  //     第 2、3 趟可能直接被當成重複而回錯誤，而舊版會把「第一個回來的」
+  //     不論成敗都當成結果 → 顯示讀取失敗，只好再按一次。
   //
-  // 現在分成兩種：
-  //   寫入類 —— 20 秒。送出報名／匯款回報這種，等太久不如讓使用者知道，
-  //             而且有 _rid 冪等鍵保護，重送不會寫成兩筆。
-  //   讀取類 —— 18 秒，逾時自動再試，每次逾時拉長 1.4 倍（18 → 25 → 35 秒）。
-  //
-  // ── 為什麼不是「一次等 90 秒」──
-  //
-  // 上一版把讀取類設成 90 秒 + 重試一次，結果是災難：
-  // 第一次請求卡住時要乾等滿 90 秒才放棄，第二次 1 秒就拿到資料，
-  // 使用者體感是「按下去兩分鐘完全沒反應」。逾時和重試的時間會相加，
-  // 設得越寬容、卡住時越久 —— 這是當初沒想到的組合效應。
-  //
-  // 實際觀察到的後端耗時是 1～2 秒。卡到 18 秒幾乎可以斷定這一趟已經掉了
-  //（多半是 GAS 轉址那層丟包），繼續等沒有意義，早點重送才是對的。
-  // 後面幾次逐步拉長，是留給真的冷啟動的餘裕。
-  const POST_TIMEOUT = 20000;
-  const READ_TIMEOUT = 18000;
-
-  function withTimeout(promise, ms){
-    return new Promise((resolve, reject)=>{
-      const timer = setTimeout(()=> reject(new Error('timeout')), ms);
-      promise.then(v=>{ clearTimeout(timer); resolve(v); },
-                    e=>{ clearTimeout(timer); reject(e); });
-    });
-  }
+  // ── 新做法 ──
+  //   讀取：先送一趟，給足時間（READ_HEDGE_MS 內不打擾它）。
+  //         超過還沒回來才補發「一趟」，任何一趟成功就用它，並把另一趟中止。
+  //         每趟用自己的 _rid。總期限 READ_DEADLINE。
+  //   寫入：一趟，逾時 WRITE_TIMEOUT；只有在「回來的是 Google 錯誤頁」
+  //         （請求根本沒進到 Apps Script）時才用同一個 _rid 自動重送。
+  //   逾時一律用 AbortController 真正中止連線，不留懸空的請求。
+  const WRITE_TIMEOUT = 25000;
+  const READ_HEDGE_MS = 12000;   // 第一趟 12 秒還沒回來，才補發第二趟
+  const READ_DEADLINE = 45000;   // 讀取總期限
 
   function sleep(ms){ return new Promise(r=> setTimeout(r, ms)); }
+  function newRid(){
+    return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
 
   /**
-   * opts.timeoutMs —— 這一次要等多久（預設 POST_TIMEOUT）
-   * opts.retries   —— 逾時後自動再試幾次（只有讀取類該用，寫入類一律 0）
-   * opts.badRetries —— 收到「不是 JSON 的回應」時自動再試幾次（預設 2）
-   *
-   * 為什麼 badRetries 連寫入類也預設開著：
-   * 這種失敗是 Google 的轉址在半路掉了，通常一兩百毫秒後重送就成功。
-   * 而且同一次呼叫會沿用同一個 _rid，後端的冪等檢查認得出是同一筆，
-   * 不會重複寫入 —— _rid 存在的意義就是讓重送變成安全的事。
+   * 送一趟 POST 到 GAS，回傳 { ok, body } 或 { ok:false, reason, ... }。
+   * opts.timeoutMs  —— 逾時（預設 WRITE_TIMEOUT）
+   * opts.badRetries —— 收到非 JSON（Google 錯誤頁）時自動重送幾次（預設 2）
+   * opts.signal     —— 外部的 AbortSignal（讀取補發時用來中止輸家）
    */
   async function postToBackend(payload, opts){
     if(!GAS_URL) return { ok:false, reason:'no-url' };
-
     opts = opts || {};
-    const timeoutMs = opts.timeoutMs || POST_TIMEOUT;
-    const retries = opts.retries || 0;
+    const timeoutMs = opts.timeoutMs || WRITE_TIMEOUT;
     const badRetries = (opts.badRetries == null) ? 2 : opts.badRetries;
 
-    // 冪等鍵：萬一同一筆因逾時被送了兩次，後端用同一個 _rid 只認第一次、不重覆寫入。
-    if(payload && typeof payload === 'object' && !payload._rid){
-      payload._rid = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    // 冪等鍵：重送時沿用同一個 _rid，後端只認第一次、不重覆寫入。
+    if(payload && typeof payload === 'object' && !payload._rid) payload._rid = newRid();
+
+    const ctrl = new AbortController();
+    const timer = setTimeout(()=> ctrl.abort('timeout'), timeoutMs);
+    const onOuterAbort = ()=> ctrl.abort('cancelled');
+    if(opts.signal){
+      if(opts.signal.aborted) ctrl.abort('cancelled');
+      else opts.signal.addEventListener('abort', onOuterAbort);
     }
 
-    // ── 就跟另一個「很快」的網站一模一樣：單純一個 POST，直接讀 JSON。──
-    // 之前那套「GET→JSONP→POST 三層備援 + 18 秒逾時」才是登入/讀取慢的元兇。
-    // 對照組證明：在這個環境，單純 POST 到 GAS 就能又快又穩地拿到回應，不需要備援。
-    // 只保留一個寬鬆逾時（20 秒）當安全網 —— 萬一真的卡住才收尾顯示錯誤，
-    // 正常情況 1~2 秒就回來，完全不受影響。
-    // ── 先當純文字收下來，再自己 JSON.parse ──
-    //
-    // 原本是直接 await res.json()。問題是：當後端回的不是資料而是一頁 HTML
-    //（Google 的錯誤頁、登入頁、或 Apps Script 執行失敗的畫面），
-    // res.json() 會拋出 SyntaxError，被下面的 catch 接住之後標成 'network'，
-    // 於是畫面顯示「可能是網路問題，或你正用 LINE 內建瀏覽器」——
-    // 完全不是真正的原因，而真正的原因（那頁 HTML 說了什麼）被整個丟掉。
-    //
-    // 改成文字優先之後，parse 失敗時我們手上還留著原始內容，
-    // 可以據此分辨到底是哪一種狀況，並且把前 300 字帶回去顯示。
     let res, raw;
     try{
-      res = await withTimeout(fetch(GAS_URL, {
-        method:'POST',
-        body: JSON.stringify(payload)
-      }), timeoutMs);
+      res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(payload), signal: ctrl.signal });
       raw = await res.text();
     }catch(err){
-      const msg = String(err && err.message ? err.message : err);
-      const reason = /timeout|abort/i.test(msg) ? 'timeout' : 'network';
-      console.warn('POST 連線失敗：', err);
-
-      // 讀取類請求逾時就自動再試。第一趟多半是在等冷啟動，
-      // 那趟把執行個體叫醒之後，第二趟通常一兩秒就回來了。
-      // 帶著同一個 _rid 重送，就算是寫入類也不會被寫成兩筆。
-      if(retries > 0){
-        console.warn('逾時，自動重試（剩餘 ' + retries + ' 次）');
-        // 讓呼叫端可以把「第幾次嘗試」顯示出來。少了這個，
-        // 使用者看到的就是一片「載入中…」不動，無法分辨是還在跑還是當掉了。
-        if(typeof opts.onRetry === 'function'){
-          try{ opts.onRetry(); }catch(e){}
-        }
-        return postToBackend(payload, {
-          timeoutMs: Math.round(timeoutMs * 1.4),   // 逐次放寬，留給真的冷啟動
-          retries: retries - 1,
-          badRetries: badRetries,
-          onRetry: opts.onRetry });
-      }
-      return { ok:false, reason:reason, error:msg };
+      const why = ctrl.signal.reason;
+      return { ok:false,
+               reason: (why === 'cancelled') ? 'cancelled' : (why === 'timeout' ? 'timeout' : 'network'),
+               error: String(err && err.message ? err.message : err) };
+    }finally{
+      clearTimeout(timer);
+      if(opts.signal) opts.signal.removeEventListener('abort', onOuterAbort);
     }
 
+    // 先當純文字收，再自己 parse：後端回 HTML 錯誤頁時才留得住原始內容可以顯示。
     try{
-      return { ok:true, via:'post', status:res.status, body: JSON.parse(raw) };
+      return { ok:true, status:res.status, body: JSON.parse(raw) };
     }catch(err){
-      // 連線是通的（拿得到回應），只是內容不是 JSON。
-      const snippet = String(raw || '')
-        .replace(/<[^>]*>/g, ' ')       // 去標籤，留下人看得懂的文字
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 300);
       console.error('後端回的不是 JSON。HTTP ' + res.status + '：', raw);
-
-      // ── 自動重送 ──
-      //
-      // GAS 的 POST 實際上要走兩段：
-      //   /exec → 302 轉址到 googleusercontent.com/...?user_content_key=xxx → 真正的回應
-      // 這個錯誤是第二段掉了，回來的是 Google Drive 的 404 錯誤頁
-      //（內容裡會看到 ppConfig、drive-log 這些字）。
-      //
-      // 關鍵是：請求根本沒送到 Apps Script，所以後端什麼都沒做，重送絕對安全。
-      // 而且這種失敗是瞬間的、隨機的，隔幾百毫秒再送通常就成功了。
-      // 先前這裡直接放棄，等於把一個「再試一次就好」的小問題，
-      // 變成使用者眼中的「名單跑不出來」。
-      //
-      // 間隔逐次拉長（400ms、800ms），給轉址那一層一點喘息時間。
-      if(badRetries > 0){
-        const waitMs = 400 * (3 - badRetries);
-        console.warn('收到非 JSON 回應（HTTP ' + res.status + '），' + waitMs + 'ms 後重送（剩餘 ' + badRetries + ' 次）');
-        await sleep(waitMs);
-        if(typeof opts.onRetry === 'function'){
-          try{ opts.onRetry(); }catch(e){}
-        }
-        return postToBackend(payload, {
-          timeoutMs: timeoutMs, retries: retries, badRetries: badRetries - 1,
-          onRetry: opts.onRetry });
+      // GAS 的 POST 會 302 轉址到 googleusercontent.com；這種錯誤是轉址那段掉了，
+      // 請求根本沒進到 Apps Script，所以重送絕對安全。
+      if(badRetries > 0 && !(opts.signal && opts.signal.aborted)){
+        await sleep(400 * (3 - badRetries));
+        return postToBackend(payload, Object.assign({}, opts, { badRetries: badRetries - 1 }));
       }
-
       return {
-        ok:false, reason:'bad-response',
-        status: res.status,
-        snippet: snippet,
-        error:'non-json-response'
+        ok:false, reason:'bad-response', status: res.status, error:'non-json-response',
+        snippet: String(raw || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
       };
     }
   }
 
-  // ===================== 讀取：並行發送（hedged request）=====================
-  //
-  // ── 為什麼需要這個 ──
-  //
-  // 實測數據（後台診斷）：
-  //     後端 0.7 秒　前端總計 19.9 秒（嘗試 2 次）　傳輸／轉址 19.2 秒
-  //
-  // 也就是 18 秒（第一趟等滿逾時）+ 1.9 秒（第二趟順利完成）。
-  // 第一趟請求會卡死不回應，第二趟卻一兩秒就好 —— 而且會重複發生。
-  //
-  // 既然第一趟靠不住，就不該把時間全押在它身上。原本「等它逾時再重送」
-  // 等於每次都先白白丟掉 18 秒。
-  //
-  // ── 做法 ──
-  //
-  // 先發第一趟；HEDGE_MS 之後若還沒有回應，就「同時」再發一趟，
-  // 不取消前一趟，誰先回來就用誰的。這是標準的 hedged request：
-  // 用一點額外流量，換掉最慢那條路徑造成的等待。
-  //
-  // 只給讀取用。讀取沒有副作用，多發幾次完全安全；
-  // 而且同一次呼叫共用同一個 _rid，就算後端真的收到兩次也認得是同一筆。
-  const HEDGE_MS = 4000;        // 多久沒回應就補發下一趟
-  const HEDGE_MAX = 3;          // 最多同時幾趟在飛
-  const HEDGE_DEADLINE = 30000; // 全部加起來的上限
-
-  function hedgedRead(payload, opts){
+  /**
+   * 讀取專用。最多兩趟：第一趟給足 READ_HEDGE_MS，還沒回來才補發第二趟；
+   * 任何一趟「成功」就採用並中止另一趟。兩趟都失敗才回報失敗。
+   * 每一趟用自己的 _rid（讀取沒有副作用，不需要冪等保護）。
+   * opts.onSlow(n) —— 補發第 n 趟時通知呼叫端（可用來更新畫面）
+   */
+  function readFromBackend(payload, opts){
     opts = opts || {};
-    const hedgeMs = opts.hedgeMs || HEDGE_MS;
-    const maxTries = opts.maxTries || HEDGE_MAX;
-    const deadline = opts.deadlineMs || HEDGE_DEADLINE;
+    const hedgeMs = opts.hedgeMs || READ_HEDGE_MS;
+    const deadline = opts.deadlineMs || READ_DEADLINE;
+    const t0 = Date.now();
 
     return new Promise(function(resolve){
-      let settled = false;
-      let launched = 0;
-      let finished = 0;
-      let lastFail = null;
-      const timers = [];
+      const ctrls = [];
+      let settled = false, launched = 0, failed = 0, lastFail = null;
+      let hedgeTimer = null, deadTimer = null;
 
-      function done(result, winner, winnerMs){
+      function finish(r, winner){
         if(settled) return;
         settled = true;
-        timers.forEach(clearTimeout);
-        result.attempts = launched;
-        // 「發了幾趟」不足以判斷發生什麼事：
-        //   第 1 趟勝出 → 補發是白做的，真正問題是單趟就很慢
-        //   第 2 趟勝出 → 第一趟真的卡死了，補發確實救到
-        // 這兩種情況總時間可能一模一樣，但要修的地方完全不同。
-        result.winner = winner || 0;
-        result.winnerMs = winnerMs || 0;
-        resolve(result);
+        clearTimeout(hedgeTimer); clearTimeout(deadTimer);
+        ctrls.forEach(c=> c.abort());          // 中止還在路上的另一趟
+        r.attempts = launched;
+        r.winner = winner || 0;
+        r.clientMs = Date.now() - t0;
+        resolve(r);
       }
 
       function launch(){
-        if(settled || launched >= maxTries) return;
+        if(settled || launched >= 2) return;
         launched++;
-        const myNo = launched;
-        const myStart = Date.now();
-
-        // 每一趟自己的逾時就設成總期限，真正的「早點放棄」是靠補發下一趟，
-        // 而不是靠掐掉這一趟 —— 萬一它其實只是慢一點，晚到也還能用。
-        postToBackend(payload, { timeoutMs: deadline, retries: 0, badRetries: 1 })
+        const no = launched;
+        const ctrl = new AbortController();
+        ctrls.push(ctrl);
+        const copy = Object.assign({}, payload, { _rid: newRid() });
+        postToBackend(copy, { timeoutMs: deadline, badRetries: 1, signal: ctrl.signal })
           .then(function(r){
-            finished++;
-            if(r.ok){
-              if(myNo > 1) console.warn('第 ' + myNo + ' 趟先回來，採用它的結果');
-              done(r, myNo, Date.now() - myStart);
-            } else {
-              lastFail = r;
-              // 全部都跑完而且都失敗了，才算真的失敗
-              if(finished >= maxTries) done(lastFail, 0, 0);
-              else if(typeof opts.onRetry === 'function'){ try{ opts.onRetry(launched); }catch(e){} }
-            }
-          });
-
-        if(launched < maxTries){
-          timers.push(setTimeout(function(){
             if(settled) return;
-            console.warn(hedgeMs + 'ms 內沒有回應，並行補發第 ' + (launched + 1) + ' 趟');
-            if(typeof opts.onRetry === 'function'){ try{ opts.onRetry(launched + 1); }catch(e){} }
-            launch();
-          }, hedgeMs));
-        }
+            if(r.ok && r.body && r.body.result === 'success'){ finish(r, no); return; }
+            // 後端明確回的業務錯誤（密碼錯、找不到…）不是運氣問題，補發也一樣，直接回報
+            if(r.ok){ finish(r, no); return; }
+            lastFail = r; failed++;
+            if(launched < 2){ clearTimeout(hedgeTimer); launchHedge(); }   // 第一趟很快就掛了 → 立刻補發，不必等計時器
+            else if(failed >= launched) finish(lastFail, 0);
+          });
       }
 
-      timers.push(setTimeout(function(){
-        done(lastFail || { ok:false, reason:'timeout', error:'hedge-deadline' }, 0, 0);
-      }, deadline));
+      function launchHedge(){
+        if(settled || launched >= 2) return;
+        if(typeof opts.onSlow === 'function'){ try{ opts.onSlow(launched + 1); }catch(e){} }
+        launch();
+      }
 
+      deadTimer = setTimeout(function(){
+        finish(lastFail || { ok:false, reason:'timeout', error:'read-deadline' }, 0);
+      }, deadline);
+      hedgeTimer = setTimeout(launchHedge, hedgeMs);
       launch();
     });
   }
@@ -940,11 +836,9 @@
       // 後端成功、只是回應在半路掉了。直接叫使用者「再試一次」正是重覆送出的來源。
       // 所以先用電話查一下：真的有就當成功、帶去查詢頁，避免他以為失敗又送一次。
       if(!editingGroup && payload.phone){
-        // 查證最多等 7 秒就放棄 —— 不然連線本來就不好時，這個查證會再跑一整輪
-        // (GET→JSONP→POST)，讓使用者等第二輪，反而更卡。問不到就直接給下面的提示。
-        let check = null;
-        try{ check = await withTimeout(postToBackend({ type:'lookup', phone: payload.phone }), 7000); }
-        catch(e){ check = null; }
+        // 查證最多等 8 秒就放棄，問不到就直接給下面的提示。
+        const check = await postToBackend({ type:'lookup', phone: payload.phone },
+                                          { timeoutMs: 8000, badRetries: 1 });
         if(check && check.ok && check.body && check.body.found){
           showToast(T({
             zh:'✅ 你其實已經報名成功了，不用再送一次',
@@ -1770,7 +1664,7 @@
       setTimeout(()=> msg.classList.remove('show'), 8000);
     };
 
-    const r = await hedgedRead({ type:'lookup', phone: phone });
+    const r = await readFromBackend({ type:'lookup', phone: phone });
     const data = r.body || {};
 
     if(!r.ok){
@@ -1965,9 +1859,7 @@
   function loadAdminCred(){ try{ return localStorage.getItem(ADMIN_CRED_KEY) || ''; }catch(e){ return ''; } }
   function clearAdminCred(){ try{ localStorage.removeItem(ADMIN_CRED_KEY); }catch(e){} }
 
-  // 只把記住的密碼「帶入欄位」，不自動送出。
-  // 自動送出會在打開後台的瞬間就發登入請求，和預熱撞在一起搶資源、時好時壞；
-  // 改成你按一下登入才送 —— 只有一個請求，而且預熱已經先把後端叫醒 → 秒進。
+  // 只把記住的密碼「帶入欄位」，不自動送出，按下登入才送。
   function prefillAdminPw(){
     if(adminPassword) return;                                // 已登入就不用
     const input = document.getElementById('admin-pw');
@@ -1991,13 +1883,8 @@
     btn.textContent = isEn() ? 'Signing in…' : '登入中…';
     errEl.style.display = 'none';
 
-    // 登入只驗密碼，後端完全不碰試算表，1 秒內就回得來。
-    //
-    // 原本 adminBootstrap 會順便把整份名單一起算好回傳（「合併成一次往返比較省」），
-    // 但那趟要讀整張報名表、每組重新組裝，冷啟動時很容易超過 20 秒逾時 ——
-    // 結果就是連後台的門都進不去。現在名單改成進去之後才載（見下方），
-    // 名單慢是名單的事，不會再把人擋在登入頁外面。
-    const r = await hedgedRead({ type:'adminBootstrap', password: pw });
+    // 登入只驗密碼，後端不碰試算表；名單進後台之後才另外載。
+    const r = await readFromBackend({ type:'adminBootstrap', password: pw });
     const body = r.body || {};
 
     btn.disabled = false;
@@ -2028,7 +1915,7 @@
     if(body.result !== 'success'){
       // 後端不認得 adminBootstrap，代表 GAS 還是舊版沒更新
       const em = String(body.message || '');
-      if(/不支援|不認得|unsupported|unknown/i.test(em) || body.reason === 'unknown-type'){
+      if(/未知的動作/.test(em)){
         errEl.textContent = isEn()
           ? 'The backend does not recognise this request — please deploy the updated Apps Script as a NEW VERSION.'
           : '後端不認得這個請求，代表 Apps Script 還是舊版。請到「部署 → 管理部署作業 → 鉛筆 → 版本選『新版本』→ 部署」';
@@ -2049,7 +1936,7 @@
     adminPassword = pw;
     adminOperator = body.operator || '';
     input.value = '';
-    saveAdminCred(pw);   // 記住這台裝置，下次自動登入
+    saveAdminCred(pw);   // 記住這台裝置，下次自動帶入密碼
 
     // 密碼對了 → 立刻進後台。名單改成進來之後才讀：
     // 讀表慢（或冷啟動）時，人已經在後台看著「載入中」，而不是卡在登入頁外面。
@@ -2058,102 +1945,82 @@
     document.getElementById('admin-content').style.display = 'block';
     showToast((isEn() ? 'Welcome, ' : '歡迎，') + adminOperator);
 
-    if(Array.isArray(body.results)){
-      // 相容：萬一後端還是舊版、名單跟著回來了，就直接畫，省一趟
-      showWarnings(body);
-      applyAdminData(body.results);
-    } else {
-      document.getElementById('admin-list').innerHTML =
-        '<div class="adm-empty">' + (isEn()
-          ? 'Loading list… (the first load after a while can take 10–30 seconds)'
-          : '名單載入中…（隔一段時間沒人用的話，第一次載入可能要 10～30 秒，請稍候）') + '</div>';
-      loadAdminList();
-    }
+    loadAdminList();
   }
   document.getElementById('admin-unlock-btn').addEventListener('click', tryUnlockAdmin);
   document.getElementById('admin-pw').addEventListener('keydown', (e)=>{
     if(e.key === 'Enter') tryUnlockAdmin();
   });
 
-  async function loadAdminList(){
+  // 同一時間只允許一個讀名單請求。登入後自動載入、再手動按 🔄，
+  // 不會變成兩份完整讀表同時在後端跑。
+  let adminListLoading = null;
+
+  function loadAdminList(){
+    if(adminListLoading) return adminListLoading;
+    adminListLoading = doLoadAdminList().finally(()=>{ adminListLoading = null; });
+    return adminListLoading;
+  }
+
+  async function doLoadAdminList(){
     const btn = document.getElementById('admin-refresh-btn');
     btn.disabled = true;
 
-    // 載入過程中把狀態寫在名單區。重點是「第幾次嘗試」——
-    // 沒有這個資訊，一旦第一趟卡住，畫面就只是一片不動的「載入中」，
-    // 使用者無法分辨是還在跑還是已經當掉，只能一直等。
+    // 顯示「已等待幾秒」而不是「第幾次嘗試」—— 看得出來它還在跑，
+    // 也不會誤以為前面幾次都失敗了（舊版的「第 3 次嘗試」其實只是計時器到了）。
     const listBox = document.getElementById('admin-list');
-    let tryNo = 1;
-    // 從按下去到資料到手的實際牆鐘時間。
-    // serverMs（GAS 執行）只是其中一段，剩下的是 Google 的轉址往返與傳輸 ——
-    // 兩個數字差多少，直接決定該往哪裡查：
-    //   差距小 → 就是 GAS 固定開銷，沒得再快
-    //   差距大 → 請求在半路掉過，時間花在逾時重送
     const tStart = Date.now();
+    let hedged = false;
     const showLoading = ()=>{
+      const sec = Math.floor((Date.now() - tStart) / 1000);
       listBox.innerHTML = '<div class="adm-empty">'
         + (isEn() ? 'Loading…' : '名單載入中…')
-        + (tryNo > 1
-            ? ('　' + (isEn() ? '(attempt ' + tryNo + ')' : '（第 ' + tryNo + ' 次嘗試）'))
-            : '')
+        + (sec >= 3 ? '　' + sec + (isEn() ? 's' : ' 秒') : '')
+        + (hedged ? (isEn() ? '（slow response, sent a backup request）' : '（回應較慢，已補發一次）') : '')
         + '</div>';
     };
     showLoading();
+    const ticker = setInterval(showLoading, 1000);
 
-    const r = await hedgedRead(
+    const r = await readFromBackend(
       { type:'adminList', password: adminPassword },
-      { onRetry: (n)=>{ tryNo = n; showLoading(); } });
+      { onSlow: ()=>{ hedged = true; showLoading(); } });
+    clearInterval(ticker);
+
     const body = r.body || {};
     showWarnings(body);
     if(body.result === 'success'){
       applyAdminData(body.results || []);
-      // 統計數字不再常駐在工具列上（版面太吵），改成存下來，
-      // 按「🔧 診斷」時才連同診斷結果一起顯示。
+      // 存下來，按「🔧 診斷」時才連同診斷結果一起顯示
       lastReadInfo = { stats: body.stats, serverMs: body.serverMs, at: new Date(),
-                       clientMs: Date.now() - tStart, attempts: r.attempts || tryNo,
-                       winner: r.winner, winnerMs: r.winnerMs };
+                       clientMs: r.clientMs, attempts: r.attempts, winner: r.winner };
     } else if(!r.ok){
       const reasonTxt = (r.reason === 'timeout')
-        // 走到這裡代表「等了 90 秒、而且自動重試過一次」都還沒回來。
-        // 那就不是冷啟動了（冷啟動撐死幾十秒），是後端真的卡住或掛掉。
-        // 先前這裡寫「請再按一次，通常第二次就好」是錯的建議 ——
-        // 重試已經自動做過了，叫使用者再按只是重複一次相同的等待。
         ? (isEn()
-            ? 'No response after 90 seconds, including one automatic retry. This is no longer a cold start — something is genuinely stuck on the backend. Press 🔧 Diagnose to see where.'
-            : '等了 90 秒（而且已經自動重試過一次）仍然沒有回應。這已經不是冷啟動了 —— 後端是真的卡住或出錯。請按「🔧 診斷」看是哪一段有問題。')
+            ? 'No response after ' + Math.round(READ_DEADLINE / 1000) + ' seconds (a backup request was also sent). Press 🔄 to try again, or 🔧 Diagnose to see where it is stuck.'
+            : '等了 ' + Math.round(READ_DEADLINE / 1000) + ' 秒（中途已自動補發一次）仍沒有回應。請按 🔄 再試一次，或按「🔧 診斷」看卡在哪一段。')
         : (r.reason === 'bad-response')
-          // 把後端「真正回了什麼」原封不動顯示出來。
-          // 這是整段診斷最關鍵的一行：Google 的錯誤頁通常會明講原因
-          //（沒有權限、指令碼發生錯誤、要求登入…），有這段文字就不必再猜。
-          // 走到這裡代表「已經自動重送兩次」都還是拿到錯誤頁。
-          // 回應內容若含 ppConfig／drive-log，那是 Google Drive 的錯誤頁，
-          // 代表請求卡在 GAS 的轉址那一段，根本沒進到 Apps Script。
+          // 把後端「真正回了什麼」原封不動顯示出來，Google 的錯誤頁通常會明講原因
           ? (isEn()
-              ? ('Google returned an error page instead of data (HTTP ' + r.status + '), '
-                 + 'even after two automatic retries.\n'
+              ? ('Google returned an error page instead of data (HTTP ' + r.status + '), even after automatic retries.\n'
                  + 'What it said: 「' + (r.snippet || '(empty)') + '」\n'
-                 + 'This fails in Google\'s redirect layer, before reaching the script. '
                  + 'The usual cause is being signed into several Google accounts in this browser — '
                  + 'try an incognito window, or sign in with only one account.')
-              : ('Google 回傳的是錯誤頁而不是資料（HTTP ' + r.status + '），'
-                 + '而且已經自動重送兩次都一樣。\n'
+              : ('Google 回傳的是錯誤頁而不是資料（HTTP ' + r.status + '），自動重送後仍然一樣。\n'
                  + '它實際回的內容是：「' + (r.snippet || '(空白)') + '」\n'
-                 + '這個錯誤發生在 Google 的轉址層，請求根本沒進到你的 Apps Script，'
-                 + '所以跟部署版本、存取權限都無關。\n'
-                 + '最常見的原因是：這個瀏覽器同時登入了多個 Google 帳號。'
-                 + '請開一個無痕視窗試試，或只保留一個 Google 帳號登入。'))
+                 + '這個錯誤發生在 Google 的轉址層，請求沒進到 Apps Script。'
+                 + '最常見的原因是瀏覽器同時登入了多個 Google 帳號，請開無痕視窗或只保留一個帳號再試。'))
           : (isEn()
               ? 'The request did not complete (network, or an in-app browser such as LINE/Instagram blocking it). Try opening the page in a normal browser.'
               : '請求沒有完成：可能是網路問題，或你正用 LINE／Instagram 內建瀏覽器（會擋掉部分連線）。請改用系統瀏覽器（Safari／Chrome）再試一次。');
-      document.getElementById('admin-list').innerHTML =
-        '<div class="adm-empty">' + escapeHtml(reasonTxt) + '</div>';
+      listBox.innerHTML = '<div class="adm-empty">' + escapeHtml(reasonTxt) + '</div>';
     } else {
-      document.getElementById('admin-list').innerHTML =
-        '<div class="adm-empty">' + escapeHtml(body.message || (isEn()
+      listBox.innerHTML = '<div class="adm-empty">' + escapeHtml(body.message || (isEn()
           ? 'Could not load data.'
           : '讀取失敗，後端回報了錯誤，請看上方黃色警告或試算表的「異動紀錄」。')) + '</div>';
     }
     btn.disabled = false;
+    return r;
   }
 
   async function loadAdminLog(){
@@ -2161,7 +2028,7 @@
     btn.disabled = true;
     document.getElementById('admin-log-list').innerHTML =
       '<div class="adm-empty">' + (isEn() ? 'Loading…' : '載入中…') + '</div>';
-    const r = await hedgedRead({ type:'adminLog', password: adminPassword, limit: 300 });
+    const r = await readFromBackend({ type:'adminLog', password: adminPassword, limit: 300 });
     const body = r.body || {};
     adminLogs = (body.result === 'success') ? (body.logs || []) : [];
     renderAdminLog();
@@ -2169,8 +2036,8 @@
   }
 
   document.getElementById('admin-refresh-btn').addEventListener('click', async ()=>{
-    await loadAdminList();
-    showToast(isEn() ? '✅ Updated' : '✅ 資料已更新');
+    const r = await loadAdminList();
+    if(r && r.body && r.body.result === 'success') showToast(isEn() ? '✅ Updated' : '✅ 資料已更新');
   });
   document.getElementById('admin-log-refresh-btn').addEventListener('click', loadAdminLog);
 
@@ -2186,7 +2053,7 @@
     box.style.display = 'block';
     box.textContent = isEn() ? 'Running diagnostics…' : '診斷中…';
 
-    const r = await hedgedRead({ type:'diagnose', password: adminPassword });
+    const r = await readFromBackend({ type:'diagnose', password: adminPassword });
 
     if(!r.ok){
       // 連診斷都打不通 → 問題在傳輸層，不在試算表。這個結論本身就很有用。
@@ -2222,8 +2089,40 @@
           + '\n\n' + '─'.repeat(40) + '\n\n';
       }
 
+      // 一組被拆成兩組：總人數還是對的、也沒有重複編號，
+      // 所以其他檢查全都看不出來 —— 但每組的人數與金額都算錯了。
+      const split = (r.body && r.body.splitGroups) || [];
+      let splitText = '';
+      if(split.length){
+        splitText = (isEn()
+          ? ('!! ' + split.length + ' registration(s) appear to be split across two IDs:\n')
+          : ('⚠️ 有 ' + split.length + ' 組疑似被拆成兩個報名編號（同一支電話出現在不同編號底下）：\n'))
+          + split.map(function(x){
+              return '   ' + (isEn() ? 'phone ' : '電話 ') + x.phone + '：'
+                + x.detail.map(function(d){
+                    return d.regId + '（第 ' + d.rows.join('、') + ' 列）';
+                  }).join('　+　');
+            }).join('\n')
+          + (isEn()
+              ? '\n   Fix: make every row of the group share ONE registration ID.'
+              : '\n   修法：把這幾列的「報名編號」統一改成同一個，整組才會併回去。')
+          + '\n\n' + '─'.repeat(40) + '\n\n';
+      }
+
+      const noPri = (r.body && r.body.groupsWithoutPrimary) || [];
+      let noPriText = '';
+      if(noPri.length){
+        noPriText = (isEn()
+          ? ('!! ' + noPri.length + ' group(s) have no 本人 row:\n')
+          : ('⚠️ 有 ' + noPri.length + ' 組沒有「本人」那一列：\n'))
+          + noPri.map(function(x){
+              return '   ' + x.regId + '（第 ' + x.rows.join('、') + ' 列：' + x.names.join('、') + '）';
+            }).join('\n')
+          + '\n\n' + '─'.repeat(40) + '\n\n';
+      }
+
       box.textContent = (head ? head + '\n\n' + '─'.repeat(40) + '\n\n' : '')
-        + susText
+        + susText + splitText + noPriText
         + JSON.stringify(r.body, null, 2);
     }
     btn.disabled = false;
@@ -2277,9 +2176,6 @@
     });
   });
 
-  // 顯示「試算表幾列 → 認到幾組幾人」的對帳數字。
-  // 有這一行，資料被吃掉的時候看得出來 —— 沒有的話，畫面只會少幾個人，
-  // 而你完全不會知道少了。數字對不上時會轉成橘色示警。
   // 最近一次讀取名單的統計（列數、組數、人數、後端耗時）。
   // 先收著，按診斷時才拿出來用 —— 平常工具列保持乾淨。
   let lastReadInfo = null;
@@ -2307,9 +2203,7 @@
              + '（' + (isEn() ? 'attempts ' : '嘗試 ') + lastReadInfo.attempts
              + (isEn() ? '' : ' 次')
              + (lastReadInfo.winner
-                 ? ('，' + (isEn() ? 'winner #' : '第 ') + lastReadInfo.winner
-                    + (isEn() ? '' : ' 趟勝出') + ' '
-                    + (lastReadInfo.winnerMs / 1000).toFixed(1) + (isEn() ? 's' : ' 秒'))
+                 ? ('，' + (isEn() ? 'winner #' + lastReadInfo.winner : '第 ' + lastReadInfo.winner + ' 趟勝出'))
                  : '')
              + '）'
              + ((lastReadInfo.serverMs != null)
@@ -2340,13 +2234,7 @@
 
   function applyAdminData(results){
     adminData = Array.isArray(results) ? results : [];
-    populateAdminCountryFilter();
-    renderAdminStats();
-    renderAdminList();
-    const t = new Date().toLocaleTimeString(isEn() ? 'en-US' : 'zh-TW',
-      { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    const upd = document.getElementById('admin-last-updated');
-    if(upd) upd.textContent = (isEn() ? 'Last updated: ' : '最後更新：') + t;
+    refreshAdminView();
   }
 
   // 用目前的本機資料重畫統計與名單（不碰後端）
@@ -2354,28 +2242,23 @@
     populateAdminCountryFilter();
     renderAdminStats();
     renderAdminList();
-    const t = new Date().toLocaleTimeString(isEn() ? 'en-US' : 'zh-TW',
-      { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    const upd = document.getElementById('admin-last-updated');
-    if(upd) upd.textContent = (isEn() ? 'Last updated: ' : '最後更新：') + t;
   }
 
   function renderAdminStats(){
     const active = adminData.filter(g=> !g.allCancelled);
     const people = active.reduce((s,g)=> s + (Number(g.activeCount)||0), 0);
     const done = active.filter(g=> g.payStatus === PS.DONE);
+    // 已收款金額 = 所有「已收款」組別的應付金額加總（款項狀態是唯一依據，不看回報金額）
+    const paidSum = done.reduce((s,g)=> s + (Number(g.due)||0), 0);
     const outstanding = active.filter(g=> g.payStatus !== PS.DONE)
                               .reduce((s,g)=> s + (Number(g.due)||0), 0);
-    const topup = active.filter(g=> g.payStatus === PS.TOPUP);
-    const pending = adminData.reduce((s,g)=> s + (Number(g.cancelPendingCount)||0), 0);
 
     document.getElementById('stat-groups').textContent = active.length;
     document.getElementById('stat-people').textContent = people;
-    document.getElementById('stat-paid').textContent = done.length;
+    // 格式：金額(組數)，例：2,400(2)
+    document.getElementById('stat-paid').innerHTML =
+      paidSum.toLocaleString() + '<span class="stat-sub">(' + done.length + ')</span>';
     document.getElementById('stat-outstanding').textContent = 'NT$' + outstanding.toLocaleString();
-    // 「待補款組數」與「待處理取消申請」兩個方塊已移除。
-    // 這兩件事在篩選列還看得到：「待補款」「⚠ 取消申請」兩顆按鈕，
-    // 以及卡片標題列上的 ⚠ 標記，所以不會因此漏掉待辦。
     renderCountryStats(active);
   }
 
@@ -2799,9 +2682,6 @@
 
     if(!payload) return;
     payload.password = adminPassword;
-    // 告訴後端「這個前端看得懂單組回應」，後端就不必回傳整份名單（231KB → 1KB）。
-    // 沒帶這個旗標的舊前端，後端會自動回傳完整名單以維持相容。
-    payload.clientVersion = 2;
 
     // ── 樂觀更新 ──
     // 改一格款項狀態要 6 次 Google API 往返（開檔、讀表、讀紀錄標題、寫 2 格、追加紀錄），
@@ -2830,11 +2710,8 @@
     }
 
     if(body.result === 'success'){
-      // 後端現在只回傳被改動的那一組（約 1KB），不再回傳整份名單（約 231KB）。
-      // 這裡就地把本機資料中的該組換掉再重畫，畫面反應幾乎是立即的。
-      if(Array.isArray(body.results)){
-        applyAdminData(body.results);          // 舊版後端相容
-      } else if(body.removed && body.regId){
+      // 後端只回傳被改動的那一組（約 1KB），就地換掉再重畫
+      if(body.removed && body.regId){
         adminData = adminData.filter(g=> g.regId !== body.regId);
         refreshAdminView();
       } else if(body.group){
@@ -2851,8 +2728,6 @@
       card.querySelectorAll('.mini-btn').forEach(b=> b.disabled = false);
     }
   });
-
-  // （IG 清單改為使用者聚焦該欄位時才載入，見 loadIgDirectory）
 
   // ---- Countdown ----
   const EVENT_TIME = new Date('2026-10-30T19:00:00+08:00').getTime();

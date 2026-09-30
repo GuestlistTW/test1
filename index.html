@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/dinner10.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
 
@@ -290,7 +290,6 @@
     <h2 class="section-title" data-i18n="payment_title">匯款轉帳</h2>
     <p class="section-desc" data-i18n="payment_desc">完成報名後，請依下方資訊完成轉帳，並回報轉帳資料以利核對。</p>
 
-    <!-- 乾淨的單欄銀行資訊（已完全移除 pay-grid 與 qr-card） -->
     <div class="bank-card" style="max-width: 500px; margin: 0 auto 26px;">
       <div class="bank-row">
         <span class="bl" data-i18n="bank_name_label">銀行</span>
@@ -414,7 +413,7 @@
         <div class="admin-stats">
           <div class="stat-box"><div class="stat-num" id="stat-groups">0</div><div class="stat-label" data-i18n="stat_groups">有效報名組數</div></div>
           <div class="stat-box"><div class="stat-num" id="stat-people">0</div><div class="stat-label" data-i18n="stat_people">總人數</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">已收款組數</div></div>
+          <div class="stat-box"><div class="stat-num" style="color:var(--green);" id="stat-paid">0</div><div class="stat-label" data-i18n="stat_paid">已收款金額(組數)</div></div>
           <div class="stat-box"><div class="stat-num" style="color:var(--orange);" id="stat-outstanding">NT$0</div><div class="stat-label" data-i18n="stat_outstanding">未收金額</div></div>
         </div>
 
@@ -493,7 +492,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 
 </body>
 </html>
