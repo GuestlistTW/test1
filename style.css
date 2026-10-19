@@ -86,7 +86,10 @@
   }
   .banner img.banner-img{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    opacity:0; transition:opacity 1.2s ease;
   }
+  /* 輪播：只有 is-active 那張看得到，切換時淡入淡出 */
+  .banner img.banner-img.is-active{opacity:1;}
   .banner-overlay{
     position:relative; z-index:2;
     width:100%;
@@ -139,7 +142,7 @@
     border-color:var(--yellow);
   }
 
-  /* 窄螢幕：縮小間距與字級，讓四個分頁盡量一次排得下，不用左右捲 */
+  /* 窄螢幕：縮小間距與字級，讓五個分頁盡量一次排得下；排不下時可左右捲，不會被裁切 */
   @media(max-width:520px){
     .tabbar{gap:6px; padding:10px 12px;}
     .tab-btn{padding:9px 12px; font-size:0.84rem;}
@@ -896,6 +899,83 @@
     .announce-head{padding:16px 18px 0; font-size:1.05rem;}
     .announce-body{padding:12px 18px 4px;}
     .announce-list li{font-size:0.85rem;}
+  }
+
+  /* ═══════════════ 圖片彈窗（進站第一個） ═══════════════ */
+  .promo-card{
+    max-width:520px; width:100%;
+    padding:0; overflow:hidden;
+    max-height:92vh; display:flex; flex-direction:column;
+  }
+  .promo-close{
+    z-index:5; width:32px; height:32px; border-radius:50%;
+    background:rgba(12,8,26,0.65); color:#fff; top:12px; right:12px;
+  }
+  .promo-viewport{
+    position:relative; overflow:hidden; flex:1 1 auto; min-height:0;
+    background:var(--bg-deep);
+    touch-action:pan-y;              /* 讓手機左右滑交給我們處理，上下仍可捲 */
+  }
+  .promo-track{
+    display:flex; height:100%;
+    transition:transform .35s ease;
+  }
+  .promo-slide{
+    flex:0 0 100%; min-width:0; margin:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .promo-slide img{
+    width:100%; height:auto;
+    max-height:calc(92vh - 150px);   /* 扣掉圓點、按鈕的高度，整張圖一定看得完整 */
+    object-fit:contain;
+    user-select:none; -webkit-user-drag:none;
+  }
+  .promo-slide figcaption{
+    font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
+    color:var(--yellow); padding:8px 12px 0; text-align:center;
+  }
+  .promo-arrow{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid rgba(255,255,255,0.25);
+    background:rgba(12,8,26,0.6); color:#fff;
+    font-size:1.6rem; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0 0 3px;
+    transition:opacity .2s, border-color .2s;
+  }
+  .promo-arrow:hover{border-color:var(--yellow);}
+  .promo-arrow.prev{left:10px;}
+  .promo-arrow.next{right:10px;}
+  .promo-arrow:disabled{opacity:0; pointer-events:none;}
+  .promo-dots{
+    display:flex; justify-content:center; gap:8px;
+    padding:12px 0; flex:none;
+  }
+  .promo-dot{
+    width:8px; height:8px; padding:0; border-radius:999px; border:none;
+    background:var(--line); cursor:pointer; transition:all .25s ease;
+  }
+  .promo-dot.is-active{width:22px; background:var(--yellow);}
+  .promo-card .btn-primary{margin:0; border-radius:0; flex:none;}
+
+  /* ═══════════════ 現場活動分頁 ═══════════════ */
+  .onsite-card{
+    background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px; margin:0 auto 20px; max-width:620px;
+  }
+  .onsite-card-title{
+    display:flex; align-items:center; gap:10px;
+    font-size:1.15rem; margin:0 0 14px;
+  }
+  .onsite-num{
+    flex:none; width:28px; height:28px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--yellow); color:var(--bg-deep);
+    font-size:0.95rem; line-height:1;
+  }
+  .onsite-img{
+    width:100%; height:auto; border-radius:12px;
+    border:1px solid var(--line); background:var(--bg-deep);
   }
 
   /* 右下角的公告按鈕：關掉之後還能隨時叫回來 */

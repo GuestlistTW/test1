@@ -1,6 +1,12 @@
 // ===================== i18n =====================
   const I18N = {
-    nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'}, nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
+    nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'},
+    nav_onsite:{en:'On-site Activities', ja:'当日イベント', ko:'현장 이벤트'},
+    onsite_title:{en:'On-site Activities', ja:'当日イベント', ko:'현장 이벤트'},
+    onsite_desc:{en:'Besides dinner, here\'s what\'s happening on the day — come join in!', ja:'当日はお食事のほかに、こんなイベントもご用意しています。ぜひご参加ください！', ko:'당일에는 식사 외에도 이런 이벤트가 준비되어 있어요. 많은 참여 바랍니다!'},
+    promo_1_title:{zh:'抽獎活動', en:'Lucky Draw', ja:'抽選会', ko:'경품 추첨'},
+    promo_2_title:{zh:'抽獎活動＋現場販售', en:'Lucky Draw + On-site Sales', ja:'抽選会＋会場販売', ko:'경품 추첨 + 현장 판매'},
+    nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
     nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},
     banner_loc:{en:'G House Taipei', ja:'鉅星匯國際宴會廳', ko:'G House 타이베이'},
     info_title:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'},
@@ -168,7 +174,7 @@
     }
   ];
 
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbwSiXOtHJEtzvmmgqTRoNXPLfwNFa_MZ1mnFjZzRf0XwphOG86BSwTj3QcaHhB__VR0Og/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyttgZjMRFh6KEANIy-cd2MIt8H98mCLbb5LVSzYXqMiv-mcSRXKN0JAO-6ZErnr_pt/exec';
 
   let currentLang = 'zh';
 
@@ -292,6 +298,8 @@
     refreshCountryPickers();
     // 公告是自己畫的（不走 data-i18n），切語言時要跟著重畫
     if(typeof renderAnnouncements === 'function') renderAnnouncements();
+    // 圖片彈窗與「現場活動」分頁的圖片依語言不同，一併換掉
+    if(typeof renderPromoImages === 'function') renderPromoImages();
     if(typeof adminData !== 'undefined' && adminData.length){
       populateAdminCountryFilter();
       renderAdminStats();
@@ -324,13 +332,12 @@
       menu.hidden = true;
       btn.setAttribute('aria-expanded', 'false');
 
-      // 切換語言之後把公告重新打開。
+      // 切換語言之後把公告流程重新跑一次（圖片彈窗 → 文字公告）。
       //
-      // 會切語言，代表這個人想用那個語言讀內容 —— 公告當然也包含在內。
-      // 原本關掉公告之後再切語言，公告就不會再出現，使用者會以為
-      // 「這個語言沒有公告」，其實只是沒有再打開而已。
+      // 會切語言，代表這個人想用那個語言讀內容 —— 公告與活動圖片當然也包含在內，
+      // 而且圖片本身就有分語言版本，正好讓他看到自己語言的那一張。
       // （語言沒變就不動，避免重複點同一個語言時視窗一直跳出來。）
-      if(changed && typeof openAnnounce === 'function') openAnnounce();
+      if(changed && typeof openPromo === 'function') openPromo();
     });
 
     document.addEventListener('click', function(e){
@@ -590,7 +597,8 @@
   if(announceModal){
     document.getElementById('announce-close-btn').addEventListener('click', closeAnnounce);
     document.getElementById('announce-x').addEventListener('click', closeAnnounce);
-    document.getElementById('announce-open-btn').addEventListener('click', openAnnounce);
+    // 右下角 📢：從圖片彈窗開始，關掉圖片後再接文字公告（跟進站時一樣的順序）
+    document.getElementById('announce-open-btn').addEventListener('click', function(){ openPromo(); });
     // 點灰色背景也能關（點內容區不會關）
     announceModal.addEventListener('click', function(e){
       if(e.target === announceModal) closeAnnounce();
@@ -598,9 +606,145 @@
     document.addEventListener('keydown', function(e){
       if(e.key === 'Escape' && announceModal.style.display === 'flex') closeAnnounce();
     });
-    // 每次進站都自動跳出
+    // 進站自動跳出改由下面的圖片彈窗負責：先圖片 → 關掉後才是文字公告
+  }
+
+  // ===================== 活動圖片（彈窗 ＋ 現場活動分頁共用） =====================
+  //
+  // 圖片放在跟首圖同一個位置，這裡只記檔名，網址由 ASSET_BASE 組出來。
+  // 每張圖依語言挑檔名；表上沒列到的語言退回英文版，再退回中文版。
+  const ASSET_BASE = 'https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/';
+  const PROMO_IMAGES = {
+    1: { zh:'1-TW.jpg', en:'1-EN.jpg', ja:'1-EN.jpg', ko:'1-EN.jpg' },   // 抽獎活動：中文以外都用英文版
+    2: { zh:'2-TW.jpg', en:'2-EN.jpg', ja:'2-JN.jpg', ko:'2-KR.jpg' }    // 抽獎活動＋現場販售
+  };
+
+  function promoSrc(n, lang){
+    const map = PROMO_IMAGES[n] || {};
+    return ASSET_BASE + (map[lang] || map.en || map.zh || '');
+  }
+
+  // 把頁面上所有 data-promo 的圖片換成目前語言的版本。
+  // 某個語言版本萬一還沒上傳（404），自動退回中文版，不會出現破圖。
+  function renderPromoImages(){
+    document.querySelectorAll('img[data-promo]').forEach(function(img){
+      const n = img.dataset.promo;
+      const want = promoSrc(n, currentLang);
+      img.alt = T('promo_' + n + '_title');
+      if(img.dataset.src === want) return;           // 同一張就不要重載
+      img.dataset.src = want;
+      img.dataset.fellBack = '';
+      img.onerror = function(){
+        const fallback = promoSrc(n, 'zh');
+        if(img.dataset.fellBack || img.src === fallback) return;
+        img.dataset.fellBack = '1';
+        img.src = fallback;
+      };
+      img.src = want;
+    });
+  }
+
+  // ---- 圖片彈窗（可左右切換） ----
+  const promoModal = document.getElementById('promo-modal');
+  const promoTrack = document.getElementById('promo-track');
+  const promoDots = document.getElementById('promo-dots');
+  const promoPrev = document.getElementById('promo-prev');
+  const promoNext = document.getElementById('promo-next');
+  const promoBtn = document.getElementById('promo-close-btn');
+  const promoCount = promoTrack ? promoTrack.children.length : 0;
+  let promoIdx = 0;
+
+  function promoGo(i){
+    promoIdx = Math.max(0, Math.min(promoCount - 1, i));
+    promoTrack.style.transform = 'translateX(' + (-100 * promoIdx) + '%)';
+    promoPrev.disabled = (promoIdx === 0);
+    promoNext.disabled = (promoIdx === promoCount - 1);
+    promoDots.querySelectorAll('.promo-dot').forEach(function(d, k){
+      d.classList.toggle('is-active', k === promoIdx);
+    });
+    // 還沒看到最後一張：按鈕是「下一張」；最後一張才是「我知道了」
+    promoBtn.textContent = (promoIdx < promoCount - 1)
+      ? T({ zh:'下一張 →', en:'Next →', ja:'次へ →', ko:'다음 →' })
+      : T({ zh:'我知道了', en:'Got it', ja:'閉じる', ko:'확인' });
+  }
+
+  function openPromo(){
+    if(!promoModal){ openAnnounce(); return; }
+    closeAnnounce();                 // 從 📢 叫出來時，避免兩個視窗疊在一起
+    renderPromoImages();
+    promoModal.style.display = 'flex';
+    promoGo(0);
+  }
+
+  // 關掉圖片彈窗 → 接著跳文字公告（匯款提醒等）
+  function closePromo(){
+    if(!promoModal || promoModal.style.display !== 'flex') return;
+    promoModal.style.display = 'none';
     openAnnounce();
   }
+
+  if(promoModal && promoTrack){
+    promoDots.innerHTML = Array.from({ length: promoCount }, function(_, k){
+      return '<button type="button" class="promo-dot" aria-label="' + (k + 1) + '"></button>';
+    }).join('');
+    promoDots.addEventListener('click', function(e){
+      const dots = Array.from(promoDots.children);
+      const k = dots.indexOf(e.target.closest('.promo-dot'));
+      if(k >= 0) promoGo(k);
+    });
+    promoPrev.addEventListener('click', function(){ promoGo(promoIdx - 1); });
+    promoNext.addEventListener('click', function(){ promoGo(promoIdx + 1); });
+    promoBtn.addEventListener('click', function(){
+      if(promoIdx < promoCount - 1) promoGo(promoIdx + 1);
+      else closePromo();
+    });
+    document.getElementById('promo-x').addEventListener('click', closePromo);
+    promoModal.addEventListener('click', function(e){
+      if(e.target === promoModal) closePromo();
+    });
+    document.addEventListener('keydown', function(e){
+      if(promoModal.style.display !== 'flex') return;
+      if(e.key === 'Escape') closePromo();
+      else if(e.key === 'ArrowLeft') promoGo(promoIdx - 1);
+      else if(e.key === 'ArrowRight') promoGo(promoIdx + 1);
+    });
+
+    // 手機左右滑動切換
+    const vp = document.getElementById('promo-viewport');
+    let sx = 0, sy = 0, tracking = false;
+    vp.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+    }, { passive:true });
+    vp.addEventListener('touchend', function(e){
+      if(!tracking) return;
+      tracking = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+        promoGo(promoIdx + (dx < 0 ? 1 : -1));
+      }
+    }, { passive:true });
+
+    // 每次進站都自動跳出：先圖片，關掉後才是文字公告
+    openPromo();
+  } else if(announceModal){
+    openAnnounce();
+  }
+
+  // ---- 首圖輪播：每 15 秒切換 ----
+  (function initBannerCarousel(){
+    const imgs = document.querySelectorAll('.banner .banner-img');
+    if(imgs.length < 2) return;
+    let i = 0;
+    setInterval(function(){
+      // 分頁在背景時不用切，回來時照樣接著輪
+      if(document.hidden) return;
+      imgs[i].classList.remove('is-active');
+      i = (i + 1) % imgs.length;
+      imgs[i].classList.add('is-active');
+    }, 15000);
+  })();
 
   // ---- 報名成功提示 ----
   const lineModal = document.getElementById('line-modal');
