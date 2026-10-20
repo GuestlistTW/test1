@@ -974,6 +974,11 @@
     background:var(--yellow); color:var(--bg-deep);
     font-size:0.95rem; line-height:1;
   }
+  .onsite-text{margin:-4px 0 14px; font-size:0.92rem; line-height:1.75; color:var(--text-light);}
+  .onsite-text p{margin:0 0 6px;}
+  .onsite-text p:last-child{margin-bottom:0; color:var(--text-muted);}
+  .onsite-ig{color:var(--yellow); font-weight:600; text-decoration:none; border-bottom:1px dotted currentColor;}
+  .onsite-ig:hover{border-bottom-style:solid;}
   .onsite-img{
     width:100%; height:auto; border-radius:12px;
     border:1px solid var(--line); background:var(--bg-deep);

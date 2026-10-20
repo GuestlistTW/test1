@@ -5,7 +5,9 @@
     onsite_title:{en:'On-site Activities', ja:'当日イベント', ko:'현장 이벤트'},
     onsite_desc:{en:'Here\'s what else is happening on the day — come join in!', ja:'当日はこんなイベントもご用意しています。ぜひご参加ください！', ko:'당일에는 이런 이벤트도 준비되어 있어요. 많은 참여 바랍니다!'},
     promo_1_title:{zh:'贈獎活動', en:'Giveaway', ja:'プレゼント企画', ko:'경품 증정'},
-    promo_2_title:{zh:'贈獎活動＋現場販售', en:'Giveaway + On-site Sales', ja:'プレゼント企画＋会場販売', ko:'경품 증정 + 현장 판매'},
+    promo_2_title:{zh:'贊助商-贈獎活動｜現場販售', en:'Sponsor Giveaway | On-site Sales', ja:'スポンサー・プレゼント企画｜会場販売', ko:'스폰서 경품 증정 | 현장 판매'},
+    promo_2_desc_1:{en:'Thank you to our sponsors for the wonderful gifts! There will also be a brand showcase & sales area at the venue — feel free to stop by and shop.', ja:'素敵なプレゼントをご提供くださったスポンサーの皆さまに感謝いたします！会場にはブランド展示・販売コーナーもございますので、ぜひお立ち寄りください。', ko:'멋진 경품을 제공해 주신 스폰서분들께 감사드립니다! 행사장에는 브랜드 전시·판매 코너도 마련되어 있으니 편하게 둘러보세요.'},
+    promo_2_desc_2:{en:'For questions about products and sales, please contact', ja:'商品のご購入・販売に関するお問い合わせは', ko:'상품 구매 및 판매 관련 문의는'},
     nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
     nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},
     banner_loc:{en:'G House Taipei', ja:'鉅星匯國際宴會廳', ko:'G House 타이베이'},
@@ -616,7 +618,7 @@
   const ASSET_BASE = 'https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/';
   const PROMO_IMAGES = {
     1: { zh:'1-TW.jpg', en:'1-EN.jpg', ja:'1-EN.jpg', ko:'1-EN.jpg' },   // 贈獎活動：中文以外都用英文版
-    2: { zh:'2-TW.jpg', en:'2-EN.jpg', ja:'2-JN.jpg', ko:'2-KR.jpg' }    // 贈獎活動＋現場販售（彈窗暫時關閉，現場活動分頁仍使用）
+    2: { zh:'2-TW.jpg', en:'2-EN.jpg', ja:'2-JN.jpg', ko:'2-KR.jpg' }    // 贊助商-贈獎活動｜現場販售（彈窗暫時關閉，現場活動分頁仍使用）
   };
 
   function promoSrc(n, lang){
