@@ -618,7 +618,8 @@
   const ASSET_BASE = 'https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/';
   const PROMO_IMAGES = {
     1: { zh:'1-TW.jpg', en:'1-EN.jpg', ja:'1-EN.jpg', ko:'1-EN.jpg' },   // 贈獎活動：中文以外都用英文版
-    2: { zh:'2-TW.jpg', en:'2-EN.jpg', ja:'2-JN.jpg', ko:'2-KR.jpg' }    // 贊助商-贈獎活動｜現場販售（彈窗暫時關閉，現場活動分頁仍使用）
+    2: { zh:'2-TW.jpg', en:'2-EN.jpg', ja:'2-JN.jpg', ko:'2-KR.jpg' },   // 贊助商-贈獎活動｜現場販售（彈窗暫時關閉，現場活動分頁仍使用）
+    '2b': { zh:'2-TW2.jpg', en:'2-TW2.jpg', ja:'2-TW2.jpg', ko:'2-TW2.jpg' } // 第二個活動的新圖：彈窗第二張＋現場活動第二個的上方，各語言共用
   };
 
   function promoSrc(n, lang){
@@ -632,7 +633,7 @@
     document.querySelectorAll('img[data-promo]').forEach(function(img){
       const n = img.dataset.promo;
       const want = promoSrc(n, currentLang);
-      img.alt = T('promo_' + n + '_title');
+      img.alt = T('promo_' + parseInt(n, 10) + '_title');   // 2b 跟 2 用同一個標題
       if(img.dataset.src === want) return;           // 同一張就不要重載
       img.dataset.src = want;
       img.dataset.fellBack = '';
@@ -755,6 +756,32 @@
   } else if(announceModal){
     openAnnounce();
   }
+
+  // ---- 現場活動分頁：點圖片放大 ----
+  (function initLightbox(){
+    const box = document.getElementById('lightbox');
+    const big = document.getElementById('lightbox-img');
+    if(!box || !big) return;
+    function open(img){
+      big.src = img.currentSrc || img.src;
+      big.alt = img.alt;
+      box.style.display = 'flex';
+      document.body.style.overflow = 'hidden';     // 放大時背後不要跟著捲
+    }
+    function close(){
+      box.style.display = 'none';
+      big.removeAttribute('src');
+      document.body.style.overflow = '';
+    }
+    document.querySelectorAll('#panel-onsite .onsite-img').forEach(function(img){
+      img.addEventListener('click', function(){ open(img); });
+    });
+    // 點任何地方（圖片本身、背景、✕）都會關掉
+    box.addEventListener('click', close);
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && box.style.display === 'flex') close();
+    });
+  })();
 
   // ---- 首圖輪播：每 3 秒切換 ----
   (function initBannerCarousel(){

@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/dinner10.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
 
@@ -42,8 +42,8 @@
 
 <div class="banner">
   <!-- 首圖輪播：每 15 秒淡入淡出切換（見 app.js 的 initBannerCarousel） -->
-  <img class="banner-img is-active" src="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/dinner10.jpg" alt="Taiwan Pride" loading="eager" decoding="async">
-  <img class="banner-img" src="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/bitch.jpg" alt="Taiwan Pride" loading="eager" decoding="async">
+  <img class="banner-img is-active" src="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/dinner10.jpg?v=3" alt="Taiwan Pride" loading="eager" decoding="async">
+  <img class="banner-img" src="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/bitch.jpg?v=3" alt="Taiwan Pride" loading="eager" decoding="async">
   <div class="banner-overlay">
     <div class="banner-meta">
       <span>📅 10/30 · 19:00</span>
@@ -165,6 +165,7 @@
         <p data-i18n="promo_2_desc_1">感謝贊助商提供活動好禮！活動現場亦設有品牌展售專區，歡迎參觀選購。</p>
         <p><span data-i18n="promo_2_desc_2">商品選購及展售相關問題，請洽</span> <a class="onsite-ig" href="https://www.instagram.com/lawrencechi/" target="_blank" rel="noopener">@lawrencechi</a></p>
       </div>
+      <img class="onsite-img" data-promo="2b" alt="" loading="lazy" decoding="async">
       <img class="onsite-img" data-promo="2" alt="" loading="lazy" decoding="async">
     </div>
   </section>
@@ -507,6 +508,9 @@
           <img data-promo="2" alt="" decoding="async">
         </figure>
         /// -->
+        <figure class="promo-slide">
+          <img data-promo="2b" alt="" decoding="async">
+        </figure>
       </div>
       <button type="button" class="promo-arrow prev" id="promo-prev" aria-label="Previous">‹</button>
       <button type="button" class="promo-arrow next" id="promo-next" aria-label="Next">›</button>
@@ -539,9 +543,15 @@
   </div>
 </div>
 
+<!-- 圖片放大檢視：點「現場活動」分頁的圖片會開這個 -->
+<div class="lightbox" id="lightbox" style="display:none;" role="dialog" aria-modal="true">
+  <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button>
+  <img id="lightbox-img" alt="">
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=18"></script>
+<script src="app.js?v=19"></script>
 
 </body>
 </html>
