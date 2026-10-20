@@ -902,14 +902,17 @@
   }
 
   /* ═══════════════ 圖片彈窗（進站第一個） ═══════════════ */
+  /* 盡量把空間都給圖片：外圍留白縮到最小、卡片不留內距、圖下方不放文字 */
+  #promo-modal{padding:8px;}
   .promo-card{
-    max-width:520px; width:100%;
-    padding:0; overflow:hidden;
-    max-height:92vh; display:flex; flex-direction:column;
+    max-width:640px; width:100%;
+    padding:0; overflow:hidden; border-radius:14px;
+    max-height:calc(100vh - 16px); max-height:calc(100dvh - 16px);
+    display:flex; flex-direction:column;
   }
   .promo-close{
     z-index:5; width:32px; height:32px; border-radius:50%;
-    background:rgba(12,8,26,0.65); color:#fff; top:12px; right:12px;
+    background:rgba(12,8,26,0.65); color:#fff; top:8px; right:8px;
   }
   .promo-viewport{
     position:relative; overflow:hidden; flex:1 1 auto; min-height:0;
@@ -922,17 +925,14 @@
   }
   .promo-slide{
     flex:0 0 100%; min-width:0; margin:0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    display:flex; align-items:center; justify-content:center;
   }
   .promo-slide img{
     width:100%; height:auto;
-    max-height:calc(92vh - 150px);   /* 扣掉圓點、按鈕的高度，整張圖一定看得完整 */
+    /* 扣掉外圍 16px 與下方按鈕約 50px，整張圖一定看得完整 */
+    max-height:calc(100vh - 66px); max-height:calc(100dvh - 66px);
     object-fit:contain;
     user-select:none; -webkit-user-drag:none;
-  }
-  .promo-slide figcaption{
-    font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
-    color:var(--yellow); padding:8px 12px 0; text-align:center;
   }
   .promo-arrow{
     position:absolute; top:50%; transform:translateY(-50%);
@@ -947,16 +947,17 @@
   .promo-arrow.prev{left:10px;}
   .promo-arrow.next{right:10px;}
   .promo-arrow:disabled{opacity:0; pointer-events:none;}
+  .promo-arrow[hidden], .promo-dots[hidden]{display:none;}
   .promo-dots{
     display:flex; justify-content:center; gap:8px;
-    padding:12px 0; flex:none;
+    padding:8px 0; flex:none;
   }
   .promo-dot{
     width:8px; height:8px; padding:0; border-radius:999px; border:none;
     background:var(--line); cursor:pointer; transition:all .25s ease;
   }
   .promo-dot.is-active{width:22px; background:var(--yellow);}
-  .promo-card .btn-primary{margin:0; border-radius:0; flex:none;}
+  .promo-card .btn-primary{margin:0; border-radius:0; flex:none; padding:12px;}
 
   /* ═══════════════ 現場活動分頁 ═══════════════ */
   .onsite-card{

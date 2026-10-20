@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/dinner10.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 
@@ -150,17 +150,17 @@
   <!-- 圖片依語言切換，src 由 app.js 的 renderPromoImages() 填入 -->
   <section class="panel" id="panel-onsite">
     <h2 class="section-title" data-i18n="onsite_title">現場活動</h2>
-    <p class="section-desc" data-i18n="onsite_desc">活動當天除了晚餐，還準備了這些現場活動，歡迎參加！</p>
+    <p class="section-desc" data-i18n="onsite_desc">活動當天還準備了這些現場活動，歡迎參加！</p>
 
     <div class="onsite-card">
       <div class="ic-bar"></div>
-      <h3 class="onsite-card-title"><span class="onsite-num">1</span><span data-i18n="promo_1_title">抽獎活動</span></h3>
+      <h3 class="onsite-card-title"><span class="onsite-num">1</span><span data-i18n="promo_1_title">贈獎活動</span></h3>
       <img class="onsite-img" data-promo="1" alt="" loading="lazy" decoding="async">
     </div>
 
     <div class="onsite-card">
       <div class="ic-bar"></div>
-      <h3 class="onsite-card-title"><span class="onsite-num">2</span><span data-i18n="promo_2_title">抽獎活動＋現場販售</span></h3>
+      <h3 class="onsite-card-title"><span class="onsite-num">2</span><span data-i18n="promo_2_title">贈獎活動＋現場販售</span></h3>
       <img class="onsite-img" data-promo="2" alt="" loading="lazy" decoding="async">
     </div>
   </section>
@@ -493,23 +493,22 @@
 <div class="modal-overlay" id="promo-modal" style="display:none;">
   <div class="modal-card promo-card" role="dialog" aria-modal="true">
     <button class="modal-close promo-close" id="promo-x" aria-label="Close">✕</button>
-    <div class="announce-bar"></div>
     <div class="promo-viewport" id="promo-viewport">
       <div class="promo-track" id="promo-track">
         <figure class="promo-slide">
           <img data-promo="1" alt="" decoding="async">
-          <figcaption data-i18n="promo_1_title">抽獎活動</figcaption>
         </figure>
+        <!-- ///（第二張暫時關閉，日後要開啟：把下面這段外層的註解符號拿掉即可，左右切換會自動恢復）
         <figure class="promo-slide">
           <img data-promo="2" alt="" decoding="async">
-          <figcaption data-i18n="promo_2_title">抽獎活動＋現場販售</figcaption>
         </figure>
+        /// -->
       </div>
       <button type="button" class="promo-arrow prev" id="promo-prev" aria-label="Previous">‹</button>
       <button type="button" class="promo-arrow next" id="promo-next" aria-label="Next">›</button>
     </div>
     <div class="promo-dots" id="promo-dots"></div>
-    <button class="btn-primary" id="promo-close-btn">下一張 →</button>
+    <button class="btn-primary" id="promo-close-btn">我知道了</button>
   </div>
 </div>
 
@@ -538,7 +537,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=15"></script>
+<script src="app.js?v=16"></script>
 
 </body>
 </html>

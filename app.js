@@ -3,9 +3,9 @@
     nav_info:{en:'Event Info', ja:'イベント情報', ko:'행사 정보'},
     nav_onsite:{en:'On-site Activities', ja:'当日イベント', ko:'현장 이벤트'},
     onsite_title:{en:'On-site Activities', ja:'当日イベント', ko:'현장 이벤트'},
-    onsite_desc:{en:'Besides dinner, here\'s what\'s happening on the day — come join in!', ja:'当日はお食事のほかに、こんなイベントもご用意しています。ぜひご参加ください！', ko:'당일에는 식사 외에도 이런 이벤트가 준비되어 있어요. 많은 참여 바랍니다!'},
-    promo_1_title:{zh:'抽獎活動', en:'Lucky Draw', ja:'抽選会', ko:'경품 추첨'},
-    promo_2_title:{zh:'抽獎活動＋現場販售', en:'Lucky Draw + On-site Sales', ja:'抽選会＋会場販売', ko:'경품 추첨 + 현장 판매'},
+    onsite_desc:{en:'Here\'s what else is happening on the day — come join in!', ja:'当日はこんなイベントもご用意しています。ぜひご参加ください！', ko:'당일에는 이런 이벤트도 준비되어 있어요. 많은 참여 바랍니다!'},
+    promo_1_title:{zh:'贈獎活動', en:'Giveaway', ja:'プレゼント企画', ko:'경품 증정'},
+    promo_2_title:{zh:'贈獎活動＋現場販售', en:'Giveaway + On-site Sales', ja:'プレゼント企画＋会場販売', ko:'경품 증정 + 현장 판매'},
     nav_register:{en:'Register & Lookup', ja:'申込・照会', ko:'신청 및 조회'}, nav_payment:{en:'Payment', ja:'銀行振込', ko:'송금 안내'},
     nav_gallery:{en:'Gallery', ja:'フォトギャラリー', ko:'사진첩'}, nav_admin:{en:'Admin', ja:'管理画面', ko:'관리자'},
     banner_loc:{en:'G House Taipei', ja:'鉅星匯國際宴會廳', ko:'G House 타이베이'},
@@ -615,8 +615,8 @@
   // 每張圖依語言挑檔名；表上沒列到的語言退回英文版，再退回中文版。
   const ASSET_BASE = 'https://cdn-general.cybassets.com/s/files/35135/theme/127586/assets/';
   const PROMO_IMAGES = {
-    1: { zh:'1-TW.jpg', en:'1-EN.jpg', ja:'1-EN.jpg', ko:'1-EN.jpg' },   // 抽獎活動：中文以外都用英文版
-    2: { zh:'2-TW.jpg', en:'2-EN.jpg', ja:'2-JN.jpg', ko:'2-KR.jpg' }    // 抽獎活動＋現場販售
+    1: { zh:'1-TW.jpg', en:'1-EN.jpg', ja:'1-EN.jpg', ko:'1-EN.jpg' },   // 贈獎活動：中文以外都用英文版
+    2: { zh:'2-TW.jpg', en:'2-EN.jpg', ja:'2-JN.jpg', ko:'2-KR.jpg' }    // 贈獎活動＋現場販售（彈窗暫時關閉，現場活動分頁仍使用）
   };
 
   function promoSrc(n, lang){
@@ -659,6 +659,11 @@
     promoTrack.style.transform = 'translateX(' + (-100 * promoIdx) + '%)';
     promoPrev.disabled = (promoIdx === 0);
     promoNext.disabled = (promoIdx === promoCount - 1);
+    // 只有一張時：箭頭、圓點都不顯示（第二張日後打開會自動出現）
+    const single = promoCount <= 1;
+    promoPrev.hidden = single;
+    promoNext.hidden = single;
+    promoDots.hidden = single;
     promoDots.querySelectorAll('.promo-dot').forEach(function(d, k){
       d.classList.toggle('is-active', k === promoIdx);
     });
@@ -681,6 +686,23 @@
     if(!promoModal || promoModal.style.display !== 'flex') return;
     promoModal.style.display = 'none';
     openAnnounce();
+  }
+
+  // 依圖片實際比例調整彈窗寬度：直式圖在電腦上被高度限制時，
+  // 卡片跟著變窄，左右就不會多出深色空白
+  const promoCard = promoModal ? promoModal.querySelector('.promo-card') : null;
+  function fitPromoCard(){
+    if(!promoCard) return;
+    const img = promoTrack.querySelector('img');
+    if(!img || !img.naturalWidth) return;
+    const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    const availH = vh - 66;                       // 外圍 16px + 下方按鈕約 50px
+    const w = Math.min(640, img.naturalWidth / img.naturalHeight * availH);
+    promoCard.style.maxWidth = Math.max(260, Math.floor(w)) + 'px';
+  }
+  if(promoTrack){
+    promoTrack.querySelectorAll('img').forEach(function(img){ img.addEventListener('load', fitPromoCard); });
+    window.addEventListener('resize', fitPromoCard);
   }
 
   if(promoModal && promoTrack){
@@ -732,7 +754,7 @@
     openAnnounce();
   }
 
-  // ---- 首圖輪播：每 15 秒切換 ----
+  // ---- 首圖輪播：每 3 秒切換 ----
   (function initBannerCarousel(){
     const imgs = document.querySelectorAll('.banner .banner-img');
     if(imgs.length < 2) return;
@@ -743,7 +765,7 @@
       imgs[i].classList.remove('is-active');
       i = (i + 1) % imgs.length;
       imgs[i].classList.add('is-active');
-    }, 15000);
+    }, 3000);
   })();
 
   // ---- 報名成功提示 ----
